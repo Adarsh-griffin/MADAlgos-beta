@@ -26,13 +26,21 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(uri, {
-      dbName: process.env.MONGODB_DB_NAME ?? "MADAlgos-new-databse",
+    const connectOptions: Parameters<typeof mongoose.connect>[1] = {
       serverSelectionTimeoutMS: 5_000,
       connectTimeoutMS: 5_000,
       socketTimeoutMS: 5_000,
       family: 4,
-    });
+    };
+
+    // Optional, but important when your connection string doesn't include
+    // the database path (MongoDB often falls back to `test`).
+    // Set this in env if you want to explicitly target a specific DB.
+    if (process.env.MONGODB_DB_NAME) {
+      connectOptions.dbName = process.env.MONGODB_DB_NAME;
+    }
+
+    cached.promise = mongoose.connect(uri, connectOptions);
   }
 
   try {

@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# github (do not commit workflows/metadata)
+.github/
+
 # env (never commit secrets)
 .env
 .env*.local

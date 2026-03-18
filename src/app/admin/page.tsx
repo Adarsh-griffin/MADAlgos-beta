@@ -21,6 +21,9 @@ export const metadata = {
   title: "Admin Dashboard | MADAlgos",
 };
 
+// Ensure this dashboard is always rendered dynamically with fresh data.
+export const dynamic = "force-dynamic";
+
 function StatCard({ title, value, icon, link }: { title: string, value: number, icon: React.ReactNode, link: string }) {
   return (
     <Link href={link} className="block group">

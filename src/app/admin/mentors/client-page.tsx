@@ -122,7 +122,8 @@ export default function MentorsPageClient({
                     body: JSON.stringify({ id: confirmAction.id }),
                 });
                 if (!res.ok) throw new Error("Failed to remove mentor");
-                toast.success("Mentor removed from mentors listing (user account kept)");
+                setMentors(mentors.filter((m) => m.id !== confirmAction.id));
+                toast.success("Mentor removed from mentors listing and application queue");
             }
         } catch (error) {
             toast.error("An error occurred");

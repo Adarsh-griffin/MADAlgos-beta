@@ -26,6 +26,10 @@ import {
   getMentorHeadline,
 } from "@/lib/mentors";
 
+// Ensure the homepage always renders fresh DB data.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   const [blogsFromDb, mentorsFromDb] = await Promise.all([
     getAllBlogs(),
