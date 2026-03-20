@@ -20,8 +20,17 @@ const timeout = (ms: number) =>
   );
 
 export async function connectDB(): Promise<typeof mongoose> {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI?.trim();
   if (!uri) throw new Error("MONGODB_URI is not set.");
+
+  // Mongoose expects standard Mongo URI schemes.
+  // This catches cases where the env var accidentally contains a wrong format
+  // (or starts with a different prefix), before Mongoose throws a parse error.
+  if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
+    throw new Error(
+      `Invalid MONGODB_URI scheme. Expected to start with "mongodb://" or "mongodb+srv://". Got: ${uri.slice(0, 25)}...`
+    );
+  }
 
   if (cached.conn) return cached.conn;
 

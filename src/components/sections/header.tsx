@@ -190,7 +190,7 @@ const Header = () => {
                 href="/auth"
                 className="inline-flex items-center justify-center h-10 rounded-full bg-primary px-5 text-[11px] font-black tracking-[0.22em] uppercase text-slate-950 hover:brightness-110 transition-all active:scale-95 shadow-[0_14px_40px_rgba(42,181,160,0.35)]"
               >
-                Sign Up
+                Join us
               </Link>
             </div>
 
@@ -245,7 +245,7 @@ const Header = () => {
                 onClick={closeMobileMenu}
                 className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-slate-950 hover:brightness-110 transition-all active:scale-95 shadow-[0_14px_40px_rgba(42,181,160,0.25)]"
               >
-                Sign Up
+                Join us
               </Link>
             </div>
 

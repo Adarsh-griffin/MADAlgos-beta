@@ -21,6 +21,10 @@ type BlogForReview = {
   status: BlogStatus;
   reviewStatus: string;
   likes: number;
+  category?: string;
+  tags?: string[];
+  seoDescription?: string;
+  seoKeywords?: string[];
   descriptionDetails: string;
 };
 
@@ -153,6 +157,45 @@ export default function BlogReviewClient({ blog }: { blog: BlogForReview }) {
 
       <div className="rounded-3xl border border-white/10 bg-[#050505]/60 p-6 md:p-8">
         <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-4">{blog.title}</h2>
+
+        <div className="mb-6 grid gap-3 md:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-1">Category</p>
+            <p className="text-sm text-white">{blog.category || "—"}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-1">SEO Description</p>
+            <p className="text-sm text-white">{blog.seoDescription || "—"}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-1">Tags</p>
+            {(blog.tags?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {blog.tags!.map((t) => (
+                  <span key={t} className="px-2.5 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] uppercase tracking-[0.18em] text-slate-200">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-white">—</p>
+            )}
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-1">SEO Keywords</p>
+            {(blog.seoKeywords?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {blog.seoKeywords!.map((k) => (
+                  <span key={k} className="px-2.5 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] uppercase tracking-[0.18em] text-slate-200">
+                    {k}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-white">—</p>
+            )}
+          </div>
+        </div>
 
         <div className="prose prose-invert max-w-none prose-headings:font-semibold prose-a:text-primary prose-strong:text-white/90 prose-img:rounded-2xl prose-img:border prose-img:border-white/10">
           {/* eslint-disable-next-line react/no-danger */}

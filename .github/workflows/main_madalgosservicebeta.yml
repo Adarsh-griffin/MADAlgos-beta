@@ -33,6 +33,8 @@ jobs:
         run: npm run build
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
           SUPERADMIN_EMAIL: ${{ secrets.SUPERADMIN_EMAIL }}
@@ -82,5 +84,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: MADAlgosServiceBeta
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B2B95DFF0A5E4D85A9E235EF83667A27 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4ADD9642A0F842FDA10D590A9B3DF112 }}
           package: deploy.zip

@@ -10,12 +10,16 @@ const BodySchema = z.object({
     thumbnail: z.string().optional(),
     category: z.string().optional(),
     tags: z.string().optional(),
+    seoKeywords: z.string().optional(),
     content: z.string().min(1),
     seoDescription: z.string().max(160).optional(),
     status: z.enum(["DRAFT", "PENDING_REVIEW", "PUBLISHED", "REJECTED"]),
 });
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
     const session = await getSessionFromRequestCookies();
     if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "MENTOR")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -27,30 +31,30 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     await connectDB();
 
-    const blog = await BlogModel.findOne({ id: Number(params.id) }).exec();
+    const { id: rawId } = await params;
+    const blog = await BlogModel.findOne({ id: Number(rawId) }).exec();
     if (!blog) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     // If MENTOR, ensure they only edit their own blogs
-    if (session.role === "MENTOR" && blog.authorId !== session.userId) {
+    if (session.role === "MENTOR" && blog.submittedByUid !== session.uid) {
         return NextResponse.json({ error: "Forbidden: Can only edit your own blogs" }, { status: 403 });
     }
 
     blog.title = parsed.data.title;
-    blog.slug = parsed.data.slug;
-    blog.thumbnailUrl = parsed.data.thumbnail;
     blog.status = parsed.data.status;
+    blog.bannerImageLink = parsed.data.thumbnail ?? null;
+    blog.category = parsed.data.category || "";
+    blog.tags = parsed.data.tags
+        ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+        : [];
+    blog.seoDescription = parsed.data.seoDescription || "";
+    blog.seoKeywords = parsed.data.seoKeywords
+        ? parsed.data.seoKeywords.split(",").map((k: string) => k.trim()).filter(Boolean)
+        : [];
 
-    // Update embedded DescriptionDetails
-    blog.descriptionDetails = {
-        ...blog.descriptionDetails, // Keep existing blocks or other fields safe
-        tags: parsed.data.tags ? parsed.data.tags.split(",").map((t: string) => t.trim()) : [],
-        category: parsed.data.category,
-        seoDescription: parsed.data.seoDescription,
-    } as any;
-
-    // Store raw content
-    // @ts-ignore - appending rawContent loosely to align with the new schema without breaking typed models
-    blog.rawContent = parsed.data.content;
+    // Blog schema stores the full HTML/content as a single string.
+    // Never treat `descriptionDetails` as an object.
+    blog.descriptionDetails = parsed.data.content;
 
     const isAdmin = session.role === "ADMIN" || session.role === "SUPER_ADMIN";
     const finalStatus =

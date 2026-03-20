@@ -11,6 +11,10 @@ export interface BlogDocument {
   title: string;
   publisher: string;
   bannerImageLink: string | null;
+  category?: string;
+  tags?: string[];
+  seoDescription?: string;
+  seoKeywords?: string[];
   descriptionId: string;
   partitionKey: string;
   publishDate: string;
@@ -32,6 +36,10 @@ const BlogSchema = new Schema<BlogDocument>(
     title: { type: String, required: true },
     publisher: { type: String, default: "MadAlgos" },
     bannerImageLink: { type: String, default: null },
+    category: { type: String, default: "" },
+    tags: { type: [String], default: [] },
+    seoDescription: { type: String, default: "" },
+    seoKeywords: { type: [String], default: [] },
     descriptionId: { type: String, required: true },
     partitionKey: { type: String, default: "0" },
     publishDate: { type: String, required: true },

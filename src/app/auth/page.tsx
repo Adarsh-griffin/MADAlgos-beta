@@ -247,7 +247,7 @@ export default function AuthPage() {
                     value="signup"
                     className="data-[state=active]:bg-primary data-[state=active]:text-slate-950 rounded-full text-xs md:text-sm"
                   >
-                    Sign up
+                    Join us
                   </TabsTrigger>
                 </TabsList>
 
@@ -500,10 +500,10 @@ export default function AuthPage() {
                           </form>
                         )}
 
-                        <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400">
                           New mentor?{" "}
                           <span className="font-semibold text-primary">
-                            Use the Sign up tab to apply.
+                            Use the Join us tab to apply.
                           </span>
                         </p>
                       </TabsContent>
@@ -515,7 +515,7 @@ export default function AuthPage() {
 
                 <TabsContent value="signup" className="mt-0">
                   <AuthFormWrapper
-                    title="Sign up"
+                    title="Join us"
                     subtitle="Students get instant access. Mentors submit basic details for verification before setting a password."
                   >
                     <Tabs defaultValue="student-signup" className="w-full">

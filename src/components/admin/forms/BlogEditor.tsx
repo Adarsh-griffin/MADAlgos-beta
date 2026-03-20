@@ -14,6 +14,7 @@ export type BlogFormData = {
     thumbnail: string;
     category: string;
     tags: string;
+    seoKeywords: string;
     content: string;
     seoDescription: string;
     status?: string;
@@ -33,9 +34,11 @@ export function BlogEditor({ initialData, onSubmit, isBusy, primaryActionLabel }
         thumbnail: initialData?.thumbnail || "",
         category: initialData?.category || "",
         tags: initialData?.tags || "",
+        seoKeywords: initialData?.seoKeywords || "",
         content: initialData?.content || "",
         seoDescription: initialData?.seoDescription || "",
     });
+    const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
     // Auto-generate slug when title changes
     useEffect(() => {
@@ -92,17 +95,57 @@ export function BlogEditor({ initialData, onSubmit, isBusy, primaryActionLabel }
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <Label htmlFor="thumbnail" className="text-slate-300">Thumbnail URL</Label>
-                        <div className="relative">
-                            <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                            <Input
-                                id="thumbnail"
-                                name="thumbnail"
-                                value={formData.thumbnail}
-                                onChange={handleChange}
-                                placeholder="https://example.com/image.jpg"
-                                className="bg-[#111] border-white/10 pl-10 focus-visible:ring-primary h-12"
-                            />
+                        <Label htmlFor="thumbnail" className="text-slate-300">Thumbnail (upload)</Label>
+                        <div className="space-y-3">
+                            <div className="relative">
+                                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                                <Input
+                                    id="thumbnail"
+                                    name="thumbnail"
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={uploadingThumbnail}
+                                    onChange={async (e) => {
+                                        const f = e.target.files?.[0];
+                                        if (!f) return;
+                                        setUploadingThumbnail(true);
+                                        try {
+                                            const fd = new FormData();
+                                            fd.append("image", f);
+                                            const res = await fetch("/api/uploads/blog-banner", {
+                                                method: "POST",
+                                                body: fd,
+                                            });
+                                            const data = await res.json().catch(() => null);
+                                            if (!res.ok) throw new Error(data?.error || "Thumbnail upload failed");
+                                            setFormData((prev) => ({ ...prev, thumbnail: data?.imageUrl ?? "" }));
+                                        } catch (err) {
+                                            // keep UI simple: error will be shown by the caller save action generally
+                                            // (we can add toast later if you want)
+                                        } finally {
+                                            setUploadingThumbnail(false);
+                                        }
+                                    }}
+                                    className="bg-[#111] border-white/10 pl-10 focus-visible:ring-primary h-12
+                                        file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-white/10 file:bg-white/5 file:text-white/80 file:text-xs hover:file:bg-white/10"
+                                />
+                            </div>
+
+                            {formData.thumbnail ? (
+                                <div className="flex items-center gap-4">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={formData.thumbnail}
+                                        alt="Thumbnail preview"
+                                        className="w-16 h-16 rounded-2xl border border-white/10 object-cover"
+                                    />
+                                    <p className="text-xs text-slate-400 truncate">
+                                        {uploadingThumbnail ? "Uploading..." : "Preview ready"}
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="text-xs text-slate-500">Optional: upload a thumbnail image.</p>
+                            )}
                         </div>
                     </div>
 
@@ -130,6 +173,17 @@ export function BlogEditor({ initialData, onSubmit, isBusy, primaryActionLabel }
                         value={formData.tags}
                         onChange={handleChange}
                         placeholder="React, Node.js, Web Development"
+                        className="bg-[#111] border-white/10 focus-visible:ring-primary h-12"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="seoKeywords" className="text-slate-300">SEO Keywords (comma separated)</Label>
+                    <Input
+                        id="seoKeywords"
+                        name="seoKeywords"
+                        value={formData.seoKeywords}
+                        onChange={handleChange}
+                        placeholder="system design, dsa, interview prep"
                         className="bg-[#111] border-white/10 focus-visible:ring-primary h-12"
                     />
                 </div>

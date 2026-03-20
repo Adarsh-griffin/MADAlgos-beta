@@ -11,6 +11,7 @@ const BodySchema = z.object({
     thumbnail: z.string().optional(),
     category: z.string().optional(),
     tags: z.string().optional(),
+    seoKeywords: z.string().optional(),
     content: z.string().min(1),
     seoDescription: z.string().max(160).optional(),
     status: z.enum(["DRAFT", "PENDING_REVIEW"]),
@@ -47,6 +48,12 @@ export async function POST(req: Request) {
         title: parsed.data.title,
         publisher: "MADAlgos",
         bannerImageLink: parsed.data.thumbnail || null,
+        category: parsed.data.category || "",
+        tags: parsed.data.tags ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
+        seoDescription: parsed.data.seoDescription || "",
+        seoKeywords: parsed.data.seoKeywords
+            ? parsed.data.seoKeywords.split(",").map((k: string) => k.trim()).filter(Boolean)
+            : [],
         descriptionId: `admin-${session.uid}-${nextId}`,
         partitionKey: "0",
         publishDate: now,

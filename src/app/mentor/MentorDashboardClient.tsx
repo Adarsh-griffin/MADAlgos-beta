@@ -36,16 +36,26 @@ export default function MentorDashboardClient({
   const [profile, setProfile] = React.useState<MentorProfile>(initialProfile);
   const [lastSavedProfile, setLastSavedProfile] = React.useState<MentorProfile>(initialProfile);
   const [saving, setSaving] = React.useState(false);
+  const [uploadingImage, setUploadingImage] = React.useState(false);
   const [status, setStatus] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   const [blogTitle, setBlogTitle] = React.useState("");
   const [blogBanner, setBlogBanner] = React.useState("");
+  const [blogCategory, setBlogCategory] = React.useState("");
+  const [blogTags, setBlogTags] = React.useState("");
+  const [blogSeoDescription, setBlogSeoDescription] = React.useState("");
+  const [blogSeoKeywords, setBlogSeoKeywords] = React.useState("");
   const [blogBody, setBlogBody] = React.useState("");
+  const [uploadingBanner, setUploadingBanner] = React.useState(false);
   const [blogSaving, setBlogSaving] = React.useState(false);
   const [lastSubmittedBlog, setLastSubmittedBlog] = React.useState({
     title: "",
     banner: "",
+    category: "",
+    tags: "",
+    seoDescription: "",
+    seoKeywords: "",
     body: "",
   });
   const [myBlogs, setMyBlogs] = React.useState<
@@ -123,18 +133,38 @@ export default function MentorDashboardClient({
     }
   };
 
-  const submitBlog = async () => {
+  const submitBlog = async (action: "DRAFT" | "PENDING_REVIEW") => {
     setBlogSaving(true);
     setStatus(null);
     setError(null);
     try {
-      const normalizeBlog = (b: { title: string; banner: string; body: string }) => ({
+      const normalizeBlog = (b: {
+        title: string;
+        banner: string;
+        category: string;
+        tags: string;
+        seoDescription: string;
+        seoKeywords: string;
+        body: string;
+      }) => ({
         title: (b.title || "").trim(),
         banner: (b.banner || "").trim(),
+        category: (b.category || "").trim(),
+        tags: (b.tags || "").trim(),
+        seoDescription: (b.seoDescription || "").trim(),
+        seoKeywords: (b.seoKeywords || "").trim(),
         body: (b.body || "").trim(),
       });
 
-      const current = normalizeBlog({ title: blogTitle, banner: blogBanner, body: blogBody });
+      const current = normalizeBlog({
+        title: blogTitle,
+        banner: blogBanner,
+        category: blogCategory,
+        tags: blogTags,
+        seoDescription: blogSeoDescription,
+        seoKeywords: blogSeoKeywords,
+        body: blogBody,
+      });
       const baseline = normalizeBlog(lastSubmittedBlog);
       const isBlogDirty = JSON.stringify(current) !== JSON.stringify(baseline);
 
@@ -153,16 +183,37 @@ export default function MentorDashboardClient({
         body: JSON.stringify({
           title: current.title,
           bannerImageLink: current.banner || null,
+          category: current.category || "",
+          tags: current.tags || "",
+          seoDescription: current.seoDescription || "",
+          seoKeywords: current.seoKeywords || "",
           descriptionDetails: current.body,
+          status: action,
         }),
       });
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) throw new Error(data?.error || "Failed to submit blog");
-      setStatus("Blog submitted. It will appear on the site once admin approves it.");
+      setStatus(
+        action === "DRAFT"
+          ? "Blog saved as draft."
+          : "Blog submitted. It will appear on the site once admin approves it."
+      );
       setBlogTitle("");
       setBlogBanner("");
+      setBlogCategory("");
+      setBlogTags("");
+      setBlogSeoDescription("");
+      setBlogSeoKeywords("");
       setBlogBody("");
-      setLastSubmittedBlog({ title: "", banner: "", body: "" });
+      setLastSubmittedBlog({
+        title: "",
+        banner: "",
+        category: "",
+        tags: "",
+        seoDescription: "",
+        seoKeywords: "",
+        body: "",
+      });
       await refreshMyBlogs();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit blog");
@@ -194,15 +245,44 @@ export default function MentorDashboardClient({
   const [skillsInput, setSkillsInput] = React.useState(profile.skills.join(" | "));
 
   const isBlogDirty = React.useMemo(() => {
-    const normalizeBlog = (b: { title: string; banner: string; body: string }) => ({
+    const normalizeBlog = (b: {
+      title: string;
+      banner: string;
+      category: string;
+      tags: string;
+      seoDescription: string;
+      seoKeywords: string;
+      body: string;
+    }) => ({
       title: (b.title || "").trim(),
       banner: (b.banner || "").trim(),
+      category: (b.category || "").trim(),
+      tags: (b.tags || "").trim(),
+      seoDescription: (b.seoDescription || "").trim(),
+      seoKeywords: (b.seoKeywords || "").trim(),
       body: (b.body || "").trim(),
     });
-    const current = normalizeBlog({ title: blogTitle, banner: blogBanner, body: blogBody });
+    const current = normalizeBlog({
+      title: blogTitle,
+      banner: blogBanner,
+      category: blogCategory,
+      tags: blogTags,
+      seoDescription: blogSeoDescription,
+      seoKeywords: blogSeoKeywords,
+      body: blogBody,
+    });
     const baseline = normalizeBlog(lastSubmittedBlog);
     return JSON.stringify(current) !== JSON.stringify(baseline);
-  }, [blogBanner, blogBody, blogTitle, lastSubmittedBlog]);
+  }, [
+    blogBanner,
+    blogBody,
+    blogCategory,
+    blogSeoDescription,
+    blogSeoKeywords,
+    blogTags,
+    blogTitle,
+    lastSubmittedBlog,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -349,14 +429,54 @@ export default function MentorDashboardClient({
 
             <div className="space-y-1">
               <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Profile image URL (from blob storage)
+                Profile image (upload)
               </label>
-              <Input
-                value={profile.imageUrl ?? ""}
-                onChange={(e) => setProfile((p) => ({ ...p, imageUrl: e.target.value || null }))}
-                placeholder="https://.../mentor-image.jpg"
-                className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
-              />
+              <div className="flex flex-col gap-3">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingImage}
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    setUploadingImage(true);
+                    try {
+                      setError(null);
+                      const fd = new FormData();
+                      fd.append("image", f);
+                      const res = await fetch("/api/mentor/profile/upload-image", {
+                        method: "POST",
+                        body: fd,
+                      });
+                      const data = await res.json().catch(() => null);
+                      if (!res.ok) throw new Error(data?.error || "Image upload failed");
+                      setProfile((p) => ({ ...p, imageUrl: data.imageUrl ?? null }));
+                      setStatus("Image uploaded. Save profile to submit for review.");
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Image upload failed");
+                    } finally {
+                      setUploadingImage(false);
+                    }
+                  }}
+                  className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-white/10 file:bg-white/5 file:text-white/80 file:text-xs hover:file:bg-white/10"
+                />
+
+                {profile.imageUrl ? (
+                  <div className="flex items-center gap-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={profile.imageUrl}
+                      alt="Mentor profile"
+                      className="w-14 h-14 rounded-2xl border border-white/10 object-cover"
+                    />
+                    <p className="text-xs text-slate-400 truncate">
+                      {uploadingImage ? "Uploading..." : "Preview updated (save to submit)."}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400">Upload an image to preview it here.</p>
+                )}
+              </div>
             </div>
 
             <Button
@@ -416,14 +536,55 @@ export default function MentorDashboardClient({
             </div>
             <div className="space-y-1">
               <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Banner image URL (optional)
+                Banner image (upload, optional)
               </label>
-              <Input
-                value={blogBanner}
-                onChange={(e) => setBlogBanner(e.target.value)}
-                placeholder="https://.../banner.jpg"
-                className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
-              />
+              <div className="flex flex-col gap-3">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingBanner}
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    setUploadingBanner(true);
+                    try {
+                      setError(null);
+                      const fd = new FormData();
+                      fd.append("image", f);
+                      const res = await fetch("/api/uploads/blog-banner", {
+                        method: "POST",
+                        body: fd,
+                      });
+                      const data = await res.json().catch(() => null);
+                      if (!res.ok) throw new Error(data?.error || "Banner upload failed");
+                      setBlogBanner(data?.imageUrl ?? "");
+                      setStatus("Banner uploaded.");
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Banner upload failed");
+                    } finally {
+                      setUploadingBanner(false);
+                    }
+                  }}
+                  className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white
+                    file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-white/10 file:bg-white/5 file:text-white/80 file:text-xs hover:file:bg-white/10"
+                />
+
+                {blogBanner ? (
+                  <div className="flex items-center gap-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={blogBanner}
+                      alt="Blog banner preview"
+                      className="w-16 h-16 rounded-2xl border border-white/10 object-cover"
+                    />
+                    <p className="text-xs text-slate-400 truncate">
+                      {uploadingBanner ? "Uploading..." : "Preview ready"}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400">Optional: upload a banner image.</p>
+                )}
+              </div>
             </div>
             <div className="space-y-1">
               <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -437,14 +598,72 @@ export default function MentorDashboardClient({
                 className="rounded-2xl border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
               />
             </div>
-            <Button
-              type="button"
-              disabled={blogSaving || !isBlogDirty}
-              onClick={submitBlog}
-              className="mt-2 w-full justify-center rounded-full bg-primary text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-950 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {blogSaving ? "Submitting..." : isBlogDirty ? "Submit blog for review" : "Submitted"}
-            </Button>
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Category
+              </label>
+              <Input
+                value={blogCategory}
+                onChange={(e) => setBlogCategory(e.target.value)}
+                placeholder="technology / career / algorithms / tutorials"
+                className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Tags (comma separated)
+              </label>
+              <Input
+                value={blogTags}
+                onChange={(e) => setBlogTags(e.target.value)}
+                placeholder="React, Node.js, DSA"
+                className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                SEO Keywords (comma separated)
+              </label>
+              <Input
+                value={blogSeoKeywords}
+                onChange={(e) => setBlogSeoKeywords(e.target.value)}
+                placeholder="system design, interview prep, backend"
+                className="h-10 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                SEO Description
+              </label>
+              <Textarea
+                value={blogSeoDescription}
+                onChange={(e) => setBlogSeoDescription(e.target.value)}
+                rows={3}
+                maxLength={160}
+                placeholder="Brief description for search engines (max 160 chars)"
+                className="rounded-2xl border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
+              />
+              <div className="text-xs text-right text-slate-500">{blogSeoDescription.length} / 160</div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={blogSaving || !isBlogDirty}
+                onClick={() => submitBlog("DRAFT")}
+                className="w-full sm:w-auto border-white/20 bg-transparent text-white hover:bg-white/5 rounded-full"
+              >
+                {blogSaving ? "Saving..." : "Save Draft"}
+              </Button>
+              <Button
+                type="button"
+                disabled={blogSaving || !isBlogDirty}
+                onClick={() => submitBlog("PENDING_REVIEW")}
+                className="w-full sm:w-auto justify-center rounded-full bg-primary text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-950 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {blogSaving ? "Submitting..." : isBlogDirty ? "Submit blog for review" : "Submitted"}
+              </Button>
+            </div>
           </div>
 
           <div className="pt-8 space-y-3">

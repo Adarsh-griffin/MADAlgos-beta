@@ -8,7 +8,12 @@ import { getSessionFromRequestCookies } from "@/lib/auth";
 const BodySchema = z.object({
   title: z.string().min(5).max(200),
   bannerImageLink: z.string().url().nullable().optional(),
+  category: z.string().optional(),
+  tags: z.string().optional(),
+  seoDescription: z.string().max(160).optional(),
+  seoKeywords: z.string().optional(),
   descriptionDetails: z.string().min(50).max(8000),
+  status: z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),
 });
 
 async function requireMentor() {
@@ -35,17 +40,25 @@ export async function POST(req: Request) {
   const nextId = (max?.id ?? 0) + 1;
 
   const now = new Date();
+  const status = parsed.data.status ?? "PENDING_REVIEW";
+
   await BlogModel.create({
     id: nextId,
     title: parsed.data.title,
     publisher: "MADAlgos",
     bannerImageLink: parsed.data.bannerImageLink ?? null,
+    category: parsed.data.category || "",
+    tags: parsed.data.tags ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
+    seoDescription: parsed.data.seoDescription || "",
+    seoKeywords: parsed.data.seoKeywords
+      ? parsed.data.seoKeywords.split(",").map((k: string) => k.trim()).filter(Boolean)
+      : [],
     descriptionId: `mentor-${session.uid}-${nextId}`,
     partitionKey: "0",
     publishDate: now.toISOString(),
     authorId: 0,
-    status: "PENDING_REVIEW",
-    reviewStatus: "PENDING_REVIEW",
+    status,
+    reviewStatus: status,
     submittedByUid: session.uid,
     rejectionReason: null,
     likes: 0,
@@ -83,6 +96,10 @@ export async function GET() {
     blogs: docs.map((b: any) => ({
       id: b.id,
       title: b.title,
+      category: b.category ?? "",
+      tags: Array.isArray(b.tags) ? b.tags : [],
+      seoDescription: b.seoDescription ?? "",
+      seoKeywords: Array.isArray(b.seoKeywords) ? b.seoKeywords : [],
       status: b.status ?? "DRAFT",
       reviewStatus: b.reviewStatus ?? "",
       rejectionReason: b.rejectionReason ?? null,

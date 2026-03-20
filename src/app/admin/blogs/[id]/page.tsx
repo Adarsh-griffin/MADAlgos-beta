@@ -9,13 +9,14 @@ export const metadata = {
   title: "Admin | Blog Review",
 };
 
-export default async function AdminBlogReviewPage({ params }: { params: { id: string } }) {
+export default async function AdminBlogReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSessionFromRequestCookies();
   if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
     redirect("/auth");
   }
 
-  const id = Number(params.id);
+  const { id: rawId } = await params;
+  const id = Number(rawId);
   if (Number.isNaN(id)) redirect("/admin/blogs");
 
   await connectDB();
@@ -33,6 +34,10 @@ export default async function AdminBlogReviewPage({ params }: { params: { id: st
         status: blog.status ?? "DRAFT",
         reviewStatus: blog.reviewStatus ?? "",
         likes: blog.likes ?? 0,
+        category: (blog as any).category ?? "",
+        tags: Array.isArray((blog as any).tags) ? (blog as any).tags : [],
+        seoDescription: (blog as any).seoDescription ?? "",
+        seoKeywords: Array.isArray((blog as any).seoKeywords) ? (blog as any).seoKeywords : [],
         descriptionDetails: blog.descriptionDetails ?? "",
       }}
     />

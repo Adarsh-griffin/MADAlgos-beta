@@ -1,64 +1,64 @@
-name: Deploy Next.js to Azure
+# name: Deploy Next.js to Azure
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+#           cache: npm
 
-      - name: Install dependencies
-        run: npm install
+#       - name: Install dependencies
+#         run: npm install
 
-      - name: Build Next.js
-        run: npm run build
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+#       - name: Build Next.js
+#         run: npm run build
+#         env:
+#           MONGODB_URI: ${{ secrets.MONGODB_URI }}
 
-      - name: Prepare deployment folder
-        run: |
-          mkdir -p deploy
-          cp -r .next/standalone/. deploy/
-          rm -rf deploy/.next
-          cp -r .next deploy/.next
-          rm -rf deploy/.next/standalone
-          cp -r .next/static/. deploy/.next/static/
-          cp -r public deploy/public
+#       - name: Prepare deployment folder
+#         run: |
+#           mkdir -p deploy
+#           cp -r .next/standalone/. deploy/
+#           rm -rf deploy/.next
+#           cp -r .next deploy/.next
+#           rm -rf deploy/.next/standalone
+#           cp -r .next/static/. deploy/.next/static/
+#           cp -r public deploy/public
 
-      - name: Zip deployment
-        run: cd deploy && zip -r ../deploy.zip . -x "*.map"
+#       - name: Zip deployment
+#         run: cd deploy && zip -r ../deploy.zip . -x "*.map"
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nextjs-build
-          path: deploy.zip
+#       - name: Upload build artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: nextjs-build
+#           path: deploy.zip
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
+#   deploy:
+#     runs-on: ubuntu-latest
+#     needs: build
 
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: nextjs-build
+#     steps:
+#       - name: Download artifact
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: nextjs-build
 
-      - name: Deploy to Azure
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'MADAlgosService'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_70A88810E7BC48F6A5823C2A113053C2 }}
-          package: deploy.zip
+#       - name: Deploy to Azure
+#         uses: azure/webapps-deploy@v3
+#         with:
+#           app-name: 'MADAlgosService'
+#           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_70A88810E7BC48F6A5823C2A113053C2 }}
+#           package: deploy.zip
