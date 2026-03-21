@@ -10,7 +10,7 @@ export const metadata = {
 export default async function NewBlogPage() {
     const session = await getSessionFromRequestCookies();
     if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "MENTOR")) {
-        redirect("/auth");
+        redirect("/login");
     }
 
     return <NewBlogPageClient />;

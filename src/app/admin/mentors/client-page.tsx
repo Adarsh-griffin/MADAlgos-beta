@@ -91,8 +91,20 @@ export default function MentorsPageClient({
                     body: JSON.stringify({ id: confirmAction.id }),
                 });
                 if (!res.ok) throw new Error("Failed to approve");
+                const data = (await res.json()) as {
+                    email?: { sent: boolean; reason?: string; detail?: string };
+                };
                 setMentors(mentors.map(m => m.id === confirmAction.id ? { ...m, role: "MENTOR", accountStatus: "ACTIVE" } : m));
                 toast.success("Application approved");
+                if (data.email && !data.email.sent) {
+                    const hint =
+                        data.email.reason === "missing_template_id"
+                            ? "Set SENDGRID_MENTOR_ACCEPTED_TEMPLATE_ID on the server."
+                            : data.email.reason === "no_api_key"
+                              ? "Set SENDGRID_API_KEY or SendGridDevKey on the server."
+                              : data.email.detail || "Check SendGrid logs / MAIL_FROM verification.";
+                    toast.warning(`Acceptance email was not sent: ${hint}`, { duration: 8000 });
+                }
 
             } else if (confirmAction.action === "VERIFY" || confirmAction.action === "UNVERIFY") {
                 const isVerified = confirmAction.action === "VERIFY";
@@ -159,9 +171,27 @@ export default function MentorsPageClient({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId }),
             });
-            const data = await res.json().catch(() => null);
+            const data = (await res.json().catch(() => null)) as {
+                error?: string;
+                published?: boolean;
+                email?: { sent: boolean; reason?: string; detail?: string };
+            } | null;
             if (!res.ok) throw new Error(data?.error || "Failed to publish mentor");
             toast.success("Mentor published on the main website.");
+            if (
+                data?.published &&
+                data?.email &&
+                !data.email.sent &&
+                data.email.reason !== "not_applicable"
+            ) {
+                const hint =
+                    data.email.reason === "missing_template_id"
+                        ? "Set SENDGRID_MENTOR_PROFILE_LIVE_TEMPLATE_ID on the server."
+                        : data.email.reason === "no_api_key"
+                          ? "Set SENDGRID_API_KEY or SendGridDevKey on the server."
+                          : data.email.detail || "Check SendGrid / MAIL_FROM.";
+                toast.warning(`Live notification email was not sent (${hint})`, { duration: 8000 });
+            }
         } catch (e: any) {
             toast.error(e?.message || "Failed to publish mentor");
         } finally {

@@ -116,10 +116,32 @@ export default function MentorDashboardClient({
         }),
       });
       const data = (await res.json().catch(() => null)) as
-        | { error?: string; profile?: { reviewStatus?: string; rejectionReason?: string | null } }
+        | {
+            error?: string;
+            profile?: { reviewStatus?: string; rejectionReason?: string | null };
+            email?: { sent: boolean; reason?: string; detail?: string };
+            teamEmail?: { sent: boolean; reason?: string; detail?: string };
+          }
         | null;
       if (!res.ok) throw new Error(data?.error || "Failed to save");
-      setStatus("Profile updated and sent for admin review.");
+      let msg = "Profile updated and sent for admin review.";
+      if (data?.email && !data.email.sent) {
+        const hint =
+          data.email.reason === "missing_template_id"
+            ? "Set SENDGRID_MENTOR_PROFILE_SUBMITTED_TEMPLATE_ID on the server."
+            : data.email.reason === "no_api_key"
+              ? "Set SENDGRID_API_KEY or SendGridDevKey on the server."
+              : data.email.detail || "Check SendGrid / MAIL_FROM.";
+        msg += ` Confirmation email was not sent (${hint})`;
+      }
+      if (data?.teamEmail && !data.teamEmail.sent) {
+        const th =
+          data.teamEmail.reason === "no_api_key"
+            ? "Team notify skipped (no SendGrid key)."
+            : data.teamEmail.detail || "Team notify failed.";
+        msg += ` ${th}`;
+      }
+      setStatus(msg);
       setProfile((p) => ({
         ...p,
         reviewStatus: (data?.profile?.reviewStatus as any) || "PENDING_REVIEW",
