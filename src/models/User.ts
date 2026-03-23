@@ -8,6 +8,12 @@ export interface UserDocument {
   status: "ACTIVE" | "PENDING" | "SUSPENDED";
   accountStatus: AccountStatus;
   verificationStatus: VerificationStatus;
+  /** True after user clicks email verification link (or OAuth). Undefined in legacy DB = treated as verified at login. */
+  emailVerified?: boolean;
+  emailVerificationToken: string | null;
+  emailVerificationExpiresAt: Date | null;
+  /** After mentor applies: confirmation + team emails sent post email verification. */
+  mentorApplyEmailsSent: boolean;
   linkedinProfileUrl: string | null;
   authProvider: null | "password" | "google" | "password+google";
   passwordHash: string | null;
@@ -51,6 +57,10 @@ const UserSchema = new Schema<UserDocument>(
       required: true,
       enum: ["UNVERIFIED", "VERIFIED"],
     },
+    emailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, default: null, sparse: true, index: true },
+    emailVerificationExpiresAt: { type: Date, default: null },
+    mentorApplyEmailsSent: { type: Boolean, default: false },
     linkedinProfileUrl: { type: String, default: null },
     authProvider: {
       type: String,

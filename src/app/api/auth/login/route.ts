@@ -32,15 +32,20 @@ export async function POST(req: Request) {
   if (user.accountStatus === "REJECTED") {
     return NextResponse.json({ error: "Application rejected" }, { status: 403 });
   }
-  if (user.role === "MENTOR_PENDING") {
-    return NextResponse.json({ error: "Mentor application pending approval" }, { status: 403 });
-  }
   if (user.accountStatus === "AWAITING_CREDENTIAL_SETUP") {
     return NextResponse.json({ error: "Please set your password from the approval email" }, { status: 403 });
   }
 
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+  // Super Admin signs in with env bootstrap credentials — no email verification gate.
+  if (user.emailVerified === false && user.role !== "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Please verify your email first. Check your inbox for the verification link." },
+      { status: 403 }
+    );
+  }
 
   user.lastLoginAt = new Date();
   if (user.authProvider === "google") user.authProvider = "password+google";

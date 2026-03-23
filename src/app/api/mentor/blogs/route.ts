@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import BlogModel from "@/models/Blog";
 import UserModel from "@/models/User";
 import { getSessionFromRequestCookies } from "@/lib/auth";
+import { blogPlainTextLength, sanitizeBlogHtml } from "@/lib/blog-html-sanitize";
 
 const BodySchema = z.object({
   title: z.string().min(5).max(200),
@@ -12,7 +13,7 @@ const BodySchema = z.object({
   tags: z.string().optional(),
   seoDescription: z.string().max(160).optional(),
   seoKeywords: z.string().optional(),
-  descriptionDetails: z.string().min(50).max(8000),
+  descriptionDetails: z.string().min(1).max(200_000),
   status: z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),
 });
 
@@ -30,6 +31,14 @@ export async function POST(req: Request) {
   const parsed = BodySchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+  }
+
+  const sanitizedBody = sanitizeBlogHtml(parsed.data.descriptionDetails);
+  if (blogPlainTextLength(sanitizedBody) < 50) {
+    return NextResponse.json(
+      { error: "Blog content must be at least 50 characters of text (excluding formatting)." },
+      { status: 400 }
+    );
   }
 
   await connectDB();
@@ -64,7 +73,7 @@ export async function POST(req: Request) {
     likes: 0,
     reviewer: "",
     reviewDate: "",
-    descriptionDetails: parsed.data.descriptionDetails,
+    descriptionDetails: sanitizedBody,
     authorDetails: {
       firstName: user.username || user.email,
       lastName: null,

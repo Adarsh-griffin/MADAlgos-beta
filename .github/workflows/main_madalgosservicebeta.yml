@@ -46,6 +46,7 @@ jobs:
           # Optional alias used by /api/contact — same key as SENDGRID_API_KEY if you only store one
           SendGridDevKey: ${{ secrets.SendGridDevKey }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID: ${{ secrets.SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID }}
           SENDGRID_MENTOR_APPLY_TEMPLATE_ID: ${{ secrets.SENDGRID_MENTOR_APPLY_TEMPLATE_ID }}
           SENDGRID_MENTOR_ACCEPTED_TEMPLATE_ID: ${{ secrets.SENDGRID_MENTOR_ACCEPTED_TEMPLATE_ID }}
           SENDGRID_MENTOR_PROFILE_SUBMITTED_TEMPLATE_ID: ${{ secrets.SENDGRID_MENTOR_PROFILE_SUBMITTED_TEMPLATE_ID }}

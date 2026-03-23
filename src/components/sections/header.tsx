@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X, BookOpen, Mail, Sparkles, Sun, Moon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, Menu, X, BookOpen, Mail, Sparkles, Sun, Moon, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { getDashboardPathForRole } from "@/lib/auth-dashboard";
 
 // AI FOUNDRY & INSIGHTS hidden for now — enable later when needed
 type NavItem = {
@@ -18,12 +20,39 @@ const NAV_ITEMS: NavItem[] = [
   { name: "CONTACT US", href: "/contact", icon: <Mail className="w-3.5 h-3.5" /> },
 ];
 
+type MeUser = {
+  id: string;
+  email: string;
+  username: string | null;
+  role: string;
+};
+
+function roleBadgeText(role: string): string {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return "Super Admin";
+    case "ADMIN":
+      return "Admin";
+    case "MENTOR":
+      return "Mentor";
+    case "MENTOR_PENDING":
+      return "Under verification";
+    case "STUDENT":
+      return "Student";
+    default:
+      return role;
+  }
+}
+
 const Header = () => {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [me, setMe] = useState<MeUser | null>(null);
+  const [meLoading, setMeLoading] = useState(true);
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -37,6 +66,35 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = (await res.json()) as { user: MeUser | null };
+        if (!cancelled) setMe(data?.user ?? null);
+      } catch {
+        if (!cancelled) setMe(null);
+      } finally {
+        if (!cancelled) setMeLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    setMe(null);
+    router.refresh();
+    router.push("/");
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -180,18 +238,58 @@ const Header = () => {
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
             {/* Desktop auth buttons */}
             <div className="hidden xl:flex items-center gap-3">
-              <Link
-                href="/auth"
-                className="inline-flex items-center justify-center h-10 rounded-full border border-white/15 bg-white/5 px-5 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
-              >
-                Log In
-              </Link>
-              <Link
-                href="/auth"
-                className="inline-flex items-center justify-center h-10 rounded-full bg-primary px-5 text-[11px] font-black tracking-[0.22em] uppercase text-slate-950 hover:brightness-110 transition-all active:scale-95 shadow-[0_14px_40px_rgba(42,181,160,0.35)]"
-              >
-                Join us
-              </Link>
+              {!meLoading && me ? (
+                <>
+                  <div className="flex flex-col items-end max-w-[200px] min-w-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 truncate w-full text-right">
+                      Logged in
+                    </span>
+                    <span className="text-[11px] font-bold text-white truncate w-full text-right" title={me.email}>
+                      {me.username?.trim() || me.email}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-semibold uppercase tracking-wider mt-0.5",
+                        me.role === "MENTOR_PENDING" ? "text-amber-400" : "text-primary/90"
+                      )}
+                    >
+                      {roleBadgeText(me.role)}
+                    </span>
+                  </div>
+                  <Link
+                    href={getDashboardPathForRole(me.role)}
+                    className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full border border-white/15 bg-white/5 px-4 text-[10px] font-black tracking-[0.18em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
+                  >
+                    <LayoutDashboard className="h-3.5 w-3.5 text-primary" />
+                    {me.role === "MENTOR_PENDING" ? "Status" : "Dashboard"}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full border border-red-500/35 bg-red-500/10 px-4 text-[10px] font-black tracking-[0.18em] uppercase text-red-200 hover:bg-red-500/20 transition-all active:scale-95"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    Log out
+                  </button>
+                </>
+              ) : !meLoading ? (
+                <>
+                  <Link
+                    href="/auth"
+                    className="inline-flex items-center justify-center h-10 rounded-full border border-white/15 bg-white/5 px-5 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/auth"
+                    className="inline-flex items-center justify-center h-10 rounded-full bg-primary px-5 text-[11px] font-black tracking-[0.22em] uppercase text-slate-950 hover:brightness-110 transition-all active:scale-95 shadow-[0_14px_40px_rgba(42,181,160,0.35)]"
+                  >
+                    Join us
+                  </Link>
+                </>
+              ) : (
+                <span className="h-10 w-24 rounded-full bg-white/5 border border-white/10 animate-pulse" aria-hidden />
+              )}
             </div>
 
             {/* Theme toggle - extreme right */}
@@ -233,20 +331,58 @@ const Header = () => {
           <div className="space-y-10">
             {/* Mobile auth buttons */}
             <div className="grid grid-cols-1 gap-3">
-              <Link
-                href="/auth"
-                onClick={closeMobileMenu}
-                className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
-              >
-                Log In
-              </Link>
-              <Link
-                href="/auth"
-                onClick={closeMobileMenu}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-slate-950 hover:brightness-110 transition-all active:scale-95 shadow-[0_14px_40px_rgba(42,181,160,0.25)]"
-              >
-                Join us
-              </Link>
+              {!meLoading && me ? (
+                <>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Logged in</p>
+                    <p className="text-sm font-bold text-white truncate">{me.username?.trim() || me.email}</p>
+                    <p
+                      className={cn(
+                        "text-[11px] font-semibold mt-1",
+                        me.role === "MENTOR_PENDING" ? "text-amber-400" : "text-primary"
+                      )}
+                    >
+                      {roleBadgeText(me.role)}
+                    </p>
+                  </div>
+                  <Link
+                    href={getDashboardPathForRole(me.role)}
+                    onClick={closeMobileMenu}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10"
+                  >
+                    <LayoutDashboard className="h-4 w-4 text-primary" />
+                    {me.role === "MENTOR_PENDING" ? "Application status" : "Dashboard"}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobileMenu();
+                      void logout();
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-red-500/35 bg-red-500/10 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-red-200"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log out
+                  </button>
+                </>
+              ) : !meLoading ? (
+                <>
+                  <Link
+                    href="/auth"
+                    onClick={closeMobileMenu}
+                    className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/auth"
+                    onClick={closeMobileMenu}
+                    className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-slate-950 hover:brightness-110 transition-all active:scale-95 shadow-[0_14px_40px_rgba(42,181,160,0.25)]"
+                  >
+                    Join us
+                  </Link>
+                </>
+              ) : null}
             </div>
 
             {NAV_ITEMS.map((item) => (

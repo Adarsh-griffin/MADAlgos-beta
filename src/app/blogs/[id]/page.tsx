@@ -10,6 +10,7 @@ import {
   formatBlogDate,
   getAuthorDisplayName,
 } from "@/lib/blogs";
+import { sanitizeBlogHtml } from "@/lib/blog-html-sanitize";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -58,6 +59,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
 
   const author = getAuthorDisplayName(blog);
   const date = formatBlogDate(blog.publishDate);
+  const safeBody = sanitizeBlogHtml(blog.descriptionDetails || "");
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground antialiased font-sans selection:bg-primary/30">
@@ -121,7 +123,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
 
           <section className="prose prose-invert max-w-none prose-headings:font-semibold prose-a:text-primary prose-strong:text-white/90 prose-img:rounded-2xl prose-img:border prose-img:border-white/10">
             {/* eslint-disable-next-line react/no-danger */}
-            <div dangerouslySetInnerHTML={{ __html: blog.descriptionDetails }} />
+            <div dangerouslySetInnerHTML={{ __html: safeBody }} />
           </section>
         </article>
       </main>

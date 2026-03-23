@@ -60,6 +60,10 @@ export async function GET(req: NextRequest) {
         role: "MENTOR_PENDING",
         accountStatus: "PENDING_APPLICATION",
         verificationStatus: "UNVERIFIED",
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpiresAt: null,
+        mentorApplyEmailsSent: false,
         linkedinProfileUrl: null,
         authProvider: "google",
         passwordHash: null,
@@ -69,7 +73,9 @@ export async function GET(req: NextRequest) {
         profileCompleted: false,
         lastLoginAt: new Date(),
       });
+      const sessionToken = createSessionToken({ uid: String(user._id), role: user.role });
       const res = NextResponse.redirect(new URL("/auth", req.url));
+      setSessionCookie(res, sessionToken);
       res.cookies.set("madalgos_google_oauth_state", "", { maxAge: 0, path: "/" });
       return res;
     }
@@ -80,6 +86,10 @@ export async function GET(req: NextRequest) {
       role: "STUDENT",
       accountStatus: "ACTIVE",
       verificationStatus: "VERIFIED",
+      emailVerified: true,
+      emailVerificationToken: null,
+      emailVerificationExpiresAt: null,
+      mentorApplyEmailsSent: false,
       linkedinProfileUrl: null,
       authProvider: "google",
       passwordHash: null,
@@ -100,9 +110,11 @@ export async function GET(req: NextRequest) {
     await user.save();
   }
 
-  // Don’t allow access for pending mentors; keep them in application flow.
+  // Pending mentors: session + /auth shows "under verification" UI.
   if (user.role === "MENTOR_PENDING") {
+    const sessionToken = createSessionToken({ uid: String(user._id), role: user.role });
     const res = NextResponse.redirect(new URL("/auth", req.url));
+    setSessionCookie(res, sessionToken);
     res.cookies.set("madalgos_google_oauth_state", "", { maxAge: 0, path: "/" });
     return res;
   }

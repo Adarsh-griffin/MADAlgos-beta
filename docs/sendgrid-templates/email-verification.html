@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>Verify Your Email – {{company_name}}</title>
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,700&display=swap" rel="stylesheet" />
+    <style type="text/css">
+      body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+      table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-collapse: collapse; }
+      body { margin: 0 !important; padding: 0 !important; background-color: #020617; }
+      body, p, div, span, a, td { font-family: 'Muli', Arial, sans-serif; font-size: 14px; }
+      a { color: #14b8a6; text-decoration: none; }
+      h1 { margin: 0; padding: 0; }
+      @media screen and (max-width: 600px) {
+        .email-container { width: 100% !important; }
+        .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
+        .hero-title { font-size: 24px !important; }
+        .cta-btn { display: block !important; width: 100% !important; text-align: center !important; padding: 14px 10px !important; box-sizing: border-box !important; }
+        .link-box { font-size: 11px !important; }
+      }
+    </style>
+  </head>
+
+  <body bgcolor="#020617">
+    <center style="width: 100%; background-color: #020617">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#020617">
+        <tr>
+          <td align="center" style="padding: 28px 16px">
+            <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="max-width: 600px; width: 100%">
+
+              <!-- TOP BAR -->
+              <tr>
+                <td height="5" style="background: linear-gradient(90deg, #14b8a6, #6366f1); border-radius: 10px 10px 0 0; font-size: 0; line-height: 0">&nbsp;</td>
+              </tr>
+
+              <!-- BRAND -->
+              <tr>
+                <td class="section-pad" align="center" bgcolor="#0f172a" style="padding: 18px 30px 14px 30px; border-left: 1px solid #233044; border-right: 1px solid #233044; border-bottom: 1px solid #233044">
+                  <span style="font-size: 20px; font-weight: 700; letter-spacing: 2px; background: linear-gradient(90deg, #14b8a6, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: #14b8a6">{{company_name}}</span>
+                </td>
+              </tr>
+
+              <!-- HERO + CTA -->
+              <tr>
+                <td class="section-pad" align="center" bgcolor="#0f172a" style="padding: 44px 30px 40px 30px; border-left: 1px solid #233044; border-right: 1px solid #233044">
+                  <!-- Icon -->
+                  <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #6366f1); font-size: 30px; line-height: 70px; text-align: center; color: #fff; margin: 0 auto 22px auto">&#9993;</div>
+
+                  <!-- Title -->
+                  <h1 class="hero-title" style="font-size: 28px; font-weight: 700; color: #f8fafc; line-height: 1.25; margin-bottom: 14px; font-family: 'Muli', Arial, sans-serif">Verify Your Email</h1>
+
+                  <!-- Body -->
+                  <p style="font-size: 15px; color: #94a3b8; line-height: 1.8; max-width: 400px; margin: 0 auto 10px auto; font-family: 'Muli', Arial, sans-serif">
+                    Hi <strong style="color: #f8fafc">{{first_name}}</strong>, please confirm
+                    <strong style="color: #14b8a6">{{user_email}}</strong> to activate your
+                    <strong style="color: #f8fafc">{{company_name}}</strong> account.
+                  </p>
+
+                  <p style="font-size: 13px; color: #475569; margin: 0 0 28px 0; font-family: 'Muli', Arial, sans-serif">
+                    This link expires in <strong style="color: #94a3b8">48 hours.</strong>
+                  </p>
+
+                  <!-- Button -->
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-radius: 6px; background: linear-gradient(90deg, #14b8a6, #6366f1)">
+                    <tr>
+                      <td style="padding: 2px; border-radius: 6px">
+                        <a class="cta-btn" href="{{verify_url}}" style="display: inline-block; background-color: #0f172a; border-radius: 5px; padding: 13px 48px; font-size: 15px; font-weight: 700; color: #14b8a6; letter-spacing: 0.5px; text-decoration: none; font-family: 'Muli', Arial, sans-serif">&#10003;&nbsp; Verify Email</a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p class="link-box" style="font-size: 11px; color: #64748b; margin: 20px 12px 0; line-height: 1.5">
+                    If the button doesn&apos;t work, copy and paste:<br />
+                    <a href="{{verification_link}}" style="color: #5eead4; word-break: break-all">{{verification_link}}</a>
+                  </p>
+                </td>
+              </tr>
+
+              <!-- BOTTOM BAR -->
+              <tr>
+                <td height="5" style="background: linear-gradient(90deg, #6366f1, #14b8a6); border-radius: 0 0 10px 10px; font-size: 0; line-height: 0">&nbsp;</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </center>
+  </body>
+</html>

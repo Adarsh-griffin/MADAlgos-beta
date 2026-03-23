@@ -6,6 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import MentorCard from "@/components/mentors/MentorCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { MentorBlogRichEditor } from "@/components/mentor/MentorBlogRichEditor";
+import { BlogSitePreview } from "@/components/mentor/BlogSitePreview";
+import { stripHtmlForCount } from "@/lib/blog-plain-text";
 
 type MentorProfile = {
   headline: string;
@@ -197,6 +200,11 @@ export default function MentorDashboardClient({
 
       if (!current.title || !current.body) {
         throw new Error("Please add at least a title and content before submitting.");
+      }
+      if (stripHtmlForCount(current.body).length < 50) {
+        throw new Error(
+          "Blog content must be at least 50 characters of text (formatting doesn’t count toward this minimum)."
+        );
       }
 
       const res = await fetch("/api/mentor/blogs", {
@@ -608,17 +616,31 @@ export default function MentorDashboardClient({
                 )}
               </div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Content
               </label>
-              <Textarea
-                value={blogBody}
-                onChange={(e) => setBlogBody(e.target.value)}
-                rows={10}
-                placeholder="Write your blog content here..."
-                className="rounded-2xl border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500"
-              />
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Use the toolbar for headings, colors, font size, alignment, lists, links, and more. The
+                preview on the right matches the public blog page (desktop). On smaller screens, scroll
+                down to see the preview.
+              </p>
+              <div className="flex flex-col xl:flex-row gap-6 items-start">
+                <div className="flex-1 min-w-0 w-full space-y-2">
+                  <MentorBlogRichEditor value={blogBody} onChange={setBlogBody} />
+                  <p className="text-[10px] text-slate-500">
+                    Plain text length: {stripHtmlForCount(blogBody).length} / 50 min
+                  </p>
+                </div>
+                <div className="w-full xl:w-[min(100%,420px)] xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:sticky xl:top-24 shrink-0">
+                  <BlogSitePreview
+                    title={blogTitle}
+                    bannerUrl={blogBanner}
+                    authorName={initialUser.username?.trim() || initialUser.email}
+                    html={blogBody}
+                  />
+                </div>
+              </div>
             </div>
             <div className="space-y-1">
               <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">

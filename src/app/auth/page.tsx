@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/sections/header";
 import Footer from "@/components/sections/footer";
+import { getDashboardPathForRole } from "@/lib/auth-dashboard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,7 +171,9 @@ async function applyMentor(email: string, username: string, linkedinProfileUrl: 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, username, linkedinProfileUrl }),
   });
-  const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+  const data = (await res.json().catch(() => null)) as
+    | { ok?: boolean; error?: string; verifyEmailSent?: boolean }
+    | null;
   if (!res.ok) throw new Error(data?.error || "Application failed");
   return data;
 }
@@ -187,6 +191,13 @@ async function checkMentorEmail(email: string) {
   return data;
 }
 
+type MeUser = {
+  id: string;
+  email: string;
+  username: string | null;
+  role: string;
+};
+
 async function setMentorPasswordLogin(email: string, password: string) {
   const res = await fetch("/api/auth/mentor/set-password-login", {
     method: "POST",
@@ -201,6 +212,9 @@ async function setMentorPasswordLogin(email: string, password: string) {
 }
 
 export default function AuthPage() {
+  const router = useRouter();
+  const [sessionUser, setSessionUser] = React.useState<MeUser | null>(null);
+  const [authLoading, setAuthLoading] = React.useState(true);
   const [mode, setMode] = React.useState<AuthMode>("signin");
   const [busy, setBusy] = React.useState(false);
   const [adminBusy, setAdminBusy] = React.useState(false);
@@ -211,10 +225,141 @@ export default function AuthPage() {
   const [mentorEmail, setMentorEmail] = React.useState<string>("");
   const [mentorPassword1, setMentorPassword1] = React.useState<string>("");
   const [mentorPassword2, setMentorPassword2] = React.useState<string>("");
+  const [lastVerifyEmailSent, setLastVerifyEmailSent] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = (await res.json()) as { user: MeUser | null };
+        if (cancelled) return;
+        const u = data?.user;
+        if (u && u.role !== "MENTOR_PENDING") {
+          router.replace(getDashboardPathForRole(u.role));
+          return;
+        }
+        setSessionUser(u ?? null);
+      } finally {
+        if (!cancelled) setAuthLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    let changed = false;
+    if (params.get("verified") === "1") {
+      setMessage(
+        "Email verified. If you applied as a mentor, your confirmation emails have been sent — check your inbox."
+      );
+      params.delete("verified");
+      changed = true;
+    }
+    const verify = params.get("verify");
+    if (verify === "invalid" || verify === "missing") {
+      setError("This verification link is invalid or has already been used.");
+      params.delete("verify");
+      changed = true;
+    } else if (verify === "expired") {
+      setError("This verification link has expired. Please contact support if you need help.");
+      params.delete("verify");
+      changed = true;
+    }
+    if (changed) {
+      const q = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
+    }
+  }, []);
 
   const goGoogle = (role: "student" | "mentor") => {
     window.location.href = `/api/auth/google/start?role=${encodeURIComponent(role)}`;
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background text-foreground antialiased">
+        <Header />
+        <main className="pt-28 md:pt-32 pb-20 px-4 flex-1 flex items-center justify-center">
+          <div
+            className="h-10 w-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin"
+            aria-label="Loading"
+          />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (sessionUser?.role === "MENTOR_PENDING") {
+    const displayName = sessionUser.username?.trim() || sessionUser.email;
+    return (
+      <div className="flex min-h-screen flex-col bg-background text-foreground antialiased">
+        <Header />
+        <main className="pt-28 md:pt-32 pb-20 px-4 md:px-6">
+          <section className="max-w-4xl mx-auto">
+            <div className="text-center mb-10 md:mb-12">
+              <span className="inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-primary">
+                <span className="h-[2px] w-9 rounded-full bg-primary" />
+                Access MADAlgos
+              </span>
+              <h1 className="mt-4 text-3xl md:text-4xl font-extrabold leading-tight text-gradient-premium">
+                Application status
+              </h1>
+              <p className="mt-3 max-w-2xl mx-auto text-xs md:text-sm text-muted-foreground leading-relaxed">
+                You&apos;re signed in. Your mentor application is under verification — see details below.
+              </p>
+            </div>
+
+            <div className="max-w-xl mx-auto">
+              <AuthFormWrapper
+                title="Under verification"
+                subtitle="Our team is reviewing your mentor profile. You don&apos;t need to sign in again until you log out."
+              >
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    Hi <strong className="text-white">{displayName}</strong>, your application is still{" "}
+                    <strong className="text-amber-300/90">under verification</strong>. We&apos;ll notify you at{" "}
+                    <strong className="text-primary">{sessionUser.email}</strong> when your profile is approved.
+                  </p>
+                  <p className="text-xs text-slate-500 leading-relaxed border-l-2 border-primary/40 pl-3">
+                    If you haven&apos;t confirmed your email yet, check your inbox for the verification link (valid 48
+                    hours). After approval, use <strong className="text-slate-300">Sign in</strong> on this page to set
+                    your password and open your mentor dashboard.
+                  </p>
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-full border-white/15"
+                      onClick={() => router.push("/")}
+                    >
+                      Back to home
+                    </Button>
+                    <Button
+                      type="button"
+                      className="rounded-full bg-linear-to-r from-[#2ab5a0] to-[#136b60] text-xs font-semibold uppercase tracking-[0.18em] text-white"
+                      onClick={async () => {
+                        await fetch("/api/auth/logout", { method: "POST" });
+                        window.location.href = "/auth";
+                      }}
+                    >
+                      Log out
+                    </Button>
+                  </div>
+                </div>
+              </AuthFormWrapper>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground antialiased">
@@ -333,8 +478,7 @@ export default function AuthPage() {
                               }
                               try {
                                 const data = await setMentorPasswordLogin(mentorEmail, mentorPassword1);
-                                const role = data?.role;
-                                window.location.href = role === "MENTOR" ? "/mentor" : "/";
+                                window.location.href = getDashboardPathForRole(data?.role);
                               } catch (err) {
                                 setError(err instanceof Error ? err.message : "Set password failed");
                               } finally {
@@ -415,8 +559,7 @@ export default function AuthPage() {
                               const password = String(fd.get("password") ?? "");
                               try {
                                 const data = await login(mentorEmail, password);
-                                const role = data?.role;
-                                window.location.href = role === "MENTOR" ? "/mentor" : "/";
+                                window.location.href = getDashboardPathForRole(data?.role);
                               } catch (err) {
                                 setError(err instanceof Error ? err.message : "Login failed");
                               } finally {
@@ -493,13 +636,18 @@ export default function AuthPage() {
                               .replace(/\/+$/, "");
                             const linkedinUrl = `${LINKEDIN_PREFIX}${normalizedId}`;
                             try {
-                              await applyMentor(
+                              const data = await applyMentor(
                                 String(fd.get("email") ?? ""),
                                 String(fd.get("username") ?? ""),
                                 linkedinUrl
                               );
+                              setLastVerifyEmailSent(data?.verifyEmailSent !== false);
                               setMentorApplyState("success");
-                              setMessage("Application submitted. Please wait for verification.");
+                              setMessage(
+                                data?.verifyEmailSent === false
+                                  ? "Application saved, but we could not send the verification email. Check SendGrid / MAIL_FROM."
+                                  : "Check your email — we sent you a link to verify your address. After that, we will confirm your application and notify our team."
+                              );
                               form.reset();
                             } catch (err) {
                               setMentorApplyState("idle");
@@ -556,7 +704,7 @@ export default function AuthPage() {
                     const fd = new FormData(form);
                     try {
                       const data = await login(String(fd.get("email") ?? ""), String(fd.get("password") ?? ""));
-                      window.location.href = data?.role === "SUPER_ADMIN" || data?.role === "ADMIN" ? "/admin" : "/";
+                      window.location.href = getDashboardPathForRole(data?.role);
                     } catch (err) {
                       setError(err instanceof Error ? err.message : "Login failed");
                     } finally {
@@ -615,13 +763,19 @@ export default function AuthPage() {
             ) : (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-emerald-300">Application submitted successfully</h3>
+                {lastVerifyEmailSent === false ? (
+                  <p className="text-sm text-amber-300">
+                    We could not send the verification email. Your details are saved — fix email config or contact support.
+                  </p>
+                ) : null}
                 <p className="text-sm text-slate-300">
                   Next steps:
                 </p>
                 <ul className="list-disc pl-5 text-sm text-slate-400 space-y-1">
-                  <li>Admin/Super Admin verifies your LinkedIn profile.</li>
-                  <li>After approval, return to Sign in and enter your email.</li>
-                  <li>You will set your password and then access your mentor panel.</li>
+                  <li>Open the email we sent and click <strong className="text-slate-200">Verify</strong> (link valid 48 hours).</li>
+                  <li>After verification, you&apos;ll receive the application confirmation and our team will be notified.</li>
+                  <li>Admin/Super Admin will then review your LinkedIn profile.</li>
+                  <li>After approval, use <strong className="text-slate-200">Sign in</strong> here to set your password and open your mentor panel.</li>
                 </ul>
                 <div className="flex justify-end">
                   <Button
