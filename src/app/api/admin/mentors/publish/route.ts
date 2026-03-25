@@ -6,6 +6,7 @@ import UserModel from "@/models/User";
 import MentorProfileModel from "@/models/MentorProfile";
 import MentorModel from "@/models/Mentor";
 import { sendTemplateEmail } from "@/lib/email";
+import { getAppBaseUrl, getAppUrl } from "@/lib/app-base-url";
 
 type LiveEmailStatus =
   | { sent: true }
@@ -67,10 +68,7 @@ export async function POST(req: Request) {
   // Email mentor only when they are **published** (going live), not when unpublishing.
   if (!isPublished) {
     const templateId = process.env.SENDGRID_MENTOR_PROFILE_LIVE_TEMPLATE_ID?.trim();
-    const base =
-      process.env.APP_BASE_URL?.replace(/\/$/, "") ||
-      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-      "https://madalgos.in";
+    const base = getAppBaseUrl();
     const now = new Date();
     const publishedDate = now.toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -101,8 +99,9 @@ export async function POST(req: Request) {
       headline_text: "Your mentor profile is verified and live",
       body_intro:
         "Great news — your verification is complete and your profile is now published on the MadAlgos website. Visitors can find you on our Mentors page and you can continue managing your profile from your mentor dashboard.",
-      mentors_page_url: `${base}/mentors`,
-      mentor_dashboard_url: `${base}/mentor`,
+      mentors_page_url: getAppUrl("/mentors"),
+      mentor_dashboard_url: getAppUrl("/mentor"),
+      website_url: getAppUrl("/"),
       app_base_url: base,
       company_name: "MAD Algos",
       team_signature: "MAD Algos Team",

@@ -8,7 +8,7 @@ import { ActionMenu } from "@/components/admin/ActionMenu";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { toast } from "sonner";
 
-type TestimonialRow = {
+export type TestimonialRow = {
     id: string;
     name: string;
     role: string;

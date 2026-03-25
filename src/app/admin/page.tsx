@@ -9,13 +9,15 @@ import UserModel from "@/models/User";
 import TestimonialModel from "@/models/Testimonial";
 import MentorProfileModel from "@/models/MentorProfile";
 import type { BlogDocument } from "@/models/Blog";
+import { blogPendingReviewMongoFilter } from "@/lib/blog-admin-status";
 import type { UserDocument } from "@/models/User";
 import type { TestimonialDocument } from "@/models/Testimonial";
 import { getSessionFromRequestCookies } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, BookOpen, MessageSquareQuote, GraduationCap } from "lucide-react";
+import { ArrowRight, Users, BookOpen, MessageSquareQuote, GraduationCap, ShoppingBag } from "lucide-react";
+import PaymentModel from "@/models/Payment";
 
 export const metadata = {
   title: "Admin Dashboard | MADAlgos",
@@ -60,13 +62,14 @@ export default async function AdminDashboardPage() {
     totalStudents,
     totalBlogs,
     totalTestimonials,
+    totalPayments,
   ] = await Promise.all([
     UserModel.find({ role: { $in: ["MENTOR_PENDING", "MENTOR"] }, accountStatus: "PENDING_APPLICATION" })
       .sort({ createdAt: -1 })
       .limit(5)
       .lean<UserDocument[]>()
       .exec(),
-    BlogModel.find({ status: "PENDING_REVIEW" })
+    BlogModel.find(blogPendingReviewMongoFilter)
       .sort({ publishDate: -1 })
       .limit(5)
       .lean<BlogDocument[]>()
@@ -85,6 +88,7 @@ export default async function AdminDashboardPage() {
     UserModel.countDocuments({ role: "STUDENT" }),
     BlogModel.countDocuments(),
     TestimonialModel.countDocuments(),
+    PaymentModel.countDocuments(),
   ]);
 
   const profileUserIds = pendingMentorProfilesRaw
@@ -108,7 +112,8 @@ export default async function AdminDashboardPage() {
       />
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard title="Order history" value={totalPayments} icon={<ShoppingBag className="w-6 h-6" />} link="/admin/orders" />
         <StatCard title="Total Mentors" value={totalMentors} icon={<Users className="w-6 h-6" />} link="/admin/mentors" />
         <StatCard title="Total Blogs" value={totalBlogs} icon={<BookOpen className="w-6 h-6" />} link="/admin/blogs" />
         <StatCard title="Testimonials" value={totalTestimonials} icon={<MessageSquareQuote className="w-6 h-6" />} link="/admin/testimonials" />

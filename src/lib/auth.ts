@@ -85,3 +85,20 @@ export function newOneTimeToken(bytes = 32): string {
   return crypto.randomBytes(bytes).toString("hex");
 }
 
+/** Short-lived token so a guest can set password after successful payment (book-mock / book-mentorship). */
+export function signGuestSetupToken(userId: string): string {
+  const secret = requireEnv("JWT_SECRET");
+  return jwt.sign({ uid: userId, typ: "guest_setup" }, secret, { expiresIn: "24h" });
+}
+
+export function verifyGuestSetupToken(token: string): { uid: string } | null {
+  try {
+    const secret = requireEnv("JWT_SECRET");
+    const decoded = jwt.verify(token, secret) as { uid?: string; typ?: string };
+    if (decoded.typ !== "guest_setup" || !decoded.uid) return null;
+    return { uid: decoded.uid };
+  } catch {
+    return null;
+  }
+}
+

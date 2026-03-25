@@ -37,6 +37,8 @@ export function MentorProfileForm({ initialData, onSave, onCancel, isBusy }: Men
         imageUrl: initialData.imageUrl || "",
         description: initialData.description || "",
     });
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -81,8 +83,55 @@ export function MentorProfileForm({ initialData, onSave, onCancel, isBusy }: Men
             </div>
 
             <div className="space-y-2">
-                <Label className="text-slate-300">Profile Image URL</Label>
-                <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} className="bg-[#111] border-white/10 text-white" />
+                <Label className="text-slate-300">Profile image (upload from device)</Label>
+                <p className="text-[11px] text-slate-500">
+                    Stored in Azure (same as mentor dashboard). JPG/PNG/WebP, max 5MB.
+                </p>
+                <Input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingImage || isBusy}
+                    onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        setUploadError(null);
+                        setUploadingImage(true);
+                        try {
+                            const fd = new FormData();
+                            fd.append("image", f);
+                            fd.append("userId", formData.userId);
+                            const res = await fetch("/api/admin/mentors/profile/upload-image", {
+                                method: "POST",
+                                body: fd,
+                            });
+                            const data = (await res.json().catch(() => null)) as { error?: string; imageUrl?: string };
+                            if (!res.ok) throw new Error(data?.error || "Upload failed");
+                            setFormData((prev) => ({ ...prev, imageUrl: data.imageUrl ?? "" }));
+                        } catch (err) {
+                            setUploadError(err instanceof Error ? err.message : "Upload failed");
+                        } finally {
+                            setUploadingImage(false);
+                            e.target.value = "";
+                        }
+                    }}
+                    className="bg-[#111] border-white/10 text-white file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-white/10 file:bg-white/5 file:text-white/80 file:text-xs hover:file:bg-white/10"
+                />
+                {uploadError ? <p className="text-xs text-red-400">{uploadError}</p> : null}
+                {formData.imageUrl ? (
+                    <div className="flex items-center gap-4 pt-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={formData.imageUrl}
+                            alt="Profile preview"
+                            className="w-16 h-16 rounded-2xl border border-white/10 object-cover"
+                        />
+                        <p className="text-xs text-slate-400">
+                            {uploadingImage ? "Uploading…" : "Preview — include when you save changes."}
+                        </p>
+                    </div>
+                ) : (
+                    <p className="text-xs text-slate-500">No image yet.</p>
+                )}
             </div>
 
             <div className="space-y-2">

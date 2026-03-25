@@ -8,7 +8,19 @@ import { getDashboardPathForRole } from "@/lib/auth-dashboard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, ShieldCheck, UserRound, Linkedin, ArrowRight } from "lucide-react";
+import { Mail, Lock, ShieldCheck, UserRound, Linkedin, ArrowRight, CheckCircle2 } from "lucide-react";
+
+function AuthInlineSuccess({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      role="status"
+      className="flex gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/15 px-4 py-3.5 text-left shadow-[0_0_32px_rgba(16,185,129,0.18)]"
+    >
+      <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-400 mt-0.5" aria-hidden />
+      <p className="text-sm md:text-base leading-relaxed font-medium text-emerald-50">{children}</p>
+    </div>
+  );
+}
 
 type AuthMode = "signin" | "signup";
 const LINKEDIN_PREFIX = "https://linkedin.com/in/";
@@ -219,6 +231,8 @@ export default function AuthPage() {
   const [busy, setBusy] = React.useState(false);
   const [adminBusy, setAdminBusy] = React.useState(false);
   const [message, setMessage] = React.useState<string | null>(null);
+  /** Set only from `?verified=1` — persists when switching tabs (unlike `message`). */
+  const [emailVerifiedBanner, setEmailVerifiedBanner] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [mentorApplyState, setMentorApplyState] = React.useState<"idle" | "submitting" | "success">("idle");
   const [mentorStep, setMentorStep] = React.useState<"email" | "set_password" | "password">("email");
@@ -254,7 +268,7 @@ export default function AuthPage() {
     const params = new URLSearchParams(window.location.search);
     let changed = false;
     if (params.get("verified") === "1") {
-      setMessage(
+      setEmailVerifiedBanner(
         "Email verified. If you applied as a mentor, your confirmation emails have been sent — check your inbox."
       );
       params.delete("verified");
@@ -384,7 +398,11 @@ export default function AuthPage() {
             <div className="relative">
               <Tabs
                 value={mode}
-                onValueChange={(v) => setMode(v as AuthMode)}
+                onValueChange={(v) => {
+                  setMode(v as AuthMode);
+                  setMessage(null);
+                  setError(null);
+                }}
                 className="w-full"
               >
                 <TabsList className="mb-5 grid w-full grid-cols-2 rounded-full bg-[#050505]/60 border border-white/10">
@@ -407,6 +425,10 @@ export default function AuthPage() {
                     title="Sign in"
                     subtitle="Continue as a mentor. Use your email credentials or sign in with Google."
                   >
+                    {emailVerifiedBanner ? (
+                      <AuthInlineSuccess>{emailVerifiedBanner}</AuthInlineSuccess>
+                    ) : null}
+                    {message ? <AuthInlineSuccess>{message}</AuthInlineSuccess> : null}
                     {/* Student sign-in tab removed for now — restore TabsList + student TabsContent when needed */}
                     <div className="mt-0 space-y-4">
                         <div onClick={() => goGoogle("mentor")} className="cursor-pointer">
@@ -602,7 +624,6 @@ export default function AuthPage() {
                         </p>
                     </div>
                     {error && <p className="text-sm text-red-400">{error}</p>}
-                    {message && <p className="text-sm text-emerald-300">{message}</p>}
                   </AuthFormWrapper>
                 </TabsContent>
 
@@ -611,6 +632,7 @@ export default function AuthPage() {
                     title="Join us"
                     subtitle="Mentors submit basic details for verification before setting a password."
                   >
+                    {message ? <AuthInlineSuccess>{message}</AuthInlineSuccess> : null}
                     {/* Student Join us tab removed for now */}
                     <div className="mt-0 space-y-4">
                         <div onClick={() => goGoogle("mentor")} className="cursor-pointer">
@@ -675,7 +697,6 @@ export default function AuthPage() {
                         </form>
                     </div>
                     {error && <p className="text-sm text-red-400">{error}</p>}
-                    {message && <p className="text-sm text-emerald-300">{message}</p>}
                   </AuthFormWrapper>
                 </TabsContent>
               </Tabs>
@@ -728,7 +749,11 @@ export default function AuthPage() {
                   </Button>
                 </form>
                 {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-                {message && <p className="mt-3 text-sm text-emerald-300">{message}</p>}
+                {message ? (
+                  <div className="mt-3">
+                    <AuthInlineSuccess>{message}</AuthInlineSuccess>
+                  </div>
+                ) : null}
 
                 <p className="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
                   <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />

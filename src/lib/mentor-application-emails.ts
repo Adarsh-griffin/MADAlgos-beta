@@ -1,4 +1,5 @@
 import { sendEmail, sendTemplateEmail, type SendTemplateEmailResult } from "@/lib/email";
+import { getAppBaseUrl } from "@/lib/app-base-url";
 
 function escapeHtml(s: string): string {
   return s
@@ -126,10 +127,7 @@ export async function sendEmailVerificationMail(params: {
   username: string;
   verificationToken: string;
 }): Promise<{ ok: boolean }> {
-  const base =
-    process.env.APP_BASE_URL?.replace(/\/$/, "") ||
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000";
+  const base = getAppBaseUrl();
 
   const verifyUrl = `${base}/api/auth/verify-email?token=${encodeURIComponent(params.verificationToken)}`;
 

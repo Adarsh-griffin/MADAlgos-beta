@@ -78,7 +78,13 @@ export default function BlogsPageClient({ initialBlogs }: { initialBlogs: BlogRo
                 });
                 if (!res.ok) throw new Error("Failed to update status");
 
-                setBlogs(blogs.map(b => b.id === confirmAction.id ? { ...b, status: confirmAction.action } : b));
+                setBlogs(
+                    blogs.map((b) =>
+                        b.id === confirmAction.id
+                            ? { ...b, status: confirmAction.action as BlogRow["status"] }
+                            : b
+                    )
+                );
                 toast.success(`Blog ${confirmAction.action.toLowerCase()} successfully`);
             }
         } catch (error) {

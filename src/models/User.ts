@@ -24,6 +24,10 @@ export interface UserDocument {
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt: Date | null;
+  /** Phone for bookings / Razorpay prefill (optional). */
+  mobile?: string | null;
+  /** Admin-editable avatar URL (optional). */
+  profilePicture?: string | null;
 }
 
 const UserSchema = new Schema<UserDocument>(
@@ -73,6 +77,8 @@ const UserSchema = new Schema<UserDocument>(
     mentorCredentialTokenExpiresAt: { type: Date, default: null },
     profileCompleted: { type: Boolean, default: false },
     lastLoginAt: { type: Date, default: null },
+    mobile: { type: String, default: null },
+    profilePicture: { type: String, default: null },
   },
   { collection: "users", timestamps: true }
 );

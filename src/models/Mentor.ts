@@ -1,13 +1,13 @@
 import mongoose, { Schema, model, models, Document } from "mongoose";
-import {
+import type {
   CareerCompany,
   CareerHistory,
   InterviewerDetails,
   Mentor,
   MentorFeedback,
-} from "@/lib/mentors";
+} from "@/types/mentor";
 
-type MentorDocument = Document;
+export type MentorDocument = Mentor & Document;
 
 const CareerCompanySchema = new Schema<CareerCompany>(
   {

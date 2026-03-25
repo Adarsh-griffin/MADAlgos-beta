@@ -51,8 +51,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
 
-                {/* Main Content Render Area */}
-                <div className="px-4 sm:px-6 lg:px-12 xl:px-14 py-8 md:py-10 max-w-6xl mx-auto w-full">
+                {/* Main content — wide on large screens (blog editor, tables, etc.) */}
+                <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-8 md:py-10">
                     {children}
                 </div>
             </SidebarInset>

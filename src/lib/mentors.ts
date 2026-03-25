@@ -1,57 +1,20 @@
 import { connectDB } from "./mongodb";
 import MentorModel from "@/models/Mentor";
+import type {
+  CareerCompany,
+  CareerHistory,
+  MentorFeedback,
+  InterviewerDetails,
+  Mentor,
+} from "@/types/mentor";
 
-export interface CareerCompany {
-  role: string;
-  startTime: string;
-  endTime: string;
-  companyName: string;
-}
-
-export interface CareerHistory {
-  currentCompany?: CareerCompany | null;
-  previousCompanies?: CareerCompany[] | null;
-}
-
-export interface MentorFeedback {
-  id: number;
-  mentorId: number;
-  rating: number;
-  review: string | null;
-  userId: number;
-  dateTime: string;
-}
-
-export interface InterviewerDetails {
-  firstName: string;
-  lastName: string | null;
-  dispImageLink: string | null;
-}
-
-export interface Mentor {
-  id: number;
-  interviewerId: number;
-  linkedin: string | null;
-  location: string | null;
-  description: string | null;
-  quote: string | null;
-  careerHistory?: CareerHistory | null;
-  skills?: string[] | null;
-  expYears: number;
-  currentNumberOfMentees: number;
-  maxNumberOfMentees: number;
-  joiningDate: string;
-  isActive: boolean;
-  PSCharges: number | null;
-  MockCharges: number | null;
-  profileId: string;
-  isVerified: boolean;
-  posterLink: string | null;
-  approvalStatus: string;
-  maxFreeTrails: number | null;
-  mentorFeedback?: MentorFeedback[] | null;
-  interviewer?: InterviewerDetails | null;
-}
+export type {
+  CareerCompany,
+  CareerHistory,
+  MentorFeedback,
+  InterviewerDetails,
+  Mentor,
+} from "@/types/mentor";
 
 export async function getAllMentors(): Promise<Mentor[]> {
   await connectDB();
@@ -60,14 +23,14 @@ export async function getAllMentors(): Promise<Mentor[]> {
     approvalStatus: "APPROVED",
   })
     .sort({ joiningDate: -1 })
-    .lean<Mentor>()
+    .lean<Mentor[]>()
     .exec();
   return docs;
 }
 
 export async function getMentorById(id: number): Promise<Mentor | null> {
   await connectDB();
-  const doc = await MentorModel.findOne({ id }).lean<Mentor>().exec();
+  const doc = await MentorModel.findOne({ id }).lean<Mentor | null>().exec();
   return doc;
 }
 
@@ -114,4 +77,3 @@ export function formatMentorJoinedDate(dateStr: string): string {
     year: "numeric",
   }).format(date);
 }
-

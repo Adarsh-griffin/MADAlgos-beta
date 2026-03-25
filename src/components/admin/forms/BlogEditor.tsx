@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageIcon, Save, Send } from "lucide-react";
+import { MentorBlogRichEditor } from "@/components/mentor/MentorBlogRichEditor";
+import { BlogAdminLivePreview } from "@/components/admin/BlogAdminLivePreview";
 
 export type BlogFormData = {
     title: string;
@@ -39,6 +41,11 @@ export function BlogEditor({ initialData, onSubmit, isBusy, primaryActionLabel }
         seoDescription: initialData?.seoDescription || "",
     });
     const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+    const isEditMode = Boolean(
+        initialData?.title?.trim() ||
+            initialData?.slug?.trim() ||
+            (initialData?.content && initialData.content.length > 0)
+    );
 
     // Auto-generate slug when title changes
     useEffect(() => {
@@ -61,11 +68,13 @@ export function BlogEditor({ initialData, onSubmit, isBusy, primaryActionLabel }
     };
 
     return (
-        <div className="bg-[#050505] border border-white/10 rounded-2xl p-6 sm:p-8 text-white space-y-8 max-w-4xl mx-auto shadow-2xl">
+        <div className="bg-[#050505] border border-white/10 rounded-2xl p-6 sm:p-8 lg:p-10 text-white space-y-8 w-full shadow-2xl">
 
             {/* Header Section */}
             <div className="border-b border-white/10 pb-6 space-y-6">
-                <h2 className="text-2xl font-semibold tracking-tight">Create Blog</h2>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                    {isEditMode ? "Edit blog" : "Create blog"}
+                </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -189,18 +198,34 @@ export function BlogEditor({ initialData, onSubmit, isBusy, primaryActionLabel }
                 </div>
             </div>
 
-            {/* Content Section */}
-            <div className="space-y-2">
-                <Label htmlFor="content" className="text-slate-300">Content Editor</Label>
-                <Textarea
-                    id="content"
-                    name="content"
-                    value={formData.content}
-                    onChange={handleChange}
-                    placeholder="Write your blog content here..."
-                    className="bg-[#111] border-white/10 focus-visible:ring-primary min-h-[300px] resize-y p-4 text-base leading-relaxed font-mono"
-                />
-                <p className="text-xs text-slate-500 mt-2">Markdown is supported.</p>
+            {/* Content editor + live preview (public-style) */}
+            <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                    <div>
+                        <Label className="text-slate-300">Content</Label>
+                        <p className="text-xs text-slate-500 mt-1">
+                            Rich text (HTML). On large screens, preview updates beside the editor.
+                        </p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 lg:items-start">
+                    <div className="space-y-2 min-w-0">
+                        <MentorBlogRichEditor
+                            value={formData.content}
+                            onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
+                            placeholder="Write your article… Use the toolbar for structure and formatting."
+                        />
+                    </div>
+                    <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
+                        <BlogAdminLivePreview
+                            title={formData.title}
+                            thumbnail={formData.thumbnail}
+                            category={formData.category}
+                            tags={formData.tags}
+                            contentHtml={formData.content}
+                        />
+                    </div>
+                </div>
             </div>
 
             {/* SEO Section */}

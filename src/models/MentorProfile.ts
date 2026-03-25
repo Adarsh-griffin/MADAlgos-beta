@@ -11,6 +11,8 @@ export interface MentorProfileDocument {
   linkedin: string | null;
   reviewStatus: "PENDING_REVIEW" | "APPROVED" | "REJECTED";
   rejectionReason: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const MentorProfileSchema = new Schema<MentorProfileDocument>(

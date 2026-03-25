@@ -42,7 +42,8 @@ export default async function MentorsPage() {
         mentor.description ??
         "Mentorship focused on interview prep, system design, and practical engineering skills.",
       skills: mentor.skills ?? [],
-      isVerified: mentor.isVerified,
+      // Everyone listed here is admin-published (see getAllMentors: isActive + approvalStatus APPROVED).
+      isVerified: true,
       image: mentor.interviewer?.dispImageLink ?? null,
       linkedin: mentor.linkedin,
     };

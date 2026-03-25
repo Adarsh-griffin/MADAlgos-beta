@@ -13,7 +13,13 @@ declare global {
 const cached = global.mongooseCache ?? { conn: null, promise: null };
 if (process.env.NODE_ENV !== "production") global.mongooseCache = cached;
 
-/** Rejects after `ms` milliseconds — used to abort slow DNS/TCP hangs. */
+/** Wall-clock cap for initial connect (Atlas / slow networks often need 15–30s). */
+function connectTimeoutMs(): number {
+  const raw = process.env.MONGODB_CONNECT_TIMEOUT_MS?.trim();
+  const n = raw ? Number.parseInt(raw, 10) : NaN;
+  return Number.isFinite(n) && n >= 5_000 ? n : 25_000;
+}
+
 const timeout = (ms: number) =>
   new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error(`DB connect timed out after ${ms}ms`)), ms)
@@ -35,11 +41,12 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
+    const t = connectTimeoutMs();
     const connectOptions: Parameters<typeof mongoose.connect>[1] = {
-      serverSelectionTimeoutMS: 5_000,
-      connectTimeoutMS: 5_000,
-      socketTimeoutMS: 5_000,
-      family: 4,
+      serverSelectionTimeoutMS: t,
+      connectTimeoutMS: t,
+      socketTimeoutMS: 45_000,
+      // Do not force IPv4 — Atlas + some networks need the default (dual-stack).
     };
 
     // Optional, but important when your connection string doesn't include
@@ -53,8 +60,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   }
 
   try {
-    // Hard 6-second wall-clock limit so OS-level DNS timeouts don't block the request.
-    cached.conn = await Promise.race([cached.promise, timeout(6_000)]);
+    cached.conn = await Promise.race([cached.promise, timeout(connectTimeoutMs())]);
     return cached.conn;
   } catch (err) {
     // Reset so next request tries a fresh connection instead of reusing failed promise.

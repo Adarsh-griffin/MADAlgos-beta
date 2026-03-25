@@ -5,6 +5,7 @@ import { getSessionFromRequestCookies } from "@/lib/auth";
 import MentorProfileModel from "@/models/MentorProfile";
 import UserModel from "@/models/User";
 import { isSendgridConfigured, sendEmail, sendTemplateEmail } from "@/lib/email";
+import { getAppBaseUrl, getAppUrl } from "@/lib/app-base-url";
 
 type ProfileEmailStatus =
   | { sent: true }
@@ -144,7 +145,7 @@ export async function PUT(req: Request) {
   })} IST`;
 
   const username = user.username?.trim() || user.email.split("@")[0];
-  const mentorPanelUrl = `${base}/mentor`;
+  const mentorPanelUrl = getAppUrl("/mentor");
 
   const dynamicTemplateData = {
     user_name: username,
@@ -158,6 +159,8 @@ export async function PUT(req: Request) {
     body_intro:
       "Thank you for submitting your mentor profile. We have received your information and it is now in our review queue. Our team will review your details shortly. If we need anything else or spot an issue, we will reach out by email.",
     mentor_panel_url: mentorPanelUrl,
+    mentor_hub_url: mentorPanelUrl,
+    website_url: getAppUrl("/"),
     app_base_url: base,
     company_name: "MAD Algos",
     team_signature: "MAD Algos Team",
@@ -191,7 +194,7 @@ export async function PUT(req: Request) {
     process.env.CONTACT_TEAM_EMAIL?.trim() ||
     "contact@madalgos.in";
 
-  const adminMentorsUrl = `${base}/admin/mentors`;
+  const adminMentorsUrl = getAppUrl("/admin/mentors");
 
   let teamEmail: TeamEmailStatus = { sent: false, reason: "no_api_key" };
 

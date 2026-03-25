@@ -471,7 +471,7 @@ export function MentorBlogRichEditor({
     if (!editor) return;
     if (value === lastEmitted.current) return;
     lastEmitted.current = value;
-    editor.commands.setContent(value || "", false);
+    editor.commands.setContent(value || "", { emitUpdate: false });
   }, [editor, value]);
 
   if (!editor) {

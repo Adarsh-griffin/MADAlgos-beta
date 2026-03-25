@@ -3,19 +3,64 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Menu, X, BookOpen, Mail, Sparkles, Sun, Moon, LogOut, LayoutDashboard } from "lucide-react";
+import {
+  ChevronDown,
+  Menu,
+  X,
+  BookOpen,
+  Mail,
+  LayoutGrid,
+  Sun,
+  Moon,
+  LogOut,
+  LayoutDashboard,
+  Video,
+  Users,
+  GraduationCap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getDashboardPathForRole } from "@/lib/auth-dashboard";
 
 // AI FOUNDRY & INSIGHTS hidden for now — enable later when needed
+type NavDropdownItem = {
+  name: string;
+  href: string;
+  description?: string;
+  icon?: React.ReactNode;
+};
 type NavItem = {
   name: string;
   href: string;
   icon: React.ReactNode;
-  dropdown?: { name: string; href: string; description?: string; icon?: React.ReactNode }[];
+  dropdown?: NavDropdownItem[];
 };
 const NAV_ITEMS: NavItem[] = [
+  {
+    name: "SERVICES",
+    href: "/book-mock",
+    icon: <LayoutGrid className="w-3.5 h-3.5" />,
+    dropdown: [
+      {
+        name: "Book mock interview",
+        href: "/book-mock",
+        description: "Paid mocks",
+        icon: <Video className="w-5 h-5" />,
+      },
+      {
+        name: "Get mentorship",
+        href: "/book-mentorship",
+        description: "Mentorship packages",
+        icon: <GraduationCap className="w-5 h-5" />,
+      },
+      {
+        name: "Mentors",
+        href: "/mentors",
+        description: "Browse verified mentors",
+        icon: <Users className="w-5 h-5" />,
+      },
+    ],
+  },
   { name: "BLOGS", href: "/blogs", icon: <BookOpen className="w-3.5 h-3.5" /> },
   { name: "CONTACT US", href: "/contact", icon: <Mail className="w-3.5 h-3.5" /> },
 ];
@@ -201,29 +246,27 @@ const Header = () => {
                           ? "opacity-100 visible translate-y-0" 
                           : "opacity-0 invisible translate-y-4 pointer-events-none"
                       )}>
-                        <div className="w-[340px] rounded-[2.5rem] bg-slate-950/95 backdrop-blur-3xl border border-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden p-4 ring-1 ring-white/5">
-                          <div className="grid grid-cols-1 gap-2">
+                        <div className="w-[380px] rounded-[2.5rem] bg-slate-950/95 backdrop-blur-3xl border border-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden p-4 ring-1 ring-white/5">
+                          <div className="grid grid-cols-1 gap-1.5">
                             {item.dropdown.map((subItem) => (
                               <Link
                                 key={subItem.name}
                                 href={subItem.href}
-                                className="group/sub flex items-start gap-5 p-5 rounded-3xl hover:bg-white/5 transition-all duration-300"
+                                className="group/sub flex items-start gap-4 p-4 rounded-2xl hover:bg-white/5 transition-all duration-300"
                               >
-                                <div className="mt-0.5 w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover/sub:bg-primary/10 group-hover/sub:text-primary transition-all duration-300 border border-white/5 group-hover:border-primary/20">
+                                <div className="mt-0.5 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover/sub:bg-primary/10 group-hover/sub:text-primary transition-all duration-300 border border-white/5 group-hover:border-primary/20">
                                   {subItem.icon}
                                 </div>
-                                <div className="space-y-1.5">
-                                  <p className="text-[14px] font-black text-white group-hover/sub:text-primary transition-colors uppercase tracking-tight">{subItem.name}</p>
-                                  <p className="text-[11px] font-medium text-muted-foreground group-hover/sub:text-gray-300 transition-colors leading-relaxed line-clamp-1">{subItem.description}</p>
+                                <div className="space-y-1 min-w-0">
+                                  <p className="text-[13px] font-black text-white group-hover/sub:text-primary transition-colors uppercase tracking-tight">
+                                    {subItem.name}
+                                  </p>
+                                  <p className="text-[11px] font-medium text-muted-foreground group-hover/sub:text-gray-300 transition-colors leading-relaxed line-clamp-2">
+                                    {subItem.description}
+                                  </p>
                                 </div>
                               </Link>
                             ))}
-                          </div>
-                          <div className="mt-3 p-4 bg-white/5 rounded-3xl border border-white/5 group-hover:bg-white/10 transition-all">
-                             <Link href="#" className="flex items-center justify-between px-2 group/btn">
-                               <span className="text-[11px] font-black text-primary tracking-[0.4em] uppercase">Enterprise Access</span>
-                               <Sparkles className="w-4 h-4 text-primary group-hover/btn:rotate-12 transition-transform" />
-                             </Link>
                           </div>
                         </div>
                       </div>
@@ -405,10 +448,20 @@ const Header = () => {
                       <ChevronDown className={cn("w-6 h-6 opacity-40 transition-transform", mobileExpanded === item.name && "rotate-180 text-primary")} />
                     </button>
                     {mobileExpanded === item.name && (
-                      <div className="grid grid-cols-1 gap-4 pl-6 border-l-2 border-white/5">
+                      <div className="grid grid-cols-1 gap-3 pl-4 border-l-2 border-white/5">
                         {item.dropdown.map((sub) => (
-                          <Link key={sub.name} href={sub.href} onClick={closeMobileMenu} className="text-[14px] font-black text-muted-foreground hover:text-primary transition-colors py-1.5 uppercase tracking-widest block">
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            onClick={closeMobileMenu}
+                            className="block rounded-2xl py-2.5 pl-2 text-[13px] font-black uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+                          >
                             {sub.name}
+                            {sub.description ? (
+                              <span className="block text-[11px] font-medium text-slate-400 normal-case tracking-normal mt-1.5">
+                                {sub.description}
+                              </span>
+                            ) : null}
                           </Link>
                         ))}
                       </div>

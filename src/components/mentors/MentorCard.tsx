@@ -73,12 +73,20 @@ export default function MentorCard(props: MentorCardProps) {
             </div>
           )}
         </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight uppercase mb-1">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight uppercase">
               {name}
             </h3>
-            {isVerified && <Verified className="w-5 h-5 text-primary" />}
+            {isVerified && (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/45 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary"
+                title="Verified by MADAlgos"
+              >
+                <Verified className="w-3.5 h-3.5" aria-hidden />
+                Verified
+              </span>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-[11px] md:text-xs font-bold uppercase tracking-[0.15em]">

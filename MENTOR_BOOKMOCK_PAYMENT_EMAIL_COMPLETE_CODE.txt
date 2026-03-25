@@ -1,0 +1,2534 @@
+================================================================================
+COMPLETE CODE FOR MENTOR, BOOK MOCK, PAYMENT, AND EMAIL WORKFLOWS
+Project: MADAlgos - Interview Preparation Platform
+================================================================================
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                          COMPLETE USER FLOW                               ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════
+                        📚 BOOK MOCK INTERVIEW FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+Step 1: USER SELECTS MOCK
+  └─→ User visits /book-mock page
+  └─→ Selects Mock Type (DSA, SYS_DES, BEH_LED)
+  └─→ Selects Experience Level (1-8 years)
+  └─→ Component: components/BookMock/BookingForm.js loads
+
+Step 2: USER FILLS BOOKING FORM
+  └─→ Select Mock Date (DatePicker - next 7-30 days)
+  └─→ Select Time Slot (SelectSlot component)
+  └─→ Select Quantity (1 or more mocks)
+  └─→ Select Country (Region - IND/USA/GBR)
+  └─→ Enter Phone Number (if not in session)
+  └─→ (Optional) Enter Coupon Code
+  └─→ Accept Terms & Conditions ✓
+  └─→ State: selectedMock, selectedDate, selectedTimeSlot populated
+
+Step 3: FRONTEND VALIDATION
+  └─→ Check Terms Accepted? → If NO, show error
+  └─→ Check Phone Valid (10 digits)? → If NO, show error
+  └─→ All validations passed → Proceed to payment
+
+Step 4: PAYMENT - RAZORPAY ORDER CREATION
+  └─→ Frontend calls: POST /api/payments/orders?product=mock
+  └─→ Body:
+        {
+          id: selectedMock.id,
+          quantity: quantity,
+          price: offerPrice || selectedMock.price,
+          orderType: "Normal Ordering" || "Rush Ordering"
+        }
+  └─→ Backend:
+        - Fetch mockInterviewOfferings from DB
+        - Calculate amount = price * quantity * 100 (in paise)
+        - Create Razorpay Order with nanoid receipt
+        - Return: { amount, id: order_id, currency }
+
+Step 5: RAZORPAY PAYMENT GATEWAY
+  └─→ Load Razorpay Script: https://checkout.razorpay.com/v1/checkout.js
+  └─→ Show Razorpay Checkout Modal
+  └─→ User enters payment details (Card/UPI/Net Banking/Wallet)
+  └─→ Payment Processed
+  └─→ Razorpay returns response:
+        {
+          razorpay_payment_id,
+          razorpay_order_id,
+          razorpay_signature
+        }
+
+Step 6a: PAYMENT VERIFICATION
+  └─→ Frontend calls: POST /api/payments/new-payment
+  └─→ Body:
+        {
+          orderCreationId: order_id,
+          paymentFor: "mock",
+          razorpayPaymentId,
+          razorpayOrderId,
+          razorpaySignature
+        }
+  └─→ Backend:
+        - Verify signature using HMAC-SHA256
+        - Create payment record in payments table
+        - Return: { status: "ok" }
+
+Step 7: MOCK BOOKING CREATION
+  └─→ Frontend calls: POST /api/book-mock
+  └─→ Body:
+        {
+          userEmail,
+          userPhone,
+          mockId,
+          selectedTimeSlot,
+          selectedDate,
+          orderId,
+          paymentId,
+          bookingCountry,
+          quantity,
+          isTermsChecked,
+          couponCode,
+          OfferPrice
+        }
+  └─→ Backend:
+        a) Find user by email
+        b) Update mobile if new
+        c) Process coupon (if provided):
+           - Create/update couponHistory
+           - Increment UserCount
+           - Get usedCouponId
+        d) Create bookedMockInterviews record in DB
+        e) Create sessionPool record (tracks mock count)
+        f) Fetch mock details & time slot info
+
+Step 8: EMAIL CONFIRMATION
+  └─→ Backend calls SendGrid API
+  └─→ Send Mock Confirmation Email to user
+  └─→ Template ID: d-00e8be8160f644b19478628409e9ea7b
+  └─→ Email Data:
+        {
+          userName,
+          mockType,
+          mockDate,
+          mockTimeSlot (startTime - endTime)
+        }
+  └─→ Also CC: contact@madalgos.in
+
+Step 9: SUCCESS & REDIRECT
+  └─→ Frontend redirects to: /payments/success?payID=<paymentId>&orderID=<orderId>
+  └─→ Success page shows order confirmation
+  └─→ Database state:
+        ✓ Payment record created
+        ✓ Mock booking created
+        ✓ Session pool created
+        ✓ Coupon history updated (if used)
+
+═══════════════════════════════════════════════════════════════════════════════
+                       👨‍🏫 BOOK MENTORSHIP FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+Step 1: USER SELECTS MENTORSHIP
+  └─→ User visits /mentorship-explore or /mentors page
+  └─→ Selects Mentor (or mentor type)
+  └─→ Component: components/Mentorship/MentorshipForm.js loads
+
+Step 2: USER FILLS MENTORSHIP FORM
+  └─→ Select Experience Level (1-8 years)
+  └─→ Select Duration (1 Month / 3 Months / 6 Months)
+  └─→ Select Type (Solo OR Group)
+  └─→ (Optional) Select Specific Mentor for Pre-assignment
+  └─→ Select Country (Region - IND/USA/GBR)
+  └─→ Enter Phone Number (if not in session)
+  └─→ (Optional) Enter Coupon Code
+  └─→ Accept Terms & Conditions ✓
+  └─→ State: selectedMentorship populated with price, duration, package details
+
+Step 3: FRONTEND VALIDATION
+  └─→ Check Terms Accepted? → If NO, show error
+  └─→ Check Phone Valid (10 digits)? → If NO, show error
+  └─→ All validations passed → Proceed to payment
+
+Step 4: PAYMENT - RAZORPAY ORDER CREATION
+  └─→ Frontend calls: POST /api/payments/orders?product=mentorship
+  └─→ Body:
+        {
+          id: selectedMentorship.id,
+          quantity: 1,
+          price: offerPrice || selectedMentorship.price,
+          orderType: "Normal Ordering"
+        }
+  └─→ Backend:
+        - Fetch mentorshipOfferings from DB
+        - Calculate amount = price * 100 (in paise)
+        - Create Razorpay Order with nanoid receipt
+        - Return: { amount, id: order_id, currency }
+
+Step 5: RAZORPAY PAYMENT GATEWAY
+  └─→ Same as Mock booking (Steps 5)
+
+Step 6: PAYMENT VERIFICATION
+  └─→ Same as Mock booking (Steps 6a)
+
+Step 7: MENTORSHIP BOOKING CREATION
+  └─→ Frontend calls: POST /api/book-mentorship
+  └─→ Body:
+        {
+          userEmail,
+          userPhone,
+          mentorshipId,
+          orderId,
+          paymentId,
+          bookingCountry,
+          isTermsChecked,
+          couponCode,
+          OfferPrice,
+          mentorId (optional - if pre-assigned)
+        }
+  └─→ Backend:
+        a) Find user by email
+        b) Update mobile if new
+        c) Process coupon (if provided)
+        d) Calculate expiry date = current date + (duration * 30) days
+        e) Create bookedMentorships record
+           - If mentorId provided: assignedMentorId = mentorId, status = ACTIVE
+           - If no mentorId: status = NEW (wait for mentor assignment)
+           - Set expiryDate
+        f) Create sessionPool record with:
+           - personalSessions (from package)
+           - mockInterviews (from package)
+        g) Fetch mentorship offering & experience level details
+        h) Fetch mentor details (if pre-assigned)
+
+Step 8: EMAIL CONFIRMATIONS
+  └─→ THREE emails sent:
+
+     EMAIL 1: MENTORSHIP PURCHASE CONFIRMATION
+     Template ID: d-13951b407cb146088195e1e3f089425a
+     To: [userEmail, contact@madalgos.in]
+     From: orders@MADAlgos.in
+     Data: userName, userExpString, orderId, duration, type (Solo/Group), groupSize
+
+     EMAIL 2: BOOKING CONFIRMATION TO USER
+     Template ID: d-b475eab8aaff4ab3b24cc89c21897d1d
+     To: userEmail
+     From: alerts@MADAlgos.in
+     Data: userName, mentorName, mentorEmail
+
+     EMAIL 3: BOOKING CONFIRMATION TO MENTOR
+     Template ID: d-ca1b04ead5bb40f18b5cc395ef7b3859
+     To: mentorEmail
+     From: alerts@MADAlgos.in
+     Data: mentorName, menteeName, menteeEmail
+
+Step 9: SUCCESS & REDIRECT
+  └─→ Frontend redirects to: /payments/success?payID=<paymentId>&orderID=<orderId>
+  └─→ Success page shows order confirmation
+  └─→ Database state:
+        ✓ Payment record created
+        ✓ Mentorship booking created
+        ✓ Session pool created (with personal sessions + mocks)
+        ✓ Coupon history updated (if used)
+
+═══════════════════════════════════════════════════════════════════════════════
+                    🆓 FREE PEER-TO-PEER MOCK FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+Step 1: USER INITIATES FREE MOCK BOOKING
+  └─→ User visits /book-free-mock page
+  └─→ Checks free mock credits (default: 6)
+  └─→ Component: components/FreeMock/Practice/TypeOfPractice.js
+  └─→ Frontend calls: POST /api/freeMock/emailVerify
+        Body: { userId, subject, email, userName, mockDate, bookWithFriend }
+
+Step 2: CHECK FREE MOCK CREDITS
+  └─→ Backend checks: user.freeMockCredits >= 1?
+  └─→ If NO: Return { flag: false, message: "No Free Credits Remaining" }
+  └─→ If YES: Continue
+
+Step 3: FETCH WAITING POOL & FIND MATCH
+  └─→ Query freeMockUnmatchedPool for bookings with same date/time
+  └─→ Filter criteria:
+        - parsedDate === booking.mockDate
+        - userId !== booking.userId (different users)
+        - booking.interviewId != 0 (valid room)
+
+Step 4a: MATCH FOUND
+  └─→ Create new freeMockUnmatchedPool record linked to EXISTING interview room
+  └─→ Data:
+        {
+          userId,
+          subject,
+          bookingCountry: region (from IP),
+          mockDate: parsedDate,
+          questionToAsk: matchedBooking.questionToBeAsked,
+          questionToBeAsked: matchedBooking.questionToAsk,
+          interviewId: matchedBooking.interviewId (REUSE)
+        }
+  └─→ NO NEW ROOM CREATED
+
+Step 4b: NO MATCH FOUND
+  └─→ Create NEW interviewRooms record
+  └─→ Generate UUID for roomId
+  └─→ Random problem selection:
+        - Select 2 different random problems from problemRecords
+        - First user gets: problemToAsk, problemToBeAsked
+        - Second user will get: reversed questions
+  └─→ Create interviewRooms record:
+        {
+          roomId: UUID,
+          status: "ACTIVE",
+          interviewType: "PEER",
+          creatorId: userId
+        }
+  └─→ Create freeMockUnmatchedPool record with NEW interviewId
+  └─→ User added to WAITING POOL (waiting for match)
+
+Step 5: SEND EMAIL WITH ROOM DETAILS
+  └─→ Two email templates available:
+
+     IF bookWithFriend === false:
+     Template ID: d-1439c107ecb34dfcb644246b23c0c334
+     Subject: Peer-to-Peer Mock Preparation
+
+     IF bookWithFriend === true:
+     Template ID: d-efc859a711e24e5d8552c3e6fa7e6800
+     Subject: Mock with Friend
+
+     Email Data:
+     {
+       roomId: "${origin}/ide/${roomId}",
+       mockDate: Google Calendar Link,
+       questionToAsk: Problem statement,
+       questionLink: "/ide/coderground?queueIndex=..."
+     }
+
+Step 6: DECREMENT FREE MOCK CREDITS
+  └─→ Update user.freeMockCredits -= 1
+  └─→ New balance = freeMockCredits - 1
+
+Step 7: RESPONSE TO FRONTEND
+  └─→ Return:
+        {
+          message: "Free Mock Booking Successful",
+          flag: true
+        }
+  └─→ Frontend notifies user
+  └─→ User receives email with IDE room link
+
+Step 8: WHEN SECOND USER MATCHES
+  └─→ When both users book for same time:
+        - Room is now "COMPLETE" (both sides matched)
+        - Both users have IDE room link + opponent details
+        - Both users have different problem statements
+        - Both users get email with calendar link
+
+═══════════════════════════════════════════════════════════════════════════════
+                     💳 PAYMENT WEBHOOK FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+Step 1: USER COMPLETES PAYMENT ON RAZORPAY
+  └─→ Razorpay processes payment
+  └─→ Payment status: CAPTURED
+
+Step 2: RAZORPAY SENDS WEBHOOK
+  └─→ POST to: /api/payments/success
+  └─→ Header: x-razorpay-signature (HMAC-SHA256)
+  └─→ Body includes:
+        {
+          payload: {
+            payment: {
+              entity: {
+                id: razorpay_payment_id,
+                amount,
+                currency,
+                method,
+                bank/wallet/vpa,
+                email,
+                contact,
+                order_id
+              }
+            }
+          },
+          created_at: UNIX timestamp
+        }
+
+Step 3: VERIFY WEBHOOK SIGNATURE
+  └─→ Create HMAC-SHA256 hash
+  └─→ Compare with x-razorpay-signature header
+  └─→ If mismatch: Log error, reject
+
+Step 4: UPDATE PAYMENT RECORD
+  └─→ Update payments table:
+        payments.paymentDetails = webhook payload
+  └─→ Now payment has full Razorpay details
+
+Step 5: SEND PAYMENT CONFIRMATION EMAIL
+  └─→ Template ID: d-23a91e4c6a4540ffaace0682fa775a25
+  └─→ To: user email
+  └─→ From: payments@MADAlgos.in
+  └─→ Email Data:
+        {
+          amount: (in rupees/currency),
+          currency,
+          orderId,
+          paymentId,
+          paymentDate (formatted),
+          paymentMethod (Card/UPI/Bank/Wallet),
+          payerEmail,
+          payerMobile
+        }
+
+Step 6: WEBHOOK RESPONSE
+  └─→ Return: { status: "ok" }
+
+═══════════════════════════════════════════════════════════════════════════════
+                      📊 DATABASE STATE AFTER BOOKING
+═══════════════════════════════════════════════════════════════════════════════
+
+MOCK BOOKING STATE:
+  Table: bookedMockInterviews
+    ├─ user → User (by userId)
+    ├─ mock → mockInterviewOfferings (by mockId)
+    ├─ payment → payments (by payment_id)
+    ├─ timeSlot → timeSlot (by timeSlotId)
+    ├─ status: "NEW" (pending Assignment)
+    └─ mockInterviews: quantity
+
+  Table: sessionPool
+    ├─ bookingType: "MOCK"
+    ├─ bookingId: mock.id
+    ├─ personalSessions: 0
+    └─ mockInterviews: quantity
+
+  Table: payments
+    ├─ paymentId: razorpay_payment_id
+    ├─ orderId: razorpay_order_id
+    ├─ paymentFor: "MOCK"
+    └─ paymentDetails: full webhook data
+
+MENTORSHIP BOOKING STATE:
+  Table: bookedMentorships
+    ├─ user → User (by userId)
+    ├─ mentorshipOfferings → mentorshipOfferings (by mentorshipId)
+    ├─ payment → payments (by payment_id)
+    ├─ assignedMentorId: mentorId (if pre-assigned) OR null
+    ├─ status: "ACTIVE" (if mentor assigned) OR "NEW"
+    ├─ expiryDate: now + (duration * 30) days
+    └─ isTermsChecked: true
+
+  Table: sessionPool
+    ├─ bookingType: "MENTORSHIP"
+    ├─ bookingId: mentorship.id
+    ├─ personalSessions: package.personalSessions
+    └─ mockInterviews: package.mockInterviews
+
+FREE MOCK STATE:
+  Table: freeMockUnmatchedPool
+    ├─ user → User (by userId)
+    ├─ subject: problem domain
+    ├─ mockDate: scheduled date
+    ├─ questionToAsk: for this user
+    ├─ questionToBeAsked: for opponent
+    ├─ interviewId → interviewRooms (by interviewId)
+    └─ bookingCountry: region
+
+  Table: interviewRooms
+    ├─ roomId: UUID
+    ├─ status: "ACTIVE"
+    ├─ interviewType: "PEER"
+    ├─ creatorId: first user
+
+═══════════════════════════════════════════════════════════════════════════════
+                        📧 EMAIL TEMPLATES SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+MOCK BOOKING:
+  Template: d-00e8be8160f644b19478628409e9ea7b
+  Trigger: After bookedMockInterviews created
+  Recipients: [userEmail, contact@madalgos.in]
+  Contains: Mock date, time, type
+
+MENTORSHIP PURCHASE:
+  Template: d-13951b407cb146088195e1e3f089425a
+  Trigger: After bookedMentorships created
+  Recipients: [userEmail, contact@madalgos.in]
+  Contains: Duration, type, experience level, order ID
+
+MENTORSHIP - USER CONFIRMATION:
+  Template: d-b475eab8aaff4ab3b24cc89c21897d1d
+  Trigger: If mentor pre-assigned
+  Recipients: userEmail
+  Contains: Mentor name, mentor email
+
+MENTORSHIP - MENTOR NOTIFICATION:
+  Template: d-ca1b04ead5bb40f18b5cc395ef7b3859
+  Trigger: If mentor pre-assigned
+  Recipients: mentorEmail
+  Contains: Mentee name, mentee email
+
+PAYMENT CONFIRMATION:
+  Template: d-23a91e4c6a4540ffaace0682fa775a25
+  Trigger: Razorpay webhook received
+  Recipients: payerEmail
+  Contains: Amount, payment method, date, order/payment IDs
+
+FREE MOCK BOOKING:
+  Template: d-1439c107ecb34dfcb644246b23c0c334
+  Trigger: After freeMockUnmatchedPool created
+  Recipients: userEmail
+  Contains: Room link, calendar link, problem statement
+
+FREE MOCK WITH FRIEND:
+  Template: d-efc859a711e24e5d8552c3e6fa7e6800
+  Trigger: When bookWithFriend = true
+  Recipients: userEmail
+  Contains: Same as above (friend booking variant)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TABLE OF CONTENTS:
+1. DATABASE SCHEMA (Prisma)
+2. DATABASE FUNCTIONS (MongoDB)
+3. MENTOR BOOKING WORKFLOW
+4. MOCK BOOKING WORKFLOW
+5. PAYMENT PROCESSING (Razorpay)
+6. EMAIL SERVICE (SendGrid)
+7. API ENDPOINTS
+8. BOOKING COMPONENTS
+================================================================================
+
+
+=== SECTION 1: DATABASE SCHEMA (PRISMA/SCHEMA.PRISMA) ===
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS FOR DATABASE MODELS
+enum Role {
+  USER
+  INTERVIEWER
+  THIRDPARTYMENTOR
+  ADMIN
+  MENTOR
+  EDITOR
+  ANALYST
+}
+
+enum OrderCompletionStatus {
+  NEW
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLATION_INITIATED
+  REFUNDED
+}
+
+enum Services {
+  MOCK
+  RESUME_BUILDING
+  MENTORSHIP
+  PREMIUMPACKAGE
+  NEGOTIATION
+  THIRDPARTYMOCK
+  THIRDPARTYRESUME
+  THIRDPARTYPREMIUM
+  THIRDPARTYSERVICES
+  CLUB
+  COURSE
+  LIVE_CLASS
+}
+
+enum Region {
+  IND
+  USA
+  GBR
+}
+
+enum Currency {
+  INR
+  USD
+  GBP
+}
+
+enum SessionStatus {
+  SCHEDULED
+  PENDINGFROMUSER
+  COMPLETED
+  CANCELLED
+}
+
+enum EventTypes {
+  MOCK
+  FREE_MOCK
+  RESUME_BUILDING
+  PERSONALSESSION
+  NEGOTIATION
+}
+
+enum EventStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum MocksProvided {
+  DSA
+  SYS_DES
+  BEH_LED
+}
+
+// ====== USER MODEL ======
+model User {
+  id                        Int                         @id @default(autoincrement())
+  firstName                 String
+  lastName                  String?
+  password                  String?
+  mobile                    String?
+  email                     String                      @unique
+  isVerified                Boolean                     @default(false)
+  emailVerificationToken    String?                     @unique @default(uuid())
+  passwordResetToken        String?
+  isInterviewer             Boolean                     @default(false)
+  dispImageLink             String?
+  referralCode              String                      @default(cuid())
+  referredBy                String?
+  joinedTime                DateTime                    @default(now())
+  blobContainerId           String?
+  role                      Role                        @default(USER)
+  bookedMockInterviews      bookedMockInterviews[]
+  bookedResumeBuilds        bookedResumeBuilds[]
+  bookedMentorships         bookedMentorships[]
+  interviewerDetails        interviewerDetails[]
+  Testimonials              Testimonials[]
+  exploreBookings           exploreBookings[]
+  bookedNegotiations        bookedNegotiations[]
+  interviewRooms            interviewRooms[]
+  freeMockMatchedPool       freeMockMatchedPool[]
+  bookedExplorePackages     bookedExplorePackages[]
+  candidateProfile          candidateProfile[]
+  freeMockUnmatchedPool     freeMockUnmatchedPool[]
+  thirdPartyMentorProfile   thirdPartyMentorProfile?
+  freeMockCredits           Int                         @default(6)
+  freeMockInviteAFriendPool freeMockInviteAFriendPool[]
+  thirdpartymentorbookings  thirdpartymentorbookings[]
+  courseOrders              courseOrders[]
+  courseProgress            courseProgress[]
+  CourseReviews             CourseReviews[]
+  mentorFeedback            mentorFeedback[]
+  eventDetails              eventDetails[]
+}
+
+// ====== MENTOR/INTERVIEWER DETAILS MODEL ======
+model interviewerDetails {
+  id                     Int                      @id @default(autoincrement())
+  interviewer            User                     @relation(fields: [interviewerId], references: [id])
+  interviewerId          Int
+  linkedin               String?
+  location               String?                  @default("INDIA")
+  description            String?
+  quote                  String?
+  careerHistory          Json
+  skills                 Json
+  expYears               Int                      @default(0)
+  mentorFeedback         mentorFeedback[]
+  currentNumberOfMentees Int?                     @default(0)
+  maxNumberOfMentees     Int?                     @default(1)
+  targetAudience         Json
+  joiningDate            DateTime?                @default(now())
+  isActive               Boolean                  @default(true)
+  PSCharges              Int?                     @default(500)  // Personal Session Charges
+  MockCharges            Int?                     @default(1000) // Mock Interview Charges
+  timestamp              String?
+  profileId              String?                  @unique @default(uuid())
+  isVerified             Boolean                  @default(false)
+  posterLink             String?
+  mentorPaymentsPool     mentorPaymentsPool[]
+  FirstPartyMentorSlots  FirstPartyMentorSlots[]
+  sessionHistory         sessionHistory[]
+  AskQuestion            AskQuestion[]
+  maxFreeTrails          Int?                     @default(3)
+  toggleFreeTrial        Boolean?                 @default(true)
+}
+
+model mentorFeedback {
+  id       Int                 @id @default(autoincrement())
+  mentor   interviewerDetails? @relation(fields: [mentorId], references: [id])
+  mentorId Int
+  rating   Int?
+  review   String?
+  user     User                @relation(fields: [userId], references: [id])
+  userId   Int
+  dateTime DateTime            @default(now())
+}
+
+// ====== MOCK INTERVIEW OFFERING MODEL ======
+model timeSlot {
+  id                   Int                    @id @default(autoincrement())
+  startTime            String
+  endTime              String
+  bookedMockInterviews bookedMockInterviews[]
+}
+
+model experience {
+  id                         Int                          @id @default(autoincrement())
+  minYears                   Int
+  maxYears                   Int
+  expString                  String?
+  mockInterviewOfferings     mockInterviewOfferings[]
+  resumeOfferings            resumeOfferings[]
+  mentorshipOfferings        mentorshipOfferings[]
+  mockInterviewOfferingsTEST mockInterviewOfferingsTEST[]
+}
+
+model mockInterviewOfferings {
+  id                   Int                    @id @default(autoincrement())
+  mockType             MocksProvided          // DSA, SYS_DES, BEH_LED
+  price                Float
+  offerPrice           String?
+  region               Region
+  currency             Currency
+  normalOrdering       Boolean                @default(true)
+  description          String?
+  rushPrice            Int
+  exp                  experience             @relation(fields: [expId], references: [id])
+  expId                Int
+  bookedMockInterviews bookedMockInterviews[]
+}
+
+model bookedMockInterviews {
+  id                           Int                         @id @default(autoincrement())
+  user                         User                        @relation(fields: [userId], references: [id])
+  userId                       Int
+  assignmentDate               DateTime?
+  assignedMentor               Int?
+  mock                         mockInterviewOfferings      @relation(fields: [mockId], references: [id])
+  mockId                       Int
+  mockDate                     DateTime                    @db.Date
+  payment                      payments                    @relation(fields: [payment_id], references: [paymentId])
+  payment_id                   String
+  timeSlot                     timeSlot                    @relation(fields: [timeSlotId], references: [id])
+  timeSlotId                   Int
+  orderDate                    DateTime                    @default(now())
+  bookingCountry               Region?
+  status                       OrderCompletionStatus       @default(NEW)
+  mockInterviews               Int                         // quantity of mocks purchased
+  mockInterviewOfferingsTEST   mockInterviewOfferingsTEST? @relation(fields: [mockInterviewOfferingsTESTId], references: [id])
+  mockInterviewOfferingsTESTId Int?
+  isTermsChecked               Boolean
+  usedCouponId                 Int?
+  userRescheduled              Int?                        @default(3)
+  isOneMock                    Int?                        @default(0)
+  ideLink                      String?
+  zoomID                       String?
+}
+
+// ====== MENTORSHIP OFFERING MODEL ======
+model mentorshipOfferings {
+  id                Int                 @id @default(autoincrement())
+  duration          Int                 // 1, 3, or 6 months
+  ifSolo            Boolean             @default(true)
+  groupSizes        Int                 @default(0)
+  exp               experience          @relation(fields: [expId], references: [id])
+  expId             Int
+  price             Float
+  offerPrice        String?
+  region            Region
+  currency          Currency
+  description       String?
+  packageId         Int
+  package           packageDetails      @relation(fields: [packageId], references: [id])
+  bookedMentorships bookedMentorships[]
+}
+
+model packageDetails {
+  id                  Int                   @id
+  duration            Int
+  personalSessions    Int                   @default(0)  // Number of personal sessions included
+  mockInterviews      Int                   @default(0)  // Number of mock interviews included
+  mentorshipOfferings mentorshipOfferings[]
+}
+
+model bookedMentorships {
+  id                  Int                   @id @default(autoincrement())
+  user                User                  @relation(fields: [userId], references: [id])
+  userId              Int
+  payment             payments              @relation(fields: [payment_id], references: [paymentId])
+  payment_id          String
+  orderDate           DateTime              @default(now())
+  expiryDate          DateTime?
+  mentorshipOfferings mentorshipOfferings   @relation(fields: [mentorshipId], references: [id])
+  mentorshipId        Int
+  assignedMentorId    Int?
+  bookingCountry      Region?
+  status              OrderCompletionStatus @default(NEW)
+  isTermsChecked      Boolean
+  usedCouponId        Int?
+  isFreeTrial         Boolean               @default(false)
+}
+
+// ====== SESSION POOL MODEL ======
+model sessionPool {
+  poolId           Int      @id @default(autoincrement())
+  bookingType      Services // Type of booking: MOCK / MENTORSHIP etc.
+  bookingId        Int      // Any type of bookingId: MOCK / MENTORSHIP etc.
+  personalSessions Int      @default(0)
+  mockInterviews   Int      @default(0)
+}
+
+// ====== EVENT DETAILS MODEL ======
+model eventDetails {
+  eventId       Int           @id @default(autoincrement())
+  googleEventId String        @default("")
+  coderground   String        @default("")
+  joiningLinkId String        @default("")
+  eventType     EventTypes    // Type of event - MOCK / RESUME_BUILDING / MENTORSHIP etc.
+  bookingType   Services      // Type of booking: MOCK / MENTORSHIP etc.
+  bookingId     Int
+  interviewerId Int?
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  startFrom     DateTime
+  endsOn        DateTime
+  eventStatus   EventStatus   @default(ACTIVE)
+  status        SessionStatus // SCHEDULED / COMPLETED / CANCELLED
+  duration      Int?
+}
+
+// ====== PAYMENT MODEL ======
+model payments {
+  paymentId                String                     @id
+  orderId                  String                     @unique
+  paymentDetails           Json?
+  paymentFor               Services
+  bookedMockInterviews     bookedMockInterviews[]
+  bookedResumeBuilds       bookedResumeBuilds[]
+  bookedMentorships        bookedMentorships[]
+  exploreBookings          exploreBookings[]
+  bookedNegotiations       bookedNegotiations[]
+  bookedExplorePackages    bookedExplorePackages[]
+  thirdpartymentorbookings thirdpartymentorbookings[]
+  courseOrders             courseOrders[]
+}
+
+model mentorPaymentsPool {
+  id             Int                @id @default(autoincrement())
+  mentor         interviewerDetails @relation(fields: [mentorId], references: [id])
+  mentorId       Int
+  monthYear      Int
+  completedPS    Int                @default(0)
+  completedMM    Int                @default(0)
+}
+
+model resumeOfferings {
+  id                 Int                  @id @default(autoincrement())
+  exp                experience           @relation(fields: [expId], references: [id])
+  expId              Int
+  bookedResumeBuilds bookedResumeBuilds[]
+  price              Float
+  offerPrice         String?
+  region             Region
+  currency           Currency
+  description        String?
+}
+
+model bookedResumeBuilds {
+  id             Int                   @id @default(autoincrement())
+  resumeOffering resumeOfferings       @relation(fields: [resumeId], references: [id])
+  resumeId       Int
+  user           User                  @relation(fields: [userId], references: [id])
+  userId         Int
+  payment        payments              @relation(fields: [payment_id], references: [paymentId])
+  payment_id     String
+  orderDate      DateTime              @default(now())
+  bookingCountry Region?
+  status         OrderCompletionStatus @default(NEW)
+  isTermsChecked Boolean
+  usedCouponId   Int?
+}
+
+model premiumPackages {
+  id                    Int                     @id @default(autoincrement())
+  companyName           String
+  region                Region
+  currency              Currency
+  personalSessionPrice  Int                     @default(0)
+  mockInterviewPrice    Int                     @default(0)
+  personalSessions      Int                     @default(0)
+  mockInterviews        Int                     @default(0)
+  bookedExplorePackages bookedExplorePackages[]
+}
+
+model bookedExplorePackages {
+  id                Int                   @id @default(autoincrement())
+  user              User                  @relation(fields: [userId], references: [id])
+  userId            Int
+  payment           payments              @relation(fields: [payment_id], references: [paymentId])
+  payment_id        String
+  orderDate         DateTime              @default(now())
+  assignedMentorId  Int?
+  bookingCountry    Region?
+  status            OrderCompletionStatus @default(NEW)
+  isTermsChecked    Boolean
+  premiumPackages   premiumPackages       @relation(fields: [premiumPackagesId], references: [id])
+  premiumPackagesId Int
+}
+
+// Free mock peer-to-peer models
+model freeMockUnmatchedPool {
+  id               Int    @id @default(autoincrement())
+  user             User   @relation(fields: [userId], references: [id])
+  userId           Int
+  subject          String
+  bookingCountry   Region?
+  mockDate         DateTime
+  questionToAsk    String
+  questionToBeAsked String
+  interviewId      Int
+}
+
+model interviewRooms {
+  id       Int    @id @default(autoincrement())
+  roomId   String
+  status   String
+  creatorId Int
+}
+
+================================================================================
+
+=== SECTION 2: DATABASE FUNCTIONS (LIB/MENTORSHIPDB.JS - MONGODB) ===
+
+import clientPromise from "./mongodb";
+
+export async function getMentorshipOfferings() {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  return db.collection("mentorshipOfferings").find({ active: true }).toArray();
+}
+
+export async function getExperienceList() {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  return db.collection("experience").find({}).sort({ minYears: 1 }).toArray();
+}
+
+export async function getBookingsToggle() {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  return db.collection("bookingsToggle").find({ category: "MENTORSHIP" }).toArray();
+}
+
+export async function getUserByEmail(email) {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  return db.collection("users").findOne({ email });
+}
+
+export async function updateUserMobile(email, mobile) {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  await db.collection("users").updateOne({ email }, { $set: { mobile } });
+}
+
+export async function savePayment(paymentId, orderId, paymentFor, details) {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  await db.collection("payments").updateOne(
+    { paymentId },
+    { $set: { orderId, paymentFor, paymentDetails: details, updatedAt: new Date() } },
+    { upsert: true }
+  );
+}
+
+export async function createBookedMentorship(data) {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  const result = await db.collection("bookedMentorships").insertOne({ ...data, createdAt: new Date() });
+  return { _id: result.insertedId, ...data };
+}
+
+export async function createSessionPool(data) {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  await db.collection("sessionPool").insertOne({ ...data, createdAt: new Date() });
+}
+
+================================================================================
+
+=== SECTION 3: LIBRARY FILES ===
+
+// LIB/MONGODB.JS
+import { MongoClient } from "mongodb";
+
+const uri = process.env.MONGODB_URI;
+if (!uri) throw new Error("MONGODB_URI is not defined in .env");
+
+let client;
+let clientPromise;
+
+if (process.env.NODE_ENV === "development") {
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri);
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise;
+} else {
+  client = new MongoClient(uri);
+  clientPromise = client.connect();
+}
+
+export default clientPromise;
+
+// LIB/PRISMA.TS
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+// Prevent multiple instances of Prisma Client in development mode (Hot Reloading)
+const prisma = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+export default prisma;
+
+================================================================================
+
+=== SECTION 4: EMAIL SERVICE (UTILS/EMAILOPS.JS) ===
+
+// Email Functions
+import sgMail from "@sendgrid/mail";
+
+async function sendEmail({
+  senderId, 
+  receiverId, 
+  templateId, 
+  dynamic_template_data
+}) {
+  try {
+    const emailData = {
+      from: senderId,
+      to: receiverId,
+      templateId: templateId,
+      dynamic_template_data: dynamic_template_data
+    };
+  
+    sgMail.setApiKey(process.env.SendGridDevKey);
+    await sgMail.send(emailData);
+  
+    console.log("Email Sent");
+
+  } catch (err) {
+    console.log(`Email not Sent to ${receiverId}`);
+    console.error(err);
+  }
+}
+
+module.exports = { sendEmail };
+
+// SendGrid Template IDs Used:
+// d-13951b407cb146088195e1e3f089425a = Mentorship Program Purchase Confirmation
+// d-b475eab8aaff4ab3b24cc89c21897d1d = Booking Confirmation to User
+// d-ca1b04ead5bb40f18b5cc395ef7b3859 = Booking Confirmation to Mentor
+// d-00e8be8160f644b19478628409e9ea7b = Mock Confirmation Email
+// d-23a91e4c6a4540ffaace0682fa775a25 = Payment Confirmation
+// d-1439c107ecb34dfcb644246b23c0c334 = Free Mock Booking Email
+// d-efc859a711e24e5d8552c3e6fa7e6800 = Free Mock With Friend Email
+
+================================================================================
+
+=== SECTION 5: PAYMENT PROCESSING API ENDPOINTS ===
+
+// PAGES/API/PAYMENTS/ORDERS.JS - Create Razorpay Order
+
+import Razorpay from "razorpay";
+import prisma from "prisma/client.ts";
+import { nanoid } from "nanoid";
+
+export default async (req, res) => {
+  const { product } = req.query;
+  const { id, quantity, price, orderType, currency } = req.body;
+  
+  try {
+    const instance = new Razorpay({
+      key_secret: process.env.razorPay_key_secret,
+      key_id: process.env.razorPay_key_id,
+    });
+    
+    let prodDetails = null;
+    
+    if (product == "mock") {
+      prodDetails = await prisma.mockInterviewOfferings.findUnique({
+        where: { id: id },
+      });
+    } else if (product == "resume") {
+      prodDetails = await prisma.resumeOfferings.findUnique({
+        where: { id: id },
+      });
+    } else if (product == "mentorship") {
+      prodDetails = await prisma.mentorshipOfferings.findUnique({
+        where: { id: id },
+      });
+    } else if (product == "negotiation") {
+      prodDetails = await prisma.negotiationOfferings.findUnique({
+        where: { id: id },
+      });
+    } else if (product == "explore") {
+      prodDetails = await prisma.explore.findUnique({
+        where: { id: id },
+      });
+    } else if (product == "premiumPackages") {
+      prodDetails = await prisma.premiumPackages.findUnique({
+        where: { id: id },
+      });
+    } else if (product == "course") {
+      prodDetails = await prisma.course.findUnique({
+        where: { id: id },
+      });
+    }
+
+    if (prodDetails) {
+      const options = {
+        amount: orderType === "Normal Ordering"
+          ? price * quantity * 100
+          : prodDetails.rushPrice * (quantity * 100),
+        currency: currency || prodDetails.currency,
+        receipt: nanoid(),
+        payment_capture: 1,
+      };
+      
+      const order = await instance.orders.create(options);
+      if (!order) return res.status(500).send("Some error occured");
+      res.json(order);
+      
+    } else if (product == "THIRDPARTYSERVICES") {
+      const options = {
+        amount: price * 100,
+        currency: "INR",
+        receipt: nanoid(),
+        payment_capture: 1,
+      };
+      const order = await instance.orders.create(options);
+      if (!order) return res.status(500).send("Some error occured");
+      res.json(order);
+    }
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+// PAGES/API/PAYMENTS/NEW-PAYMENT.JS - Verify Payment and Create Payment Record
+
+import crypto from "crypto";
+import prisma from "prisma/client.ts";
+
+export default async (req, res) => {
+  try {
+    const {
+      orderCreationId,
+      paymentFor,
+      razorpayPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
+    } = req.body;
+    
+    const shasum = crypto.createHmac("sha256", process.env.razorPay_key_secret);
+    shasum.update(`${orderCreationId}|${razorpayPaymentId}`);
+    const digest = shasum.digest("hex");
+    
+    if (digest !== razorpaySignature) {
+      return res.status(400).json({ msg: "Transaction not legit!" });
+    } else {
+      // Create new payment record
+      const newPayment = await prisma.payments.create({
+        data: {
+          orderId: razorpayOrderId,
+          paymentId: razorpayPaymentId,
+          paymentFor: paymentFor,
+        },
+      });
+      return res.json({ status: "ok" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
+};
+
+// PAGES/API/PAYMENTS/SUCCESS.JS - Webhook Handler for Payment Success
+
+import sgMail from "@sendgrid/mail";
+import prisma from "prisma/client.ts";
+import crypto from "crypto";
+
+export default async (req, res) => {
+  const secret = "123456789"; // Change this to official secret
+
+  const shasum = crypto.createHmac("sha256", secret);
+  shasum.update(JSON.stringify(req.body));
+  const digest = shasum.digest("hex");
+
+  if (digest === req.headers["x-razorpay-signature"]) {
+    console.log(
+      `Updating payment ${req.body.payload.payment.entity.id} with payment data`
+    );
+    
+    const updatePayment = await prisma.payments.update({
+      where: {
+        paymentId: req.body.payload.payment.entity.id,
+      },
+      data: {
+        paymentDetails: req.body.payload.payment.entity,
+      },
+    });
+    
+    console.log(
+      `Payment ID ${req.body.payload.payment.entity.id} updated successfully`
+    );
+    
+    // Convert Razorpay UNIX timestamp to date string
+    const tempPaymentDate = new Date(req.body.created_at * 1000);
+    const paymentDate = tempPaymentDate.toLocaleDateString("en-GB");
+
+    // SEND PAYMENT CONFIRMATION MAIL
+    sgMail.setApiKey(process.env.SendGridDevKey);
+    const msg = {
+      to: req.body.payload.payment.entity.email,
+      from: "payments@MADAlgos.in",
+      templateId: "d-23a91e4c6a4540ffaace0682fa775a25",
+      dynamic_template_data: {
+        amount: req.body.payload.payment.entity.amount / 100,
+        currency: req.body.payload.payment.entity.currency,
+        orderId: req.body.payload.payment.entity.order_id,
+        paymentId: req.body.payload.payment.entity.id,
+        paymentDate: paymentDate,
+        paymentMethod: `${
+          req.body.payload.payment.entity.method == null
+            ? ""
+            : req.body.payload.payment.entity.method
+        } ${
+          req.body.payload.payment.entity.bank == null
+            ? ""
+            : req.body.payload.payment.entity.bank
+        } ${
+          req.body.payload.payment.entity.wallet == null
+            ? ""
+            : req.body.payload.payment.entity.wallet
+        } ${
+          req.body.payload.payment.entity.vpa == null
+            ? ""
+            : req.body.payload.payment.entity.vpa
+        }`,
+        payerEmail: req.body.payload.payment.entity.email,
+        payerMobile: req.body.payload.payment.entity.contact,
+      },
+    };
+
+    try {
+      await sgMail.send(msg);
+    } catch (error) {
+      console.error(error);
+      if (error.response) {
+        console.error(error.response.body);
+      }
+    }
+
+    res.json({ status: "ok" });
+  } else {
+    console.log("Signature verification failed");
+  }
+};
+
+================================================================================
+
+=== SECTION 6: MOCK BOOKING API ENDPOINT ===
+
+// PAGES/API/BOOK-MOCK.JS - Complete Mock Booking Workflow
+
+import prisma from "prisma/client.ts";
+import sgMail from "@sendgrid/mail";
+
+export default async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Invalid Method" });
+  }
+  
+  const {
+    userEmail,
+    userPhone,
+    mockId,
+    selectedTimeSlot,
+    selectedDate,
+    orderId,
+    paymentId,
+    bookingCountry,
+    quantity,
+    isTermsChecked,
+    couponCode,
+    OfferPrice,
+    option,
+    data,
+    day
+  } = req.body;
+
+  console.log("Selected Date for Email", selectedDate);
+  
+  if (isTermsChecked == false) {
+    return res.status(400).json({ error: "terms and agreement not checked" });
+  }
+
+  try {
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+    });
+
+    if (!user) {
+      return res.status(422).json({ error: "user not available" });
+    } else if (userPhone && !user.mobile) {
+      await prisma.user.update({
+        where: { email: userEmail },
+        data: { mobile: userPhone },
+      });
+    }
+
+    // Process coupon if provided
+    let usedCouponId = null;
+    if (couponCode !== null) {
+      const couponInfo = await prisma.couponCodes.findFirst({
+        where: { couponCode },
+      });
+
+      const checkCouponAvailablity = await prisma.couponHistory.findMany({
+        where: { couponCode, userId: user.id },
+      });
+
+      if (checkCouponAvailablity[0] === undefined) {
+        const newCoupon = await prisma.couponHistory.create({
+          data: {
+            userId: user.id,
+            couponCode,
+            Status: false,
+            OfferPrice,
+          },
+        });
+        usedCouponId = newCoupon.id;
+      } else {
+        usedCouponId = checkCouponAvailablity[0].id;
+        const updateCheckCoupon = await prisma.couponHistory.updateMany({
+          where: { couponCode, userId: user.id },
+          data: { OfferPrice, Status: false },
+        });
+      }
+
+      const updateUserCount = await prisma.couponCodes.updateMany({
+        where: { couponCode },
+        data: { UserCount: { increment: 1 } },
+      });
+    }
+
+    // Create mock booking
+    const mock = await prisma.bookedMockInterviews.create({
+      data: {
+        userId: user.id,
+        mockId: mockId,
+        mockDate: selectedDate,
+        payment_id: paymentId,
+        timeSlotId: selectedTimeSlot,
+        bookingCountry: bookingCountry,
+        mockInterviews: quantity,
+        isTermsChecked: isTermsChecked,
+        usedCouponId: usedCouponId,
+      },
+    });
+
+    // Populate eventsPool Table
+    const eventsPool = await prisma.sessionPool.create({
+      data: {
+        bookingType: "MOCK",
+        bookingId: mock.id,
+        personalSessions: 0,
+        mockInterviews: quantity,
+      },
+    });
+
+    console.log("eventsPool Created: ", eventsPool);
+
+    // Get mock details and time slot info
+    const mockDetails = await prisma.mockInterviewOfferings.findUnique({
+      where: { id: mockId },
+    });
+
+    const timeSlot = await prisma.timeSlot.findUnique({
+      where: { id: selectedTimeSlot },
+    });
+
+    // SEND MOCK CONFIRMATION MAIL
+    sgMail.setApiKey(process.env.SendGridDevKey);
+    
+    if (process.env.NEXT_PUBLIC_MOCK == "MockSlotSelectionFeature" && option == "single") {
+      function convertToISOString(dateString, timeString) {
+        const months = {
+          Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+          Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+        };
+
+        const parts = dateString.split(" ");
+        const day = parseInt(parts[0]);
+        const monthName = parts[1];
+        const year = new Date().getFullYear();
+        const month = months[monthName];
+        const timeParts = timeString.split(" ");
+        let hour = parseInt(timeParts[0]);
+        const isAM = timeParts[1] === "am";
+        
+        if (!isAM && hour === 12) hour = 0;
+        
+        const utcDate = new Date(Date.UTC(year, month, day, hour + (isAM ? 0 : 12)));
+        return utcDate.toISOString();
+      }
+
+      const { dayno, slotTime } = data;
+      let isoString = convertToISOString(day, slotTime);
+      const assignmentDate = new Date(isoString);
+      
+      const formattedDate = assignmentDate.toLocaleDateString("en-US", {
+        timeZone: "UTC",
+        day: "numeric",
+        month: "numeric",
+        year: "numeric",
+      });
+      
+      const formattedStartTime = assignmentDate.toLocaleString("en-US", {
+        timeZone: "UTC",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: true,
+      });
+      
+      const endTimeDate = new Date(assignmentDate.getTime() + 60 * 60 * 1000);
+      const formattedEndTime = endTimeDate.toLocaleString("en-US", {
+        timeZone: "UTC",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: true,
+      });
+      
+      const msg = {
+        to: [userEmail, "contact@madalgos.in"],
+        from: "orders@MADAlgos.in",
+        templateId: "d-00e8be8160f644b19478628409e9ea7b",
+        dynamic_template_data: {
+          userName: user.firstName,
+          mockType: mockDetails.mockType,
+          mockDate: new Date(isoString).toLocaleDateString("en-US"),
+          mockTimeSlot: `${formattedStartTime} to ${formattedEndTime}`,
+        },
+      };
+      
+      try {
+        await sgMail.send(msg);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      const msg = {
+        to: [userEmail, "contact@madalgos.in"],
+        from: "orders@MADAlgos.in",
+        templateId: "d-00e8be8160f644b19478628409e9ea7b",
+        dynamic_template_data: {
+          userName: user.firstName,
+          mockType: mockDetails.mockType,
+          mockDate: new Date(selectedDate).toLocaleDateString("en-GB"),
+          mockTimeSlot: `${timeSlot.startTime} to ${timeSlot.endTime}`,
+        },
+      };
+      
+      try {
+        await sgMail.send(msg);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    return res.status(201).json({
+      message: "booking created",
+      paymentId: paymentId,
+      orderId: orderId,
+    });
+    
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Server Error" });
+  }
+};
+
+================================================================================
+
+=== SECTION 7: MENTORSHIP BOOKING API ENDPOINT ===
+
+// PAGES/API/BOOK-MENTORSHIP.JS - Complete Mentorship Booking Workflow
+
+import prisma from "prisma/client.ts";
+import sgMail from "@sendgrid/mail";
+
+function getExpiryDate(date, months) {
+  const newDate = new Date(date);
+  newDate.setUTCDate(date.getUTCDate() + months * 30);
+  return newDate;
+}
+
+export default async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Invalid Method" });
+  }
+
+  const {
+    userEmail,
+    userPhone,
+    mentorshipId,
+    orderId,
+    paymentId,
+    bookingCountry,
+    isTermsChecked,
+    couponCode,
+    OfferPrice,
+    mentorId
+  } = req.body;
+
+  if (isTermsChecked == false) {
+    return res.status(400).json({ error: "terms and agreement not checked" });
+  }
+
+  try {
+    // Find User
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+    });
+
+    if (!user) {
+      return res.status(422).json({ error: "user not available" });
+    } else if (userPhone && !user.mobile) {
+      await prisma.user.update({
+        where: { email: userEmail },
+        data: { mobile: userPhone },
+      });
+    }
+
+    // Find mentorship offering details
+    const mentorshipDetails = await prisma.mentorshipOfferings.findUnique({
+      where: { id: mentorshipId },
+      include: { package: true },
+    });
+
+    // Process coupon if provided
+    let usedCouponId = null;
+    if (couponCode !== null) {
+      const couponInfo = await prisma.couponCodes.findFirst({
+        where: { couponCode },
+      });
+
+      const checkCouponAvailablity = await prisma.couponHistory.findMany({
+        where: { couponCode, userId: user.id },
+      });
+
+      if (checkCouponAvailablity[0] === undefined) {
+        const newCoupon = await prisma.couponHistory.create({
+          data: {
+            userId: user.id,
+            couponCode,
+            Status: false,
+            OfferPrice,
+          },
+        });
+        usedCouponId = newCoupon.id;
+      } else {
+        usedCouponId = checkCouponAvailablity[0].id;
+        const updateCheckCoupon = await prisma.couponHistory.updateMany({
+          where: { couponCode, userId: user.id },
+          data: { OfferPrice, Status: false },
+        });
+      }
+
+      const updateUserCount = await prisma.couponCodes.updateMany({
+        where: { couponCode },
+        data: { UserCount: { increment: 1 } },
+      });
+    }
+
+    // Create mentorship booking with pre-assigned mentor
+    if (mentorId != undefined) {
+      const currentDate = new Date();
+      const expiryDate = getExpiryDate(currentDate, mentorshipDetails.duration);
+      
+      const mentorshipOrder = await prisma.bookedMentorships.create({
+        data: {
+          userId: user.id,
+          mentorshipId: mentorshipId,
+          payment_id: paymentId,
+          bookingCountry: bookingCountry,
+          isTermsChecked: isTermsChecked,
+          usedCouponId: usedCouponId,
+          assignedMentorId: mentorId,
+          status: "ACTIVE",
+          expiryDate: expiryDate,
+        },
+      });
+
+      // Populate SessionPool Table - To Store the count of sessions
+      const newPool = await prisma.sessionPool.create({
+        data: {
+          bookingType: "MENTORSHIP",
+          bookingId: mentorshipOrder.id,
+          personalSessions: mentorshipDetails.package.personalSessions,
+          mockInterviews: mentorshipDetails.package.mockInterviews,
+        },
+      });
+
+      // Get experience level
+      const exp = await prisma.experience.findUnique({
+        where: { id: mentorshipDetails.expId },
+      });
+
+      // Get mentor details
+      const mentorData = await prisma.interviewerDetails.findUnique({
+        where: { id: mentorId },
+        include: { interviewer: true },
+      });
+
+      console.log(mentorData);
+
+      // Send emails
+      const mentorshipProgramPurchaseConfirmation = {
+        from: "orders@MADAlgos.in",
+        to: [userEmail, "contact@madalgos.in"],
+        templateId: "d-13951b407cb146088195e1e3f089425a",
+        dynamic_template_data: {
+          userName: user.firstName,
+          userExpString: exp.expString,
+          orderId: orderId,
+          duration: mentorshipDetails.duration,
+          type: mentorshipDetails.ifSolo ? "Solo" : "Group",
+          groupSize: mentorshipDetails.groupSizes || 0,
+        },
+      };
+
+      const BookingConfirmationToUser = {
+        from: "alerts@MADAlgos.in",
+        to: user.email,
+        templateId: "d-b475eab8aaff4ab3b24cc89c21897d1d",
+        dynamic_template_data: {
+          userName: `${user.firstName} ${user.lastName != null ? user.lastName : ""}`,
+          mentorName: `${mentorData.interviewer.firstName} ${
+            mentorData.interviewer.lastName != null
+              ? mentorData.interviewer.lastName
+              : ""
+          }`,
+          mentorEmail: mentorData.interviewer.email,
+        },
+      };
+
+      const BookingConfirmationToMentor = {
+        from: "alerts@MADAlgos.in",
+        to: mentorData.interviewer.email,
+        templateId: "d-ca1b04ead5bb40f18b5cc395ef7b3859",
+        dynamic_template_data: {
+          userName: `${mentorData.interviewer.firstName}`,
+          menteeName: `${user.firstName} ${
+            user.lastName != null ? user.lastName : ""
+          }`,
+          menteeEmail: user.email,
+        },
+      };
+
+      try {
+        sgMail.setApiKey(process.env.SendGridDevKey);
+        await sgMail.send(mentorshipProgramPurchaseConfirmation);
+        await sgMail.send(BookingConfirmationToUser);
+        await sgMail.send(BookingConfirmationToMentor);
+        console.log(
+          "mentorship booking confirmation mail sent for order " + orderId
+        );
+        return res.status(201).json({
+          message: "mentorship Program Purchase Confirmed",
+          paymentId: paymentId,
+          orderId: orderId,
+        });
+      } catch (err) {
+        console.log("message NOT sent");
+        console.error(err);
+      }
+
+      return res.status(201).json({
+        message: "Mentorship Program Purchase Confirmed",
+        paymentId: paymentId,
+        orderId: orderId,
+      });
+    }
+
+    // Create mentorship booking without pre-assigned mentor
+    const currentDate = new Date();
+    const expiryDate = getExpiryDate(currentDate, mentorshipDetails.duration);
+    
+    const mentorshipOrder = await prisma.bookedMentorships.create({
+      data: {
+        userId: user.id,
+        mentorshipId: mentorshipId,
+        payment_id: paymentId,
+        bookingCountry: bookingCountry,
+        isTermsChecked: isTermsChecked,
+        usedCouponId: usedCouponId,
+        expiryDate: expiryDate,
+      },
+    });
+
+    // Populate SessionPool Table
+    const newPool = await prisma.sessionPool.create({
+      data: {
+        bookingType: "MENTORSHIP",
+        bookingId: mentorshipOrder.id,
+        personalSessions: mentorshipDetails.package.personalSessions,
+        mockInterviews: mentorshipDetails.package.mockInterviews,
+      },
+    });
+
+    // Get experience level
+    const exp = await prisma.experience.findUnique({
+      where: { id: mentorshipDetails.expId },
+    });
+
+    // SEND Mentorship booking confirmation MAIL
+    const mentorshipProgramPurchaseConfirmation = {
+      from: "orders@MADAlgos.in",
+      to: [userEmail, "contact@madalgos.in"],
+      templateId: "d-13951b407cb146088195e1e3f089425a",
+      dynamic_template_data: {
+        userName: user.firstName,
+        userExpString: exp.expString,
+        orderId: orderId,
+        duration: mentorshipDetails.duration,
+        type: mentorshipDetails.ifSolo ? "Solo" : "Group",
+        groupSize: mentorshipDetails.groupSizes || 0,
+      },
+    };
+
+    try {
+      sgMail.setApiKey(process.env.SendGridDevKey);
+      await sgMail.send(mentorshipProgramPurchaseConfirmation);
+      console.log(
+        "mentorship booking confirmation mail sent for order " + orderId
+      );
+      return res.status(201).json({
+        message: "mentorship Program Purchase Confirmed",
+        paymentId: paymentId,
+        orderId: orderId,
+      });
+    } catch (err) {
+      console.log("message NOT sent");
+      console.error(err);
+    }
+
+    return res.status(201).json({
+      message: "Mentorship Program Purchase Confirmed",
+      paymentId: paymentId,
+      orderId: orderId,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Server Error" });
+  }
+};
+
+================================================================================
+
+=== SECTION 8: FREE MOCK BOOKING API ENDPOINT ===
+
+// PAGES/API/FREEMOCK/BOOK-FREE-MOCK.JS - Peer-to-Peer Free Mock Booking
+
+import prisma from "prisma/client.ts";
+import axios from "axios";
+import moment from "moment-timezone";
+import { v4 as uuidV4 } from "uuid";
+import { sendEmail } from "../../../utils/EmailOps";
+
+async function sendEmails(res1, roomid, isoDateStart, isoDateEnd, req) {
+  await sendEmail({
+    senderId: "alerts@MADAlgos.in",
+    receiverId: [res1.user.email],
+    templateId: "d-1439c107ecb34dfcb644246b23c0c334",
+    dynamic_template_data: {
+      roomId: `${req.headers.origin}/ide/${roomid}`,
+      mockDate: `https://calendar.google.com/calendar/u/0/r/eventedit?text=Peer+to+Peer+Mock&dates=${isoDateStart}/${isoDateEnd}`,
+      questionToAsk: res1.questionToAsk,
+      questionLink: `${req.headers.origin}/ide/coderground?queueIndex=${encodeURI(res1.questionToAsk)}&isLegacy=true`,
+    },
+  });
+}
+
+async function sendEmailsForBookWithFriend(
+  res1,
+  roomid,
+  isoDateStart,
+  isoDateEnd,
+  req
+) {
+  await sendEmail({
+    senderId: "alerts@MADAlgos.in",
+    receiverId: [res1.user.email],
+    templateId: "d-efc859a711e24e5d8552c3e6fa7e6800",
+    dynamic_template_data: {
+      roomId: `${req.headers.origin}/ide/${roomid}`,
+      mockDate: `https://calendar.google.com/calendar/u/0/r/eventedit?text=Peer+to+Peer+Mock&dates=${isoDateStart}/${isoDateEnd}`,
+      questionToAsk: res1.questionToAsk,
+      questionLink: `${req.headers.origin}/ide/coderground?queueIndex=${encodeURI(res1.questionToAsk)}&isLegacy=true`,
+    },
+  });
+}
+
+export default async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Invalid Method" });
+  }
+
+  const { userId, subject, email, userName, mockDate, bookWithFriend } =
+    req.body;
+  let region = null;
+
+  await axios
+    .get("https://ipapi.co/json/")
+    .then((res) => (region = res.data.country_code_iso3))
+    .catch((Err) => console.log(Err));
+
+  try {
+    // Check free mock credits
+    const { freeMockCredits } = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { freeMockCredits: true },
+    });
+
+    if (freeMockCredits < 1) {
+      return res
+        .status(200)
+        .json({ flag: false, message: "No Free Credits Remaining" });
+    }
+
+    const parsedDate = moment(mockDate).format();
+
+    // Check for matching bookings
+    const waitingList = await prisma.freeMockUnmatchedPool.findMany();
+
+    const isMatch = waitingList.filter(
+      (booking) =>
+        new Date(parsedDate).valueOf() ===
+          new Date(booking.mockDate).valueOf() &&
+        userId !== booking.userId &&
+        booking.interviewId != 0
+    );
+
+    const matchedBooking = isMatch[0];
+    var res1;
+
+    if (matchedBooking) {
+      // Match found - book with existing waiting user
+      res1 = await prisma.freeMockUnmatchedPool.create({
+        data: {
+          userId,
+          subject,
+          bookingCountry: region,
+          mockDate: parsedDate,
+          questionToAsk: matchedBooking.questionToBeAsked,
+          questionToBeAsked: matchedBooking.questionToAsk,
+          interviewId: matchedBooking.interviewId,
+        },
+        include: { user: true },
+      });
+    } else {
+      // No match - create new room and add to waiting pool
+      const roomId = uuidV4();
+
+      // Random question selection
+      const problemRecords = await prisma.problemRecords.findMany();
+      const problemToAsk = problemRecords[
+        Math.floor(Math.random() * (problemRecords.length - 1))
+      ].title;
+      var problemToBeAsked = problemRecords[
+        Math.floor(Math.random() * (problemRecords.length - 1))
+      ].title;
+
+      while (problemToAsk === problemToBeAsked) {
+        problemToBeAsked = problemRecords[
+          Math.floor(Math.random() * (problemRecords.length - 1))
+        ].title;
+      }
+
+      // Create interview room
+      const interviewRoom = await prisma.interviewRooms.create({
+        data: {
+          roomId,
+          status: "ACTIVE",
+          interviewType: "PEER",
+          creatorId: userId,
+        },
+      });
+
+      res1 = await prisma.freeMockUnmatchedPool.create({
+        data: {
+          userId,
+          subject,
+          bookingCountry: region,
+          mockDate: parsedDate,
+          questionToAsk: problemToAsk,
+          questionToBeAsked: problemToBeAsked,
+          interviewId: interviewRoom.id,
+        },
+        include: { user: true },
+      });
+    }
+
+    const interviewId = res1.interviewId;
+
+    // Get room details
+    const room = await prisma.interviewRooms.findFirst({
+      where: { id: interviewId, status: "ACTIVE" },
+    });
+
+    const roomid = room.roomId;
+
+    // Send emails with calendar link
+    const dateTime = moment(new Date(mockDate));
+
+    // Format dates for Google Calendar
+    let startDate = dateTime.toISOString().replace(/[-,:,.]/g, "");
+    let endDate = dateTime
+      .add(2, "h")
+      .toISOString()
+      .replace(/[-,:,.]/g, "");
+
+    if (bookWithFriend === false)
+      await sendEmails(res1, roomid, startDate, endDate, req);
+    else await sendEmailsForBookWithFriend(res1, roomid, startDate, endDate, req);
+
+    // Decrement free mock credits
+    var remCreds = freeMockCredits - 1;
+    await prisma.user.updateMany({
+      where: { id: userId },
+      data: { freeMockCredits: { decrement: 1 } },
+    });
+
+    return res.status(200).json({
+      message: "Free Mock Booking Successful",
+      flag: true,
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ flag: false, message: "Server Error" });
+  }
+};
+
+================================================================================
+
+=== SECTION 9: BOOKING COMPONENT - BOOK MOCK FORM ===
+
+// COMPONENTS/BOOKMOCK/BOOKINGFORM.JS (Excerpt - Key Parts)
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Link from "next/link";
+import { Add, Remove, Close } from "@mui/icons-material";
+import { useRouter } from "next/router";
+import {
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  MenuItem,
+  TextField,
+  Dialog,
+  CircularProgress,
+  Slide,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Backdrop,
+} from "@mui/material";
+import CardBody from "components/Card/CardBody.js";
+import Card from "components/Card/Card.js";
+import CardHeader from "components/Card/CardHeader.js";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Button from "components/CustomButtons/Button.js";
+import { makeStyles } from "@mui/styles";
+import moment from "moment";
+import modalStyle from "assets/jss/nextjs-material-kit/modalStyle.js";
+import { useSession } from "next-auth/react";
+import dayjs from "dayjs";
+import OAuth from "components/Auth/OAuthForm.js";
+import CouponField from "components/Coupon/couponField.js";
+import {
+  GetDiscountedPrice,
+  GetMarginAmount,
+} from "../../utils/CouponCalculatorOps";
+import SelectSlot from "./SelectSlot";
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
+
+const yesterday = moment().subtract(1, "day");
+const tomorrow = moment().add(2, "day");
+const dayAfterTomorrow = moment().add(3, "day");
+const next30 = moment().add(30, "days");
+
+const useModalStyles = makeStyles(modalStyle);
+
+function BookingForm({
+  countriesAvailable,
+  maxBookingsAllowed,
+  datesToExclude,
+  mocks,
+  mockTypes,
+  exp,
+  marks,
+  providers,
+  classes,
+  host,
+}) {
+  const [slotOpen, setslotOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedSlotData, setSelectedSlotData] = useState(null);
+  const [mockDate, setMockDate] = useState(null);
+  const [slotDay, setslotDay] = useState(null);
+  const [version, setVersion] = useState("");
+  const [selectedMock, setSelectedMock] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [mockType, setMockType] = useState("");
+  const [country, setCountry] = useState({
+    countryName: "India",
+    countryCode: "IND",
+    currency: "INR",
+  });
+  const [expLevel, setExpLevel] = useState(1);
+  const [termsCheck, setTermsCheck] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [phoneIsValid, setPhoneIsValid] = useState(true);
+  const [orderType, setOrderType] = useState("Normal Ordering");
+  const [offerPrice, setOfferPrice] = useState(null);
+  const [marginAmount, setMarginAmount] = useState(null);
+  const [confModal, setConfModal] = useState(false);
+  const [couponCode, setcouponCode] = useState(null);
+  const [planChange, setplanChange] = useState(true);
+  const [priceChange, setpriceChange] = useState(true);
+  const [unservedCountry, setUnservedCountry] = useState(false);
+  const router = useRouter();
+  const modalClasses = useModalStyles();
+  const { data: session, loading } = useSession();
+
+  // Discount handler
+  const handleDiscount = (disc, marg) => {
+    setplanChange(false);
+    let discountedPrice = GetDiscountedPrice(disc, selectedMock.price);
+    let marginedPrice = GetMarginAmount(marg, selectedMock.price);
+    setOfferPrice(discountedPrice);
+    setMarginAmount(marginedPrice);
+    setSelectedMock({
+      ...selectedMock,
+      offerPrice: discountedPrice,
+    });
+  };
+
+  // Payment handler
+  const handlePay = async () => {
+    setConfModal(false);
+
+    function loadScript(src) {
+      return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+    }
+
+    const res = await loadScript(
+      "https://checkout.razorpay.com/v1/checkout.js"
+    );
+    if (!res) {
+      alert(
+        "Payment Gateway unavailable. Please check your Internet connection."
+      );
+      return;
+    }
+
+    // Create order
+    const paymentData = await axios.post("/api/payments/orders?product=mock", {
+      id: selectedMock.id,
+      quantity,
+      price: !offerPrice ? selectedMock.price : offerPrice,
+      orderType,
+    });
+
+    if (!paymentData) {
+      alert("Server error!");
+      return;
+    }
+
+    const { amount, id: order_id, currency } = paymentData.data;
+
+    const options = {
+      key: process.env.razorPay_key_id,
+      amount,
+      currency,
+      name: "MADAlgos",
+      order_id,
+      prefill: {
+        name: session.user.name || "",
+        email: session.user.email || "",
+        contact: session.user.mobile || phone || "",
+      },
+      handler: async (response) => {
+        try {
+          // Verify payment
+          await axios.post("/api/payments/new-payment", {
+            orderCreationId: order_id,
+            paymentFor: "mock",
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature,
+          });
+
+          // Book mock
+          const bookRes = await axios.post("/api/book-mock", {
+            userEmail: session.user.email,
+            userPhone: phone || session.user.mobile,
+            mockId: selectedMock.id,
+            selectedTimeSlot: selectedSlot,
+            selectedDate: mockDate,
+            orderId: order_id,
+            paymentId: response.razorpay_payment_id,
+            bookingCountry: country.countryCode,
+            quantity,
+            isTermsChecked: termsCheck,
+            couponCode,
+            OfferPrice: offerPrice,
+            option: version,
+          });
+
+          if (bookRes.status === 201) {
+            router.push(
+              `/payments/success?payID=${response.razorpay_payment_id}&orderID=${order_id}`
+            );
+          }
+        } catch (error) {
+          console.error("Payment/Booking error:", error);
+          alert("Payment verified but booking failed. Please contact support.");
+        }
+      },
+    };
+
+    const rzp1 = new window.Razorpay(options);
+    rzp1.open();
+  };
+
+  // Form submission
+  const handleSubmit = (values) => {
+    let error = document.getElementById("terms-error");
+    error.style.visibility = "hidden";
+
+    if (!termsCheck) {
+      return (error.style.visibility = "visible");
+    }
+
+    if (session && !session.user.mobile) {
+      const pattern = new RegExp(/^[0-9\b]+$/);
+      if (!pattern.test(phone) || phone.length != 10) {
+        setPhoneIsValid(false);
+        return;
+      }
+      setPhoneIsValid(true);
+    }
+
+    setConfModal(true);
+  };
+
+  return (
+    // Form JSX here...
+  );
+}
+
+export default BookingForm;
+
+================================================================================
+
+=== SECTION 10: BOOKING COMPONENT - MENTORSHIP FORM ===
+
+// COMPONENTS/MENTORSHIP/MENTORSHIPFORM.JS (Excerpt - Key Parts)
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
+import CardBody from "components/Card/CardBody.js";
+import Card from "components/Card/Card.js";
+import CardHeader from "components/Card/CardHeader.js";
+import SelectSlot from "../BookMentor/SelectSlot";
+import MenuItem from "@mui/material/MenuItem";
+import Button from "components/CustomButtons/Button.js";
+import { useSession } from "next-auth/react";
+import { makeStyles } from "@mui/styles";
+import TextField from "@mui/material/TextField";
+import React from "react";
+import Slide from "@mui/material/Slide";
+import modalStyle from "assets/jss/nextjs-material-kit/modalStyle.js";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import OAuth from "components/Auth/OAuthForm.js";
+import Table from "@mui/material/Table";
+import { TableCell, TableRow, TableBody, Backdrop } from "@mui/material";
+import { CircularProgress } from "@mui/material";
+import CouponField from "components/Coupon/couponField.js";
+import {
+  GetDiscountedPrice,
+  GetMarginAmount,
+} from "../../utils/CouponCalculatorOps";
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
+
+const useModalStyles = makeStyles(modalStyle);
+
+function MentorshipForm({ props }) {
+  const img1 = "/img/form-icon.png";
+  const router = useRouter();
+  const modalClasses = useModalStyles();
+  const {
+    exp,
+    offerings,
+    providers,
+    classes,
+    host,
+    maxBookingsAllowed,
+    countriesAvailable,
+  } = props;
+
+  // States
+  const [selectedMentorship, setSelectedMentorship] = useState({
+    price: "loading...",
+  });
+  const [unservedCountry, setUnservedCountry] = useState(false);
+  const [phoneIsValid, setPhoneIsValid] = useState(true);
+  const [userExp, setUserExp] = useState(1);
+  const [phone, setPhone] = useState("");
+  const [ifSolo, setifSolo] = useState(true);
+  const [duration, setDuration] = useState(1);
+  const { data: session, loading } = useSession();
+  const [open, setOpen] = useState(false);
+  const [confModal, setConfModal] = useState(false);
+  const [termsCheck, setTermsCheck] = useState(false);
+  const [offerPrice, setOfferPrice] = useState(null);
+  const [marginAmount, setMarginAmount] = useState(null);
+  const [couponCode, setcouponCode] = useState(null);
+  const [planChange, setplanChange] = useState(true);
+  const [priceChange, setpriceChange] = useState(true);
+  const [country, setCountry] = useState({
+    countryName: "India",
+    countryCode: "IND",
+    currency: "INR",
+  });
+
+  // Discount handler
+  const handleDiscount = (disc, marg) => {
+    setplanChange(false);
+    let discountedPrice = GetDiscountedPrice(disc, selectedMentorship.price);
+    let marginedPrice = GetMarginAmount(marg, selectedMentorship.price);
+    setOfferPrice(discountedPrice);
+    setMarginAmount(marginedPrice);
+    setSelectedMentorship({
+      ...selectedMentorship,
+      offerPrice: discountedPrice,
+    });
+  };
+
+  // Form submission
+  const handleSubmit = (values) => {
+    values.preventDefault();
+    let error = document.getElementById("terms-error");
+    error.style.visibility = "hidden";
+
+    if (!termsCheck) {
+      return (error.style.visibility = "visible");
+    }
+
+    if (session && !session.user.mobile) {
+      const pattern = new RegExp(/^[0-9\b]+$/);
+      if (!pattern.test(phone) || phone.length != 10) {
+        setPhoneIsValid(false);
+        return;
+      }
+      setPhoneIsValid(true);
+    }
+
+    setConfModal(true);
+  };
+
+  // Payment handler
+  const handlePay = async () => {
+    setConfModal(false);
+
+    function loadScript(src) {
+      return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+    }
+
+    const res = await loadScript(
+      "https://checkout.razorpay.com/v1/checkout.js"
+    );
+    if (!res) {
+      alert(
+        "Payment Gateway unavailable. Please check your Internet connection."
+      );
+      return;
+    }
+
+    // Create order
+    const paymentData = await axios.post(
+      "/api/payments/orders?product=mentorship",
+      {
+        id: selectedMentorship.id,
+        quantity: 1,
+        price: !offerPrice ? selectedMentorship.price : offerPrice,
+        orderType: "Normal Ordering",
+      }
+    );
+
+    if (!paymentData) {
+      alert("Server error!");
+      return;
+    }
+
+    const { amount, id: order_id, currency } = paymentData.data;
+
+    const options = {
+      key: process.env.razorPay_key_id,
+      amount,
+      currency,
+      name: "MADAlgos",
+      order_id,
+      prefill: {
+        name: session.user.name || "",
+        email: session.user.email || "",
+        contact: session.user.mobile || phone || "",
+      },
+      handler: async (response) => {
+        try {
+          // Verify payment
+          await axios.post("/api/payments/new-payment", {
+            orderCreationId: order_id,
+            paymentFor: "mentorship",
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature,
+          });
+
+          // Book mentorship
+          const bookRes = await axios.post("/api/book-mentorship", {
+            userEmail: session.user.email,
+            userPhone: phone || session.user.mobile,
+            mentorshipId: selectedMentorship.id,
+            orderId: order_id,
+            paymentId: response.razorpay_payment_id,
+            bookingCountry: country.countryCode,
+            isTermsChecked: termsCheck,
+            couponCode,
+            OfferPrice: offerPrice,
+          });
+
+          if (bookRes.status === 201) {
+            router.push(
+              `/payments/success?payID=${response.razorpay_payment_id}&orderID=${order_id}`
+            );
+          }
+        } catch (error) {
+          console.error("Payment/Booking error:", error);
+          alert("Payment verified but booking failed. Please contact support.");
+        }
+      },
+    };
+
+    const rzp1 = new window.Razorpay(options);
+    rzp1.open();
+  };
+
+  return (
+    // Form JSX here...
+  );
+}
+
+export default MentorshipForm;
+
+================================================================================
+
+=== SECTION 11: KEY ENVIRONMENT VARIABLES ===
+
+# Razorpay
+razorPay_key_id=your_razorpay_key_id
+razorPay_key_secret=your_razorpay_key_secret
+
+# SendGrid
+SendGridDevKey=your_sendgrid_api_key
+
+# Database
+MONGODB_URI=your_mongodb_connection_string
+MONGODB_DB=your_database_name
+DATABASE_URL=your_mysql_prisma_connection_string
+
+# NextAuth (if applicable)
+NEXTAUTH_URL=your_nextauth_url
+NEXTAUTH_SECRET=your_nextauth_secret
+
+================================================================================
+
+=== SECTION 12: COMPLETE WORKFLOW SUMMARY ===
+
+MENTOR BOOKING WORKFLOW:
+1. User selects mentorship offering on /mentorship-explore or /mentors page
+2. User fills MentorshipForm component with:
+   - Experience level (exp)
+   - Duration (1/3/6 months)
+   - Type (Solo/Group)
+   - Phone number (if not in session)
+   - Coupon code (optional)
+   - Country
+3. Form validates terms and payment info
+4. Razorpay order created via /api/payments/orders?product=mentorship
+5. Razorpay payment dialog opens
+6. After successful payment, Razorpay handler calls:
+   - /api/payments/new-payment (verify and store payment)
+   - /api/book-mentorship (create booking, session pool, send emails)
+7. Three confirmation emails sent:
+   - Mentorship purchase confirmation
+   - Booking confirmation to user
+   - Booking confirmation to mentor
+8. Booking record created in bookedMentorships table
+9. Session pool created with allocated personal sessions and mock interviews
+10. User redirected to /payments/success page
+
+MOCK BOOKING WORKFLOW:
+1. User selects mock type on /book-mock page
+2. User fills BookingForm with:
+   - Mock type (DSA, SYS_DES, BEH_LED)
+   - Experience level
+   - Date via DatePicker
+   - Time slot via SelectSlot
+   - Quantity of mocks
+   - Phone number (if not in session)
+   - Coupon code (optional)
+   - Country
+3. Form validates terms and payment info
+4. Razorpay order created via /api/payments/orders?product=mock
+5. Razorpay payment dialog opens
+6. After successful payment, Razorpay handler calls:
+   - /api/payments/new-payment (verify and store payment)
+   - /api/book-mock (create booking, session pool, send emails)
+7. Mock confirmation email sent with mock date and time
+8. Booking record created in bookedMockInterviews table
+9. Session pool created with mock count
+10. User redirected to /payments/success page
+
+FREE MOCK WORKFLOW:
+1. User with free mock credits initiates booking
+2. System checks for matching users with same date/time
+3. If match found:
+   - Creates booking with existing interview room
+   - Allocates questions from both sides
+4. If no match:
+   - Creates new interview room (UUID)
+   - Generates two random problems
+   - Adds user to unmatched pool
+5. Sends email with:
+   - Room ID/link to IDE
+   - Google Calendar link
+   - Problem statements
+6. Decrements free mock credits
+7. When second user matches, both emails updated with complete details
+
+PAYMENT FLOW:
+1. Order created with Razorpay
+2. User completes payment on Razorpay checkout
+3. Razorpay sends success webhook to /api/payments/success
+4. Payment details updated in database
+5. Confirmation email sent to user with payment details
+6. Frontend verifies payment with /api/payments/new-payment
+7. Booking created after payment verification
+
+EMAIL TEMPLATES USED:
+- Mentorship Purchase Confirmation: d-13951b407cb146088195e1e3f089425a
+- User Booking Confirmation: d-b475eab8aaff4ab3b24cc89c21897d1d
+- Mentor Booking Confirmation: d-ca1b04ead5bb40f18b5cc395ef7b3859
+- Mock Confirmation: d-00e8be8160f644b19478628409e9ea7b
+- Payment Confirmation: d-23a91e4c6a4540ffaace0682fa775a25
+- Free Mock Booking: d-1439c107ecb34dfcb644246b23c0c334
+- Free Mock With Friend: d-efc859a711e24e5d8552c3e6fa7e6800
+
+================================================================================
+
+=== SECTION 13: COUPON PROCESSING LOGIC ===
+
+COUPON HANDLING IN BOOKINGS:
+1. User enters coupon code in booking form
+2. Frontend calls GetDiscountedPrice or GetMarginAmount utilities
+3. In API endpoint (/api/book-mock or /api/book-mentorship):
+   - Check if coupon exists in couponCodes table
+   - Check if user has already used this coupon
+   - If first use: create couponHistory record
+   - If re-use: update couponHistory with new OfferPrice and Status=false
+   - Increment UserCount in couponCodes
+4. Store usedCouponId in booking record
+5. Discounted price sent to Razorpay payment
+
+================================================================================
+
+=== SECTION 14: ADDITIONAL API ENDPOINTS ===
+
+// Get mentor payments - PAGES/API/PAYMENTS/GET-MENTORPAYMENTS.JS
+// Get all mentors - PAGES/API/MENTORS/GET-ALL-MENTORS.JS
+// Get single mentor - PAGES/API/MENTORS/GET-SINGLE-INTERVIEWER.JS
+// Auto slot booking - PAGES/API/MENTORS/AUTO-SLOT-BOOK.JS
+// Schedule mentor mock - PAGES/API/MOCKS/SCHEDULE-MENTOR-MOCK.JS
+// Schedule premium mock - PAGES/API/MOCKS/SCHEDULE-PREMIUM-MOCK.JS
+// Create event - PAGES/API/EVENTS/CREATE-EVENT.JS
+// Get events - PAGES/API/EVENTS/GET-EVENTS.JS
+// Assign premium package - PAGES/API/ASSIGN-PREMIUM.JS
+// Resume build booking - PAGES/API/BOOK-RESUME-BUILD.JS
+// Negotiation booking - PAGES/API/BOOK-NEGOTIATION.JS
+// Explore packages booking - PAGES/API/BOOK-EXPLORE.JS
+
+================================================================================
+END OF DOCUMENT
+================================================================================

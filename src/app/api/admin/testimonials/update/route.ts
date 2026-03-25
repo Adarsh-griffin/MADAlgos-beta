@@ -34,10 +34,9 @@ export async function POST(req: Request) {
 
         testimonial.name = d.name;
         testimonial.role = d.role;
-        // @ts-ignore
-        testimonial.company = d.company;
-        testimonial.imageUrl = d.imageUrl;
-        testimonial.text = d.text;
+        testimonial.company = d.company ?? null;
+        testimonial.imageUrl = d.imageUrl ?? null;
+        testimonial.content = d.text;
         testimonial.rating = d.rating;
         await testimonial.save();
         return NextResponse.json({ ok: true, id: testimonial._id });
@@ -46,12 +45,11 @@ export async function POST(req: Request) {
         const newTestimonial = new TestimonialModel({
             name: d.name,
             role: d.role,
-            company: d.company,
-            imageUrl: d.imageUrl,
-            text: d.text,
+            company: d.company ?? null,
+            imageUrl: d.imageUrl ?? null,
+            content: d.text,
             rating: d.rating,
             status: "PENDING",
-            createdAt: new Date(),
         });
         await newTestimonial.save();
         return NextResponse.json({ ok: true, id: newTestimonial._id });
