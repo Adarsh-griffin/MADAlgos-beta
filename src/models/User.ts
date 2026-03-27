@@ -28,6 +28,8 @@ export interface UserDocument {
   mobile?: string | null;
   /** Admin-editable avatar URL (optional). */
   profilePicture?: string | null;
+  /** Optional program/course label (admin-visible; e.g. bootcamp name). */
+  enrolledCourse?: string | null;
 }
 
 const UserSchema = new Schema<UserDocument>(
@@ -79,6 +81,7 @@ const UserSchema = new Schema<UserDocument>(
     lastLoginAt: { type: Date, default: null },
     mobile: { type: String, default: null },
     profilePicture: { type: String, default: null },
+    enrolledCourse: { type: String, default: null },
   },
   { collection: "users", timestamps: true }
 );

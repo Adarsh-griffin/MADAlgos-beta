@@ -52,6 +52,12 @@ export async function POST(req: Request) {
   await connectDB();
 
   let user = await UserModel.findOne({ email }).exec();
+  if (!user && sessionUserId?.trim()) {
+    const sess = await UserModel.findById(sessionUserId.trim()).exec();
+    if (sess && sess.email?.trim().toLowerCase() === email) {
+      user = sess;
+    }
+  }
 
   if (sessionUserId?.trim()) {
     const sid = sessionUserId.trim();
@@ -63,7 +69,7 @@ export async function POST(req: Request) {
     }
     if (!user) {
       const sess = await UserModel.findById(sid).exec();
-      if (sess && sess.email !== email) {
+      if (sess && sess.email?.trim().toLowerCase() !== email) {
         return NextResponse.json(
           { error: "Checkout email must match your logged-in account." },
           { status: 400 }
@@ -72,12 +78,7 @@ export async function POST(req: Request) {
     }
   }
 
-  if (user && (user.passwordHash || user.googleId) && String(user._id) !== sessionUserId?.trim()) {
-    return NextResponse.json(
-      { error: "This email already has an account. Sign in to continue." },
-      { status: 409 }
-    );
-  }
+  /** Guest checkout: payment attaches to existing user by email (no sign-in required). Do not block. */
 
   if (!user) {
     user = await UserModel.create({

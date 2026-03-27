@@ -3,11 +3,11 @@ import { z } from "zod";
 import { connectDB } from "@/lib/mongodb";
 import UserModel from "@/models/User";
 import PaymentModel from "@/models/Payment";
-import MentorshipOfferingModel from "@/models/MentorshipOffering";
 import MentorModel from "@/models/Mentor";
+import { getSimpleMentorshipById } from "@/lib/mentorship-simple-packages";
 import BookedMentorshipModel from "@/models/BookedMentorship";
 import SessionPoolModel from "@/models/SessionPool";
-import { sendMentorshipPurchaseEmails } from "@/lib/booking-emails";
+import { notifyTeamOrderPlaced, sendMentorshipPurchaseEmails } from "@/lib/booking-emails";
 import { signGuestSetupToken } from "@/lib/auth";
 
 const BodySchema = z.object({
@@ -88,15 +88,15 @@ export async function POST(req: Request) {
     );
   }
 
-  const offering = await MentorshipOfferingModel.findOne({ id: d.mentorshipId }).lean().exec();
-  if (!offering) {
+  const canonical = getSimpleMentorshipById(d.mentorshipId);
+  if (!canonical) {
     return NextResponse.json({ error: "Mentorship offering not found" }, { status: 404 });
   }
 
   const now = new Date();
-  const expiryDate = addExpiryMonths(now, offering.durationMonths);
+  const expiryDate = addExpiryMonths(now, canonical.durationMonths);
 
-  let assignedMentorId: number | null = d.mentorId ?? null;
+  const assignedMentorId: number | null = d.mentorId ?? null;
   let mentorForEmail: { name: string; email: string } | null = null;
 
   if (assignedMentorId != null) {
@@ -130,24 +130,49 @@ export async function POST(req: Request) {
   await SessionPoolModel.create({
     bookingType: "MENTORSHIP",
     bookingRef: booking._id,
-    personalSessions: offering.personalSessions,
-    mockInterviews: offering.mockInterviews,
+    personalSessions: canonical.personalSessions,
+    mockInterviews: canonical.mockInterviews,
   });
 
   const userName = user.username?.trim() || user.email.split("@")[0];
   const menteeName = userName;
-  const typeLabel = offering.ifSolo ? "Solo" : "Group";
+  const typeLabel = canonical.ifSolo ? "Solo" : "Group";
 
   await sendMentorshipPurchaseEmails({
     userEmail: user.email,
     userName,
     orderId: d.orderId,
-    durationMonths: offering.durationMonths,
+    durationMonths: canonical.durationMonths,
     typeLabel,
-    groupSize: offering.groupSizes,
-    expLabel: offering.expLabel,
+    groupSize: canonical.groupSizes,
+    expLabel: canonical.expLabel,
     menteeName,
     mentor: mentorForEmail,
+  });
+
+  const packageSummary = `${canonical.durationMonths} mo · ${canonical.mockInterviews} mocks · ${canonical.personalSessions}× 1:1 · ${typeLabel} · INR ${canonical.price}`;
+
+  await notifyTeamOrderPlaced({
+    kind: "mentorship",
+    customerEmail: user.email,
+    customerName: userName,
+    customerPhone: d.userPhone?.trim() || user.mobile?.trim() || null,
+    paymentId: d.paymentId,
+    orderId: d.orderId,
+    bookingCountry: d.bookingCountry,
+    bookingId: String(booking._id),
+    lines: [
+      { label: "Booking ID", value: String(booking._id) },
+      { label: "Customer email", value: user.email },
+      { label: "Phone", value: d.userPhone?.trim() || user.mobile?.trim() || "—" },
+      { label: "Package", value: packageSummary },
+      { label: "Mentorship offering ID", value: String(d.mentorshipId) },
+      { label: "Assigned mentor", value: mentorForEmail ? `${mentorForEmail.name} (${mentorForEmail.email})` : "Unassigned (ops will assign)" },
+      { label: "Region", value: d.bookingCountry },
+      { label: "Access until", value: expiryDate.toLocaleDateString("en-IN") },
+      { label: "Razorpay payment ID", value: d.paymentId },
+      { label: "Razorpay order ID", value: d.orderId },
+    ],
   });
 
   const fresh = await UserModel.findById(user._id).lean().exec();

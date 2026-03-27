@@ -20,7 +20,8 @@ export function middleware(req: NextRequest) {
 
   const needsAdmin = pathname.startsWith("/admin");
   const needsMentor = pathname.startsWith("/mentor");
-  if (!needsAdmin && !needsMentor) return NextResponse.next();
+  const needsStudent = pathname.startsWith("/student");
+  if (!needsAdmin && !needsMentor && !needsStudent) return NextResponse.next();
 
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token) {
@@ -46,10 +47,22 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (needsStudent && role !== "STUDENT") {
+    const url = req.nextUrl.clone();
+    if (role === "MENTOR") {
+      url.pathname = "/mentor";
+    } else if (role === "ADMIN" || role === "SUPER_ADMIN") {
+      url.pathname = "/admin";
+    } else {
+      url.pathname = "/auth";
+    }
+    return NextResponse.redirect(url);
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/mentor/:path*"],
+  matcher: ["/admin/:path*", "/mentor/:path*", "/student/:path*"],
 };
 

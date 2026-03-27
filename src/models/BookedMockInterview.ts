@@ -1,5 +1,8 @@
 import mongoose, { Schema, model, models, type Types } from "mongoose";
 
+/** Years of professional experience (buyer), collected at checkout. */
+export type BuyerExperienceBracket = "1-3" | "3-5" | "5-10" | "10+";
+
 export interface BookedMockInterviewDocument {
   userId: Types.ObjectId;
   mockOfferingId: number;
@@ -10,7 +13,11 @@ export interface BookedMockInterviewDocument {
   bookingCountry: string;
   mockInterviews: number;
   isTermsChecked: boolean;
+  /** Buyer’s experience bracket (not the mock topic’s exp tier). */
+  buyerExperienceBracket?: BuyerExperienceBracket;
   status: "NEW" | "ACTIVE" | "COMPLETED" | "CANCELLED";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const BookedMockInterviewSchema = new Schema<BookedMockInterviewDocument>(
@@ -24,6 +31,11 @@ const BookedMockInterviewSchema = new Schema<BookedMockInterviewDocument>(
     bookingCountry: { type: String, required: true },
     mockInterviews: { type: Number, required: true, min: 1 },
     isTermsChecked: { type: Boolean, required: true },
+    buyerExperienceBracket: {
+      type: String,
+      required: false,
+      enum: ["1-3", "3-5", "5-10", "10+"],
+    },
     status: {
       type: String,
       enum: ["NEW", "ACTIVE", "COMPLETED", "CANCELLED"],

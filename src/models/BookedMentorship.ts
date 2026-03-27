@@ -10,6 +10,8 @@ export interface BookedMentorshipDocument {
   assignedMentorId?: number | null;
   status: "NEW" | "ACTIVE" | "COMPLETED" | "EXPIRED" | "CANCELLED";
   expiryDate: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const BookedMentorshipSchema = new Schema<BookedMentorshipDocument>(

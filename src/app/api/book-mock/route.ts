@@ -7,8 +7,10 @@ import MockInterviewOfferingModel from "@/models/MockInterviewOffering";
 import TimeSlotModel from "@/models/TimeSlot";
 import BookedMockInterviewModel from "@/models/BookedMockInterview";
 import SessionPoolModel from "@/models/SessionPool";
-import { sendMockBookingConfirmation } from "@/lib/booking-emails";
+import { notifyTeamOrderPlaced, sendMockBookingConfirmation } from "@/lib/booking-emails";
 import { signGuestSetupToken } from "@/lib/auth";
+import { isMockBookingDateAllowedServer } from "@/lib/booking-date";
+import { formatMockOfferingLabel } from "@/lib/mock-offering-label";
 
 const BodySchema = z.object({
   userEmail: z.string().email(),
@@ -23,6 +25,7 @@ const BodySchema = z.object({
   isTermsChecked: z.literal(true),
   couponCode: z.string().nullable().optional(),
   OfferPrice: z.number().optional().nullable(),
+  buyerExperienceBracket: z.enum(["1-3", "3-5", "5-10", "10+"]),
 });
 
 /**
@@ -37,6 +40,13 @@ export async function POST(req: Request) {
   }
 
   const d = parsed.data;
+  if (!isMockBookingDateAllowedServer(d.selectedDate)) {
+    return NextResponse.json(
+      { error: "Booking date must be at least two days from today." },
+      { status: 400 }
+    );
+  }
+
   await connectDB();
 
   const email = d.userEmail.trim().toLowerCase();
@@ -103,6 +113,7 @@ export async function POST(req: Request) {
     bookingCountry: d.bookingCountry,
     mockInterviews: d.quantity,
     isTermsChecked: true,
+    buyerExperienceBracket: d.buyerExperienceBracket,
     status: "NEW",
   });
 
@@ -122,6 +133,31 @@ export async function POST(req: Request) {
     mockType: mockOffer.mockType,
     mockDate: new Date(d.selectedDate).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     mockTimeSlot,
+  });
+
+  await notifyTeamOrderPlaced({
+    kind: "mock",
+    customerEmail: user.email,
+    customerName: userName,
+    customerPhone: d.userPhone?.trim() || user.mobile?.trim() || null,
+    paymentId: d.paymentId,
+    orderId: d.orderId,
+    bookingCountry: d.bookingCountry,
+    bookingId: String(booking._id),
+    lines: [
+      { label: "Booking ID", value: String(booking._id) },
+      { label: "Customer email", value: user.email },
+      { label: "Phone", value: d.userPhone?.trim() || user.mobile?.trim() || "—" },
+      { label: "Mock", value: formatMockOfferingLabel(mockOffer) },
+      { label: "Buyer experience (yrs)", value: d.buyerExperienceBracket },
+      { label: "Type", value: mockOffer.mockType },
+      { label: "Quantity", value: String(d.quantity) },
+      { label: "Slot", value: mockTimeSlot },
+      { label: "Date", value: new Date(d.selectedDate).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) },
+      { label: "Region", value: d.bookingCountry },
+      { label: "Razorpay payment ID", value: d.paymentId },
+      { label: "Razorpay order ID", value: d.orderId },
+    ],
   });
 
   const fresh = await UserModel.findById(user._id).lean().exec();

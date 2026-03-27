@@ -4,7 +4,7 @@ import Razorpay from "razorpay";
 import { nanoid } from "nanoid";
 import { connectDB } from "@/lib/mongodb";
 import MockInterviewOfferingModel from "@/models/MockInterviewOffering";
-import MentorshipOfferingModel from "@/models/MentorshipOffering";
+import { getSimpleMentorshipById } from "@/lib/mentorship-simple-packages";
 
 const BodySchema = z.object({
   id: z.number().int().positive(),
@@ -54,12 +54,15 @@ export async function POST(req: NextRequest) {
       orderType === "Rush Ordering" ? offering.rushPrice ?? offering.price : price;
     amountPaise = Math.round(unit * quantity * 100);
   } else {
-    const offering = await MentorshipOfferingModel.findOne({ id }).lean().exec();
-    if (!offering) {
+    const canonical = getSimpleMentorshipById(id);
+    if (!canonical) {
       return NextResponse.json({ error: "Mentorship offering not found" }, { status: 404 });
     }
-    currency = bodyCurrency ?? offering.currency ?? "INR";
-    amountPaise = Math.round(price * quantity * 100);
+    if (Math.abs(price - canonical.price) > 0.01) {
+      return NextResponse.json({ error: "Price does not match selected package" }, { status: 400 });
+    }
+    currency = bodyCurrency ?? canonical.currency ?? "INR";
+    amountPaise = Math.round(canonical.price * quantity * 100);
   }
 
   const instance = getRazorpay();

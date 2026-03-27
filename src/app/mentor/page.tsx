@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import UserModel from "@/models/User";
 import MentorProfileModel from "@/models/MentorProfile";
+import MentorModel from "@/models/Mentor";
 import { getSessionFromRequestCookies } from "@/lib/auth";
 import MentorDashboardClient from "./MentorDashboardClient";
 import MentorTopBar from "./MentorTopBar";
@@ -63,6 +64,13 @@ export default async function MentorPage() {
     rejectionReason: typeof profile.rejectionReason === "string" ? profile.rejectionReason : null,
   };
 
+  const mentorListing = await MentorModel.findOne({ profileId: `user:${String(user._id)}` }).lean().exec();
+  const profilePublishedOnSite = Boolean(
+    mentorListing &&
+      mentorListing.isActive &&
+      mentorListing.approvalStatus === "APPROVED"
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground antialiased">
       <MentorTopBar />
@@ -109,6 +117,7 @@ export default async function MentorPage() {
                 verificationStatus: user.verificationStatus,
               }}
               initialProfile={initialProfile}
+              profilePublishedOnSite={profilePublishedOnSite}
             />
           </div>
         </section>

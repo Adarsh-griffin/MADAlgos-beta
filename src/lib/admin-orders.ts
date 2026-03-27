@@ -4,8 +4,8 @@ import UserModel from "@/models/User";
 import BookedMockInterviewModel from "@/models/BookedMockInterview";
 import BookedMentorshipModel from "@/models/BookedMentorship";
 import MockInterviewOfferingModel from "@/models/MockInterviewOffering";
-import MentorshipOfferingModel from "@/models/MentorshipOffering";
 import MentorModel from "@/models/Mentor";
+import { getSimpleMentorshipById } from "@/lib/mentorship-simple-packages";
 import TimeSlotModel from "@/models/TimeSlot";
 
 export type AdminOrderRow = {
@@ -56,19 +56,15 @@ export async function getAdminOrderHistory(limit = 250): Promise<AdminOrderRow[]
     ...new Set(mentorships.map((m) => m.assignedMentorId).filter((x): x is number => x != null)),
   ];
 
-  const [mockOffs, slots, mentOffs, mentorDocs] = await Promise.all([
+  const [mockOffs, slots, mentorDocs] = await Promise.all([
     mockOfferingIds.length
       ? MockInterviewOfferingModel.find({ id: { $in: mockOfferingIds } }).lean().exec()
       : [],
     slotIds.length ? TimeSlotModel.find({ id: { $in: slotIds } }).lean().exec() : [],
-    mentOfferingIds.length
-      ? MentorshipOfferingModel.find({ id: { $in: mentOfferingIds } }).lean().exec()
-      : [],
     mentorNumIds.length ? MentorModel.find({ id: { $in: mentorNumIds } }).lean().exec() : [],
   ]);
   const mockOffById = new Map(mockOffs.map((o) => [o.id, o]));
   const slotById = new Map(slots.map((s) => [s.id, s]));
-  const mentOffById = new Map(mentOffs.map((o) => [o.id, o]));
   const mentorByNum = new Map(mentorDocs.map((m) => [m.id, m]));
 
   const rows: AdminOrderRow[] = [];
@@ -103,7 +99,7 @@ export async function getAdminOrderHistory(limit = 250): Promise<AdminOrderRow[]
     }
 
     if (ment) {
-      const off = mentOffById.get(ment.mentorshipOfferingId);
+      const simple = getSimpleMentorshipById(ment.mentorshipOfferingId);
       let assignedMentorLabel: string | null = null;
       if (ment.assignedMentorId != null) {
         const md = mentorByNum.get(ment.assignedMentorId);
@@ -123,7 +119,9 @@ export async function getAdminOrderHistory(limit = 250): Promise<AdminOrderRow[]
         bookingConfirmed: true,
         bookingId: String(ment._id),
         bookingStatus: ment.status,
-        summary: `${off ? `${off.durationMonths} mo · ${off.personalSessions} sessions` : `Package #${ment.mentorshipOfferingId}`} · ${ment.bookingCountry}`,
+        summary: simple
+          ? `${simple.durationMonths} mo · ${simple.mockInterviews} mocks · ${simple.personalSessions}× 1:1 · INR ${simple.price} · ${ment.bookingCountry}`
+          : `Package #${ment.mentorshipOfferingId} · ${ment.bookingCountry}`,
         assignedMentorLabel,
       });
       continue;

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -31,9 +32,11 @@ type MentorUser = {
 export default function MentorDashboardClient({
   initialUser,
   initialProfile,
+  profilePublishedOnSite,
 }: {
   initialUser: MentorUser;
   initialProfile: MentorProfile;
+  profilePublishedOnSite: boolean;
 }) {
   const [tab, setTab] = React.useState<"profile" | "blogs">("profile");
   const [profile, setProfile] = React.useState<MentorProfile>(initialProfile);
@@ -362,14 +365,29 @@ export default function MentorDashboardClient({
                 </p>
               </div>
             ) : profile.reviewStatus === "APPROVED" ? (
-              <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-xs text-emerald-100">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-200/90 mb-1">
-                  Profile approved
-                </p>
-                <p className="leading-relaxed">
-                  Your profile is approved. Admin will publish you on the site when ready.
-                </p>
-              </div>
+              profilePublishedOnSite ? (
+                <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-xs text-emerald-100">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-200/90 mb-1">
+                    Profile live on the site
+                  </p>
+                  <p className="leading-relaxed">
+                    Your mentor profile is published. Visitors can find you on the{" "}
+                    <Link href="/mentors" className="font-semibold text-emerald-200 underline underline-offset-2">
+                      Mentors
+                    </Link>{" "}
+                    page.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-xs text-emerald-100">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-200/90 mb-1">
+                    Profile approved
+                  </p>
+                  <p className="leading-relaxed">
+                    Your profile is approved. Admin will publish you on the site when ready.
+                  </p>
+                </div>
+              )
             ) : null}
 
             <div className="grid gap-4 md:grid-cols-2">

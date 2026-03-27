@@ -17,6 +17,7 @@ import {
   Video,
   Users,
   GraduationCap,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -71,6 +72,16 @@ type MeUser = {
   username: string | null;
   role: string;
 };
+
+function userInitials(me: MeUser): string {
+  const n = me.username?.trim();
+  if (n) {
+    const parts = n.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return n.slice(0, 2).toUpperCase();
+  }
+  return me.email.slice(0, 2).toUpperCase();
+}
 
 function roleBadgeText(role: string): string {
   switch (role) {
@@ -283,6 +294,36 @@ const Header = () => {
             <div className="hidden xl:flex items-center gap-3">
               {!meLoading && me ? (
                 <>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link
+                      href={getDashboardPathForRole(me.role)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-primary/25 to-primary/40 text-[11px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:brightness-110 transition-all"
+                      title="Open your portal"
+                      aria-label="Open your portal"
+                    >
+                      {userInitials(me)}
+                    </Link>
+                    {(me.role === "ADMIN" || me.role === "SUPER_ADMIN") && (
+                      <Link
+                        href="/admin"
+                        className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        title="Admin panel"
+                        aria-label="Admin panel"
+                      >
+                        <Shield className="h-4 w-4" />
+                      </Link>
+                    )}
+                    {me.role === "STUDENT" && (
+                      <Link
+                        href="/student"
+                        className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        title="Student portal"
+                        aria-label="Student portal"
+                      >
+                        <GraduationCap className="h-4 w-4" />
+                      </Link>
+                    )}
+                  </div>
                   <div className="flex flex-col items-end max-w-[200px] min-w-0">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 truncate w-full text-right">
                       Logged in
@@ -304,7 +345,15 @@ const Header = () => {
                     className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full border border-white/15 bg-white/5 px-4 text-[10px] font-black tracking-[0.18em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
                   >
                     <LayoutDashboard className="h-3.5 w-3.5 text-primary" />
-                    {me.role === "MENTOR_PENDING" ? "Status" : "Dashboard"}
+                    {me.role === "MENTOR_PENDING"
+                      ? "Status"
+                      : me.role === "STUDENT"
+                        ? "Student portal"
+                        : me.role === "ADMIN" || me.role === "SUPER_ADMIN"
+                          ? "Admin"
+                          : me.role === "MENTOR"
+                            ? "Mentor dashboard"
+                            : "Dashboard"}
                   </Link>
                   <button
                     type="button"
@@ -376,6 +425,36 @@ const Header = () => {
             <div className="grid grid-cols-1 gap-3">
               {!meLoading && me ? (
                 <>
+                  <div className="flex justify-center gap-3">
+                    <Link
+                      href={getDashboardPathForRole(me.role)}
+                      onClick={closeMobileMenu}
+                      className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-primary/25 to-primary/40 text-sm font-bold text-white"
+                      aria-label="Open your portal"
+                    >
+                      {userInitials(me)}
+                    </Link>
+                    {(me.role === "ADMIN" || me.role === "SUPER_ADMIN") && (
+                      <Link
+                        href="/admin"
+                        onClick={closeMobileMenu}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary"
+                        aria-label="Admin panel"
+                      >
+                        <Shield className="h-5 w-5" />
+                      </Link>
+                    )}
+                    {me.role === "STUDENT" && (
+                      <Link
+                        href="/student"
+                        onClick={closeMobileMenu}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary"
+                        aria-label="Student portal"
+                      >
+                        <GraduationCap className="h-5 w-5" />
+                      </Link>
+                    )}
+                  </div>
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Logged in</p>
                     <p className="text-sm font-bold text-white truncate">{me.username?.trim() || me.email}</p>
@@ -394,7 +473,15 @@ const Header = () => {
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10"
                   >
                     <LayoutDashboard className="h-4 w-4 text-primary" />
-                    {me.role === "MENTOR_PENDING" ? "Application status" : "Dashboard"}
+                    {me.role === "MENTOR_PENDING"
+                      ? "Application status"
+                      : me.role === "STUDENT"
+                        ? "Student portal"
+                        : me.role === "ADMIN" || me.role === "SUPER_ADMIN"
+                          ? "Admin"
+                          : me.role === "MENTOR"
+                            ? "Mentor dashboard"
+                            : "Dashboard"}
                   </Link>
                   <button
                     type="button"

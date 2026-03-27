@@ -10,6 +10,8 @@ export interface MentorshipOfferingDocument {
   personalSessions: number;
   mockInterviews: number;
   expLabel: string;
+  /** Market code (e.g. IND, USA, GBR) for region-specific pricing rows */
+  region?: string;
 }
 
 const MentorshipOfferingSchema = new Schema<MentorshipOfferingDocument>(
@@ -23,6 +25,7 @@ const MentorshipOfferingSchema = new Schema<MentorshipOfferingDocument>(
     personalSessions: { type: Number, default: 0 },
     mockInterviews: { type: Number, default: 0 },
     expLabel: { type: String, default: "" },
+    region: { type: String, required: false },
   },
   { collection: "mentorship_offerings" }
 );

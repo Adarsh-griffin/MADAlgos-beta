@@ -121,17 +121,17 @@ function PasswordField({ label = "Password", name = "password" }: { label?: stri
   );
 }
 
-function UsernameField() {
+function UsernameField({ required = true }: { required?: boolean }) {
   return (
     <div className="space-y-1">
       <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-        Username
+        Username{!required ? <span className="text-slate-600 normal-case"> (optional)</span> : null}
       </label>
       <div className="relative">
         <UserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
         <Input
           name="username"
-          required
+          required={required}
           placeholder="Preferred username"
           className="h-10 pl-9 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500 focus:border-[#2ab5a0] focus:ring-2 focus:ring-[#2ab5a0]/60"
         />
@@ -175,6 +175,56 @@ async function login(email: string, password: string) {
     | null;
   if (!res.ok) throw new Error(data?.error || "Login failed");
   return data;
+}
+
+async function registerStudent(email: string, password: string, username?: string) {
+  const res = await fetch("/api/auth/register-student", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email,
+      password,
+      ...(username?.trim() ? { username: username.trim() } : {}),
+    }),
+  });
+  const data = (await res.json().catch(() => null)) as { error?: string; ok?: boolean } | null;
+  if (!res.ok) throw new Error(data?.error || "Registration failed");
+  return data;
+}
+
+function AuthSegmentToggle({
+  value,
+  onChange,
+}: {
+  value: "student" | "mentor";
+  onChange: (v: "student" | "mentor") => void;
+}) {
+  return (
+    <div className="mb-5 flex rounded-full border border-white/10 bg-[#050505]/60 p-1">
+      <button
+        type="button"
+        onClick={() => onChange("student")}
+        className={`flex-1 rounded-full px-3 py-2 text-xs font-medium transition-colors ${
+          value === "student"
+            ? "bg-primary text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.2)]"
+            : "text-slate-400 hover:text-white"
+        }`}
+      >
+        Student
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("mentor")}
+        className={`flex-1 rounded-full px-3 py-2 text-xs font-medium transition-colors ${
+          value === "mentor"
+            ? "bg-primary text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.2)]"
+            : "text-slate-400 hover:text-white"
+        }`}
+      >
+        Mentor
+      </button>
+    </div>
+  );
 }
 
 async function applyMentor(email: string, username: string, linkedinProfileUrl: string) {
@@ -240,6 +290,7 @@ export default function AuthPage() {
   const [mentorPassword1, setMentorPassword1] = React.useState<string>("");
   const [mentorPassword2, setMentorPassword2] = React.useState<string>("");
   const [lastVerifyEmailSent, setLastVerifyEmailSent] = React.useState<boolean | null>(null);
+  const [authSegment, setAuthSegment] = React.useState<"student" | "mentor">("student");
 
   React.useEffect(() => {
     let cancelled = false;
@@ -386,10 +437,10 @@ export default function AuthPage() {
               Access MADAlgos
             </span>
             <h1 className="mt-4 text-3xl md:text-4xl font-extrabold leading-tight text-gradient-premium">
-              Sign in or apply as a mentor.
+              Students, mentors, and team access
             </h1>
             <p className="mt-3 max-w-2xl mx-auto text-xs md:text-sm text-muted-foreground leading-relaxed">
-              Mentors can use email or continue with Google. Admin and Super Admin use secure email sign in.
+              Choose <strong className="text-slate-300">Student</strong> or <strong className="text-slate-300">Mentor</strong> below. Admins use the panel on the right.
             </p>
           </div>
 
@@ -423,13 +474,69 @@ export default function AuthPage() {
                 <TabsContent value="signin" className="mt-0">
                   <AuthFormWrapper
                     title="Sign in"
-                    subtitle="Continue as a mentor. Use your email credentials or sign in with Google."
+                    subtitle={
+                      authSegment === "student"
+                        ? "Students: continue with Google or sign in with email and password."
+                        : "Mentors: use Google (Mentor) or your registered mentor email."
+                    }
                   >
                     {emailVerifiedBanner ? (
                       <AuthInlineSuccess>{emailVerifiedBanner}</AuthInlineSuccess>
                     ) : null}
                     {message ? <AuthInlineSuccess>{message}</AuthInlineSuccess> : null}
-                    {/* Student sign-in tab removed for now — restore TabsList + student TabsContent when needed */}
+                    <AuthSegmentToggle
+                      value={authSegment}
+                      onChange={(v) => {
+                        setAuthSegment(v);
+                        setError(null);
+                        setMessage(null);
+                        if (v === "mentor") setMentorStep("email");
+                      }}
+                    />
+                    {authSegment === "student" ? (
+                      <div className="mt-0 space-y-4">
+                        <div onClick={() => goGoogle("student")} className="cursor-pointer">
+                          <GoogleButton label="Continue with Google (Student)" />
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                          <span className="h-px flex-1 bg-white/10" />
+                          Or use email
+                          <span className="h-px flex-1 bg-white/10" />
+                        </div>
+                        <form
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            setBusy(true);
+                            setError(null);
+                            setMessage(null);
+                            const form = e.currentTarget;
+                            const fd = new FormData(form);
+                            try {
+                              const data = await login(
+                                String(fd.get("email") ?? "").trim(),
+                                String(fd.get("password") ?? "")
+                              );
+                              window.location.href = getDashboardPathForRole(data?.role);
+                            } catch (err) {
+                              setError(err instanceof Error ? err.message : "Login failed");
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                          className="space-y-4"
+                        >
+                          <EmailField />
+                          <PasswordField />
+                          <Button
+                            type="submit"
+                            disabled={busy}
+                            className="mt-1 w-full justify-center rounded-full bg-linear-to-r from-[#2ab5a0] to-[#136b60] text-xs md:text-sm font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_36px_rgba(42,181,160,0.55)] hover:brightness-110 active:scale-95 disabled:opacity-60"
+                          >
+                            {busy ? "Signing in…" : "Sign in as student"}
+                          </Button>
+                        </form>
+                      </div>
+                    ) : (
                     <div className="mt-0 space-y-4">
                         <div onClick={() => goGoogle("mentor")} className="cursor-pointer">
                           <GoogleButton label="Continue with Google (Mentor)" />
@@ -623,17 +730,101 @@ export default function AuthPage() {
                           </span>
                         </p>
                     </div>
+                    )}
                     {error && <p className="text-sm text-red-400">{error}</p>}
                   </AuthFormWrapper>
                 </TabsContent>
 
                 <TabsContent value="signup" className="mt-0">
                   <AuthFormWrapper
-                    title="Join us"
-                    subtitle="Mentors submit basic details for verification before setting a password."
+                    title={authSegment === "student" ? "Create student account" : "Join us"}
+                    subtitle={
+                      authSegment === "student"
+                        ? "Register with email and password or Google. You can book mocks and mentorship after signing in."
+                        : "Mentors submit basic details for verification before setting a password."
+                    }
                   >
                     {message ? <AuthInlineSuccess>{message}</AuthInlineSuccess> : null}
-                    {/* Student Join us tab removed for now */}
+                    <AuthSegmentToggle
+                      value={authSegment}
+                      onChange={(v) => {
+                        setAuthSegment(v);
+                        setError(null);
+                        setMessage(null);
+                      }}
+                    />
+                    {authSegment === "student" ? (
+                      <div className="mt-0 space-y-4">
+                        <div onClick={() => goGoogle("student")} className="cursor-pointer">
+                          <GoogleButton label="Continue with Google (Student)" />
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                          <span className="h-px flex-1 bg-white/10" />
+                          Or register with email
+                          <span className="h-px flex-1 bg-white/10" />
+                        </div>
+                        <form
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            setBusy(true);
+                            setError(null);
+                            setMessage(null);
+                            const form = e.currentTarget;
+                            const fd = new FormData(form);
+                            const email = String(fd.get("email") ?? "").trim();
+                            const pw = String(fd.get("password") ?? "");
+                            const pw2 = String(fd.get("passwordConfirm") ?? "");
+                            const username = String(fd.get("username") ?? "").trim();
+                            if (pw.length < 6) {
+                              setError("Password must be at least 6 characters.");
+                              setBusy(false);
+                              return;
+                            }
+                            if (pw !== pw2) {
+                              setError("Passwords do not match.");
+                              setBusy(false);
+                              return;
+                            }
+                            try {
+                              await registerStudent(email, pw, username || undefined);
+                              window.location.href = "/";
+                            } catch (err) {
+                              setError(err instanceof Error ? err.message : "Registration failed");
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                          className="space-y-4"
+                        >
+                          <UsernameField required={false} />
+                          <EmailField />
+                          <PasswordField label="Password (min 6)" name="password" />
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                              Confirm password
+                            </label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                              <Input
+                                name="passwordConfirm"
+                                type="password"
+                                required
+                                minLength={6}
+                                placeholder="Confirm password"
+                                className="h-10 pl-9 rounded-full border-white/10 bg-[#1c1c1c] text-sm text-white placeholder:text-slate-500 focus:border-[#2ab5a0] focus:ring-2 focus:ring-[#2ab5a0]/60"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            type="submit"
+                            disabled={busy}
+                            className="mt-1 w-full justify-center rounded-full bg-linear-to-r from-[#2ab5a0] to-[#136b60] text-xs md:text-sm font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_36px_rgba(42,181,160,0.55)] hover:brightness-110 active:scale-95 disabled:opacity-60"
+                          >
+                            {busy ? "Creating account…" : "Create account"}
+                          </Button>
+                        </form>
+                      </div>
+                    ) : (
                     <div className="mt-0 space-y-4">
                         <div onClick={() => goGoogle("mentor")} className="cursor-pointer">
                           <GoogleButton label="Continue with Google (Mentor application)" />
@@ -696,6 +887,7 @@ export default function AuthPage() {
                           </Button>
                         </form>
                     </div>
+                    )}
                     {error && <p className="text-sm text-red-400">{error}</p>}
                   </AuthFormWrapper>
                 </TabsContent>

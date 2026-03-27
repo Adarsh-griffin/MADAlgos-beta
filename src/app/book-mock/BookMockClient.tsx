@@ -14,6 +14,20 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { getRazorpayKeyIdForClient } from "@/lib/razorpay-public-key";
+import { checkoutRoleBadge, checkoutRolePhrase, isLoggedInNonStudent } from "@/lib/checkout-copy";
+import {
+  earliestMockBookingDateLocalString,
+  isLocalDateAtLeastDaysAhead,
+} from "@/lib/booking-date";
+import { GuestPasswordSetupDialog } from "@/components/checkout/GuestPasswordSetupDialog";
+import {
+  formatMockCategoryLabel,
+  formatMockTierLabel,
+  sortMockCategoryKeys,
+} from "@/lib/mock-offering-label";
+
+const BUYER_EXP_OPTIONS = ["1-3", "3-5", "5-10", "10+"] as const;
+type BuyerExperienceBracket = (typeof BUYER_EXP_OPTIONS)[number];
 
 type MockOffering = {
   id: number;
@@ -23,6 +37,8 @@ type MockOffering = {
   price: number;
   rushPrice: number;
   currency: string;
+  /** When set, row applies only to this market (IND / USA / GBR) */
+  region?: string;
 };
 
 type TimeSlot = {
@@ -49,15 +65,19 @@ export default function BookMockClient() {
   const router = useRouter();
   const [catalog, setCatalog] = React.useState<{ mocks: MockOffering[]; slots: TimeSlot[] } | null>(null);
   const [meEmail, setMeEmail] = React.useState<string | null>(null);
+  const [meRole, setMeRole] = React.useState<string | null>(null);
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [mockId, setMockId] = React.useState<number | "">("");
+  /** Mock interview row: category (topic) + tier (1 yr … 5+ yr) map to one catalog id. */
+  const [mockCategory, setMockCategory] = React.useState<string>("");
+  const [mockTierExpLevel, setMockTierExpLevel] = React.useState<number | "">("");
   const [slotId, setSlotId] = React.useState<number | "">("");
   const [date, setDate] = React.useState("");
   const [quantity, setQuantity] = React.useState(1);
   const [country, setCountry] = React.useState("IND");
   const [terms, setTerms] = React.useState(false);
   const [rush, setRush] = React.useState(false);
+  const [buyerExperience, setBuyerExperience] = React.useState<BuyerExperienceBracket | "">("");
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [phase, setPhase] = React.useState<"checkout" | "post_pay_setup" | "complete">("checkout");
@@ -67,9 +87,13 @@ export default function BookMockClient() {
   const [setupPassword2, setSetupPassword2] = React.useState("");
   const [setupBusy, setSetupBusy] = React.useState(false);
   const [setupErr, setSetupErr] = React.useState<string | null>(null);
-  const [emailWarning, setEmailWarning] = React.useState<string | null>(null);
-  const [emailCheckPending, setEmailCheckPending] = React.useState(false);
   const [accountCreatedDialogOpen, setAccountCreatedDialogOpen] = React.useState(false);
+  const [bookingSuccessOpen, setBookingSuccessOpen] = React.useState(false);
+  const [bookingSuccessIds, setBookingSuccessIds] = React.useState<{ payId: string; orderId: string } | null>(
+    null
+  );
+
+  const minBookingDate = React.useMemo(() => earliestMockBookingDateLocalString(), []);
 
   React.useEffect(() => {
     let c = true;
@@ -83,9 +107,10 @@ export default function BookMockClient() {
           mockOfferings: MockOffering[];
           timeSlots: TimeSlot[];
         };
-        const me = (await meRes.json()) as { user: { email?: string } | null };
+        const me = (await meRes.json()) as { user: { email?: string; role?: string } | null };
         if (!c) return;
         setCatalog({ mocks: cat.mockOfferings ?? [], slots: cat.timeSlots ?? [] });
+        setMeRole(me.user?.role ?? null);
         const em = me.user?.email?.trim();
         if (em) {
           setMeEmail(em);
@@ -100,38 +125,44 @@ export default function BookMockClient() {
     };
   }, []);
 
-  React.useEffect(() => {
-    if (phase !== "checkout") return;
-    const e = email.trim();
-    if (!e) {
-      setEmailWarning(null);
-      setEmailCheckPending(false);
-      return;
-    }
-    const t = window.setTimeout(() => {
-      void (async () => {
-        setEmailCheckPending(true);
-        try {
-          const res = await fetch(`/api/auth/check-checkout-email?email=${encodeURIComponent(e)}`);
-          const j = (await res.json()) as { canCheckout?: boolean; message?: string };
-          if (!res.ok || j.canCheckout !== true) {
-            setEmailWarning(j.message ?? "Sign in to continue with this email.");
-          } else {
-            setEmailWarning(null);
-          }
-        } catch {
-          setEmailWarning(null);
-        } finally {
-          setEmailCheckPending(false);
-        }
-      })();
-    }, 450);
-    return () => window.clearTimeout(t);
-  }, [email, phase]);
+  const mocksForCountry = React.useMemo(() => {
+    if (!catalog?.mocks.length) return [];
+    return catalog.mocks.filter((m) => (m.region ?? "IND") === country);
+  }, [catalog?.mocks, country]);
 
-  const selectedMock = catalog?.mocks.find((m) => m.id === mockId);
+  const mockCategoriesOrdered = React.useMemo(
+    () => sortMockCategoryKeys([...new Set(mocksForCountry.map((m) => m.mockType))]),
+    [mocksForCountry]
+  );
+
+  const expLevelsForMockCategory = React.useMemo(() => {
+    if (!mockCategory) return [];
+    const levels = mocksForCountry
+      .filter((m) => m.mockType === mockCategory)
+      .map((m) => m.expLevel);
+    return [...new Set(levels)].sort((a, b) => a - b);
+  }, [mocksForCountry, mockCategory]);
+
+  React.useEffect(() => {
+    if (!mockCategory || mockTierExpLevel === "") return;
+    const ok = mocksForCountry.some(
+      (m) => m.mockType === mockCategory && m.expLevel === mockTierExpLevel
+    );
+    if (!ok) {
+      setMockCategory("");
+      setMockTierExpLevel("");
+    }
+  }, [mocksForCountry, mockCategory, mockTierExpLevel]);
+
+  const selectedMock = React.useMemo(() => {
+    if (!mockCategory || mockTierExpLevel === "") return undefined;
+    return mocksForCountry.find(
+      (m) => m.mockType === mockCategory && m.expLevel === mockTierExpLevel
+    );
+  }, [mocksForCountry, mockCategory, mockTierExpLevel]);
   const unitPrice =
     selectedMock && rush ? selectedMock.rushPrice : selectedMock ? selectedMock.price : 0;
+  const nonStudentCheckout = isLoggedInNonStudent(meRole);
 
   async function submitGuestPassword() {
     setSetupErr(null);
@@ -191,8 +222,13 @@ export default function BookMockClient() {
       setErr("Please accept the terms.");
       return;
     }
-    if (!email.trim()) {
+    const em = email.trim();
+    if (!em) {
       setErr("Email is required.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      setErr("Enter a valid email address.");
       return;
     }
     if (!phone.trim() || !/^\d{10}$/.test(phone.trim())) {
@@ -203,11 +239,12 @@ export default function BookMockClient() {
       setErr("Select mock, slot, and date.");
       return;
     }
-
-    const gateRes = await fetch(`/api/auth/check-checkout-email?email=${encodeURIComponent(email.trim())}`);
-    const gateJson = (await gateRes.json()) as { canCheckout?: boolean; message?: string };
-    if (!gateRes.ok || gateJson.canCheckout !== true) {
-      setErr(gateJson.message ?? "Sign in to continue with this email.");
+    if (!buyerExperience) {
+      setErr("Select your experience (years).");
+      return;
+    }
+    if (!isLocalDateAtLeastDaysAhead(date, 2)) {
+      setErr("Choose a date at least two days from today.");
       return;
     }
 
@@ -302,6 +339,7 @@ export default function BookMockClient() {
                 isTermsChecked: true,
                 couponCode: null,
                 OfferPrice: null,
+                buyerExperienceBracket: buyerExperience,
               }),
             });
             const bookJson = (await book.json().catch(() => ({}))) as { error?: string; setupToken?: string };
@@ -317,9 +355,11 @@ export default function BookMockClient() {
               setPhase("post_pay_setup");
               return;
             }
-            router.push(
-              `/payments/success?payID=${encodeURIComponent(response.razorpay_payment_id)}&orderID=${encodeURIComponent(order.id)}`
-            );
+            setBookingSuccessIds({
+              payId: response.razorpay_payment_id,
+              orderId: order.id,
+            });
+            setBookingSuccessOpen(true);
           } catch {
             setErr("Booking step failed.");
             setBusy(false);
@@ -344,8 +384,17 @@ export default function BookMockClient() {
     return (
       <p className="text-sm text-amber-400">
         No mock offerings in the database. Run{" "}
-        <code className="text-xs bg-white/10 px-1 rounded">npm run seed:booking</code> with{" "}
+        <code className="text-xs bg-white/10 px-1 rounded">npm run seed:pricing</code> (or{" "}
+        <code className="text-xs bg-white/10 px-1 rounded">npm run seed:booking</code> for test fixtures) with{" "}
         <code className="text-xs bg-white/10 px-1 rounded">MONGODB_URI</code> set.
+      </p>
+    );
+  }
+
+  if (mocksForCountry.length === 0) {
+    return (
+      <p className="text-sm text-amber-400">
+        No mock offerings for this region. Choose another region or contact support.
       </p>
     );
   }
@@ -359,75 +408,66 @@ export default function BookMockClient() {
         <div className="relative border-b border-border px-8 py-10 md:px-10 lg:border-b-0 lg:border-r">
           <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-primary">
             <span className="h-[2px] w-9 rounded-full bg-primary" />
-            Student account
+            Account
           </p>
           {phase === "checkout" ? (
             <>
               <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Sign in or continue as guest</h2>
-              <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Already have an account?{" "}
-                <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
-                  Sign in
-                </Link>
-                . Need an account first?{" "}
-                <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
-                  Create one
-                </Link>{" "}
-                or use Google. To pay as a guest, fill in booking details on the right — after payment you can set a password for the same email.
-              </p>
+              {nonStudentCheckout ? (
+                <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
+                  You&apos;re signed in {checkoutRolePhrase(meRole)}. Use the{" "}
+                  <strong className="text-card-foreground">same email</strong> in the booking form on the right as this
+                  account — mentors, admins, and other roles can buy mocks and mentorship here; a separate student-only
+                  account is not required. Guest checkout on the right is for people who are not logged in.
+                </p>
+              ) : (
+                <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
+                    Sign in
+                  </Link>
+                  . Need an account first?{" "}
+                  <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
+                    Create one
+                  </Link>{" "}
+                  or use Google. To pay as a guest, fill in booking details on the right — after payment you can set a password for the same email.
+                </p>
+              )}
               <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full rounded-full border-white/20 text-card-foreground hover:bg-white/5"
-                  onClick={() => {
-                    window.location.href = "/api/auth/google/start?role=student";
-                  }}
-                >
-                  Continue with Google (student)
-                </Button>
+                {!nonStudentCheckout ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-full border-white/20 text-card-foreground hover:bg-white/5"
+                    onClick={() => {
+                      window.location.href = "/api/auth/google/start?role=student";
+                    }}
+                  >
+                    Continue with Google (student)
+                  </Button>
+                ) : (
+                  <p className="text-center text-xs text-muted-foreground">
+                    Complete payment on the right using your account email (prefilled).
+                  </p>
+                )}
               </div>
               {meEmail ? (
-                <p className="mt-4 text-xs text-muted-foreground">Signed in as {meEmail}</p>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Signed in as {meEmail}
+                  {meRole && checkoutRoleBadge(meRole) ? ` (${checkoutRoleBadge(meRole)})` : ""}
+                </p>
               ) : (
                 <p className="mt-4 text-xs text-muted-foreground">Guest checkout: use the email you pay with.</p>
               )}
             </>
           ) : phase === "post_pay_setup" ? (
             <>
-              <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Set your password</h2>
+              <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Payment received</h2>
               <p className="mb-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Payment received for{" "}
-                <strong className="text-card-foreground">{guestEmail}</strong>. Choose a password to finish setting up your student account.
+                We&apos;ve received payment for{" "}
+                <strong className="text-card-foreground">{guestEmail}</strong>. Use the dialog in the center of the screen
+                to set your password and finish creating your student account.
               </p>
-              <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
-                <input
-                  type="password"
-                  placeholder="New password (min 6)"
-                  value={setupPassword}
-                  onChange={(e) => setSetupPassword(e.target.value)}
-                  className={contactField}
-                  autoComplete="new-password"
-                />
-                <input
-                  type="password"
-                  placeholder="Confirm password"
-                  value={setupPassword2}
-                  onChange={(e) => setSetupPassword2(e.target.value)}
-                  className={contactField}
-                  autoComplete="new-password"
-                />
-                {setupErr ? <p className="text-xs text-red-400">{setupErr}</p> : null}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={setupBusy}
-                  className="w-full rounded-full font-semibold"
-                  onClick={() => void submitGuestPassword()}
-                >
-                  {setupBusy ? "Saving…" : "Save password"}
-                </Button>
-              </div>
             </>
           ) : (
             <>
@@ -451,7 +491,11 @@ export default function BookMockClient() {
             }`}
           >
             <h3 className="mb-2 text-lg font-semibold text-white">Booking details</h3>
-            <p className="mb-6 text-xs text-slate-400 md:text-sm">Use the same email as your student account. Fields match the legacy checkout.</p>
+            <p className="mb-6 text-xs text-slate-400 md:text-sm">
+              {nonStudentCheckout
+                ? "Use your MADAlgos account email below (prefilled). Mentors and staff can purchase with the same login."
+                : "Guest or signed-in: use the email you want on the receipt and booking. Payment is linked to your account when the email matches. Fields match the legacy checkout."}
+            </p>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -464,20 +508,9 @@ export default function BookMockClient() {
                       setEmail(e.target.value);
                       setErr(null);
                     }}
-                    className={`${contactField} ${emailWarning ? "border-amber-500/60" : ""}`}
+                    className={contactField}
                     required
-                    aria-invalid={emailWarning ? true : undefined}
                   />
-                  {emailCheckPending ? <p className="text-xs text-slate-500">Checking email…</p> : null}
-                  {emailWarning ? (
-                    <p className="text-xs text-amber-400">
-                      {emailWarning}{" "}
-                      <Link href="/auth" className="font-semibold text-primary underline">
-                        Sign in
-                      </Link>{" "}
-                      or use another email.
-                    </p>
-                  ) : null}
                 </div>
                 <div className="space-y-1.5">
                   <label className={contactLabel}>Phone (10 digits)</label>
@@ -488,17 +521,69 @@ export default function BookMockClient() {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className={contactLabel}>Mock</label>
+                  <select
+                    className={`${contactField} appearance-none bg-[#1c1c1c]`}
+                    value={mockCategory}
+                    onChange={(e) => {
+                      setMockCategory(e.target.value);
+                      setMockTierExpLevel("");
+                      setErr(null);
+                    }}
+                  >
+                    <option value="">Select…</option>
+                    {mockCategoriesOrdered.map((t) => (
+                      <option key={t} value={t}>
+                        {formatMockCategoryLabel(t)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={contactLabel}>Interview level</label>
+                  <select
+                    className={`${contactField} appearance-none bg-[#1c1c1c] disabled:opacity-50`}
+                    disabled={!mockCategory}
+                    value={mockTierExpLevel === "" ? "" : String(mockTierExpLevel)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setMockTierExpLevel(v === "" ? "" : Number(v));
+                      setErr(null);
+                    }}
+                  >
+                    <option value="">{mockCategory ? "Select…" : "—"}</option>
+                    {expLevelsForMockCategory.map((level) => {
+                      const row = mocksForCountry.find(
+                        (m) => m.mockType === mockCategory && m.expLevel === level
+                      );
+                      return (
+                        <option key={level} value={level}>
+                          {row
+                            ? `${formatMockTierLabel(level)} — ${row.currency} ${row.price}`
+                            : formatMockTierLabel(level)}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
               <div className="space-y-1.5">
-                <label className={contactLabel}>Mock</label>
+                <label className={contactLabel} title="Your years of professional experience">
+                  Your experience (years)
+                </label>
                 <select
                   className={`${contactField} appearance-none bg-[#1c1c1c]`}
-                  value={mockId === "" ? "" : String(mockId)}
-                  onChange={(e) => setMockId(e.target.value ? Number(e.target.value) : "")}
+                  value={buyerExperience}
+                  onChange={(e) =>
+                    setBuyerExperience((e.target.value || "") as BuyerExperienceBracket | "")
+                  }
                 >
                   <option value="">Select…</option>
-                  {catalog.mocks.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.label} — {m.currency} {m.price}
+                  {BUYER_EXP_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
                     </option>
                   ))}
                 </select>
@@ -530,7 +615,19 @@ export default function BookMockClient() {
                 </div>
                 <div className="space-y-1.5">
                   <label className={contactLabel}>Date</label>
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={contactFieldDate} />
+                  <input
+                    type="date"
+                    min={minBookingDate}
+                    value={date}
+                    onChange={(e) => {
+                      setDate(e.target.value);
+                      setErr(null);
+                    }}
+                    className={contactFieldDate}
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Earliest slot: {minBookingDate} (two days from today).
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -572,7 +669,7 @@ export default function BookMockClient() {
               {err ? <p className="text-sm text-red-400">{err}</p> : null}
               <button
                 type="button"
-                disabled={busy || phase !== "checkout" || !!emailWarning || emailCheckPending}
+                disabled={busy || phase !== "checkout"}
                 onClick={() => void pay()}
                 className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ab5a0] to-[#136b60] px-6 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_36px_rgba(42,181,160,0.55)] transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"
               >
@@ -583,6 +680,54 @@ export default function BookMockClient() {
         </div>
       </div>
 
+      <Dialog
+        open={bookingSuccessOpen}
+        onOpenChange={(open) => {
+          setBookingSuccessOpen(open);
+          if (!open && bookingSuccessIds) {
+            router.push(
+              `/payments/success?payID=${encodeURIComponent(bookingSuccessIds.payId)}&orderID=${encodeURIComponent(bookingSuccessIds.orderId)}`
+            );
+          }
+        }}
+      >
+        <DialogContent className="border-border bg-card sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Booking confirmed</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-2 pt-1 text-left text-sm text-muted-foreground">
+                <p>Payment received and your mock interview is booked. We&apos;ll email you a confirmation when delivery is set up.</p>
+                {bookingSuccessIds ? (
+                  <p className="font-mono text-xs text-muted-foreground/90">
+                    Payment ID: {bookingSuccessIds.payId}
+                  </p>
+                ) : null}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button type="button" variant="outline" className="rounded-full" onClick={() => setBookingSuccessOpen(false)}>
+              View receipt
+            </Button>
+            <Button type="button" className="rounded-full" onClick={() => setBookingSuccessOpen(false)}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <GuestPasswordSetupDialog
+        open={phase === "post_pay_setup"}
+        email={guestEmail}
+        setupPassword={setupPassword}
+        setupPassword2={setupPassword2}
+        onSetupPasswordChange={setSetupPassword}
+        onSetupPassword2Change={setSetupPassword2}
+        setupErr={setupErr}
+        setupBusy={setupBusy}
+        onSave={() => void submitGuestPassword()}
+      />
+
       <Dialog open={accountCreatedDialogOpen} onOpenChange={setAccountCreatedDialogOpen}>
         <DialogContent className="border-border bg-card sm:max-w-md">
           <DialogHeader>
@@ -590,7 +735,7 @@ export default function BookMockClient() {
             <DialogDescription asChild>
               <div className="space-y-3 pt-1 text-left text-sm text-muted-foreground">
                 <p>
-                  Your student account is now set up with{" "}
+                  Your MADAlgos account is now set up with{" "}
                   <strong className="text-card-foreground">{guestEmail}</strong>.
                 </p>
                 <p>

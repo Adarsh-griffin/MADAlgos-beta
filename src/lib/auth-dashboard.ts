@@ -6,5 +6,6 @@ export function getDashboardPathForRole(role: string | undefined): string {
   if (role === "SUPER_ADMIN" || role === "ADMIN") return "/admin";
   if (role === "MENTOR") return "/mentor";
   if (role === "MENTOR_PENDING") return "/auth";
+  if (role === "STUDENT") return "/student";
   return "/";
 }

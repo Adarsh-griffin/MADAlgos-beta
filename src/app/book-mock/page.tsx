@@ -38,8 +38,8 @@ export default function BookMockPage() {
               Book a mock interview
             </h1>
             <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-muted-foreground leading-relaxed">
-              Same flow as the legacy site: create Razorpay order → pay → verify payment → create booking →
-              confirmation email (when SendGrid template env is set).
+              Students, mentors, and admins use the same checkout: Razorpay order → pay → verify → booking → confirmation
+              email (when SendGrid is configured). Sign in and use your account email — no separate student-only account.
             </p>
           </div>
 

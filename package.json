@@ -8,7 +8,8 @@
     "start": "next start -p $PORT",
     "lint": "eslint",
     "download:logos": "node scripts/download-logos.cjs",
-    "seed:booking": "node scripts/seed-booking-test-data.mjs"
+    "seed:booking": "node scripts/seed-booking-test-data.mjs",
+    "seed:pricing": "node scripts/seed-pricing-from-json.mjs"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.31.0",

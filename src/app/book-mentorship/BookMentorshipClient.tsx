@@ -14,6 +14,16 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { getRazorpayKeyIdForClient } from "@/lib/razorpay-public-key";
+import {
+  checkoutRoleBadge,
+  checkoutRolePhrase,
+  isLoggedInNonStudent,
+  isLoggedInStudent,
+} from "@/lib/checkout-copy";
+import { formatMentorshipOptionLabel } from "@/lib/mentorship-simple-packages";
+import { GuestPasswordSetupDialog } from "@/components/checkout/GuestPasswordSetupDialog";
+
+const BOOKING_COUNTRY = "IND";
 
 type MentRow = {
   id: number;
@@ -25,6 +35,8 @@ type MentRow = {
   personalSessions: number;
   mockInterviews: number;
   expLabel: string;
+  /** When set, row applies only to this market (IND / USA / GBR) */
+  region?: string;
 };
 
 declare global {
@@ -40,11 +52,12 @@ const contactLabel = "text-[11px] font-semibold uppercase tracking-[0.18em] text
 export default function BookMentorshipClient() {
   const router = useRouter();
   const [rows, setRows] = React.useState<MentRow[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = React.useState(false);
   const [meEmail, setMeEmail] = React.useState<string | null>(null);
+  const [meRole, setMeRole] = React.useState<string | null>(null);
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [mid, setMid] = React.useState<number | "">("");
-  const [country, setCountry] = React.useState("IND");
   const [terms, setTerms] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
@@ -55,22 +68,25 @@ export default function BookMentorshipClient() {
   const [setupPassword2, setSetupPassword2] = React.useState("");
   const [setupBusy, setSetupBusy] = React.useState(false);
   const [setupErr, setSetupErr] = React.useState<string | null>(null);
-  const [emailWarning, setEmailWarning] = React.useState<string | null>(null);
-  const [emailCheckPending, setEmailCheckPending] = React.useState(false);
   const [accountCreatedDialogOpen, setAccountCreatedDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     let c = true;
     (async () => {
-      const [catRes, meRes] = await Promise.all([fetch("/api/booking/catalog"), fetch("/api/auth/me")]);
-      const cat = (await catRes.json()) as { mentorshipOfferings: MentRow[] };
-      const me = (await meRes.json()) as { user: { email?: string } | null };
-      if (!c) return;
-      setRows(cat.mentorshipOfferings ?? []);
-      const em = me.user?.email?.trim();
-      if (em) {
-        setMeEmail(em);
-        setEmail(em);
+      try {
+        const [catRes, meRes] = await Promise.all([fetch("/api/booking/catalog"), fetch("/api/auth/me")]);
+        const cat = (await catRes.json()) as { mentorshipOfferings: MentRow[] };
+        const me = (await meRes.json()) as { user: { email?: string; role?: string } | null };
+        if (!c) return;
+        setRows(cat.mentorshipOfferings ?? []);
+        setMeRole(me.user?.role ?? null);
+        const em = me.user?.email?.trim();
+        if (em) {
+          setMeEmail(em);
+          setEmail(em);
+        }
+      } finally {
+        if (c) setCatalogLoaded(true);
       }
     })();
     return () => {
@@ -79,35 +95,12 @@ export default function BookMentorshipClient() {
   }, []);
 
   React.useEffect(() => {
-    if (phase !== "checkout") return;
-    const e = email.trim();
-    if (!e) {
-      setEmailWarning(null);
-      setEmailCheckPending(false);
-      return;
-    }
-    const t = window.setTimeout(() => {
-      void (async () => {
-        setEmailCheckPending(true);
-        try {
-          const res = await fetch(`/api/auth/check-checkout-email?email=${encodeURIComponent(e)}`);
-          const j = (await res.json()) as { canCheckout?: boolean; message?: string };
-          if (!res.ok || j.canCheckout !== true) {
-            setEmailWarning(j.message ?? "Sign in to continue with this email.");
-          } else {
-            setEmailWarning(null);
-          }
-        } catch {
-          setEmailWarning(null);
-        } finally {
-          setEmailCheckPending(false);
-        }
-      })();
-    }, 450);
-    return () => window.clearTimeout(t);
-  }, [email, phase]);
+    if (mid === "") return;
+    if (!rows.some((r) => r.id === mid)) setMid("");
+  }, [rows, mid]);
 
   const offering = rows.find((r) => r.id === mid);
+  const nonStudentCheckout = isLoggedInNonStudent(meRole);
 
   async function submitGuestPassword() {
     setSetupErr(null);
@@ -167,19 +160,17 @@ export default function BookMentorshipClient() {
       setErr("Accept terms to continue.");
       return;
     }
-    if (!email.trim() || !offering) {
+    const em = email.trim();
+    if (!em || !offering) {
       setErr("Email and package required.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      setErr("Enter a valid email address.");
       return;
     }
     if (!phone.trim() || !/^\d{10}$/.test(phone.trim())) {
       setErr("Valid 10-digit phone required.");
-      return;
-    }
-
-    const gateRes = await fetch(`/api/auth/check-checkout-email?email=${encodeURIComponent(email.trim())}`);
-    const gateJson = (await gateRes.json()) as { canCheckout?: boolean; message?: string };
-    if (!gateRes.ok || gateJson.canCheckout !== true) {
-      setErr(gateJson.message ?? "Sign in to continue with this email.");
       return;
     }
 
@@ -266,7 +257,7 @@ export default function BookMentorshipClient() {
                 mentorshipId: offering.id,
                 orderId: order.id,
                 paymentId: response.razorpay_payment_id,
-                bookingCountry: country,
+                bookingCountry: BOOKING_COUNTRY,
                 isTermsChecked: true,
                 couponCode: null,
                 OfferPrice: null,
@@ -303,13 +294,18 @@ export default function BookMentorshipClient() {
     }
   }
 
-  if (!rows.length) {
+  if (catalogLoaded && !rows.length) {
     return (
       <p className="text-sm text-amber-400">
-        No mentorship packages. Run <code className="text-xs bg-white/10 px-1 rounded">npm run seed:booking</code> with{" "}
+        No mentorship packages. Run <code className="text-xs bg-white/10 px-1 rounded">npm run seed:pricing</code> (or{" "}
+        <code className="text-xs bg-white/10 px-1 rounded">npm run seed:booking</code>) with{" "}
         <code className="text-xs bg-white/10 px-1 rounded">MONGODB_URI</code>.
       </p>
     );
+  }
+
+  if (!catalogLoaded) {
+    return <p className="text-sm text-slate-400">Loading catalog…</p>;
   }
 
   return (
@@ -321,75 +317,86 @@ export default function BookMentorshipClient() {
         <div className="relative border-b border-border px-8 py-10 md:px-10 lg:border-b-0 lg:border-r">
           <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-primary">
             <span className="h-[2px] w-9 rounded-full bg-primary" />
-            Student account
+            Account
           </p>
           {phase === "checkout" ? (
             <>
-              <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Sign in or continue as guest</h2>
-              <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Already have an account?{" "}
-                <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
-                  Sign in
-                </Link>
-                . Need an account first?{" "}
-                <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
-                  Create one
-                </Link>{" "}
-                or use Google. To pay as a guest, complete the form on the right — after payment you can set a password for the same email.
-              </p>
-              <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full rounded-full border-white/20 text-card-foreground hover:bg-white/5"
-                  onClick={() => {
-                    window.location.href = "/api/auth/google/start?role=student";
-                  }}
-                >
-                  Continue with Google (student)
-                </Button>
-              </div>
+              {nonStudentCheckout ? (
+                <>
+                  <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">
+                    Pay with your MADAlgos account
+                  </h2>
+                  <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    You&apos;re signed in {checkoutRolePhrase(meRole)}. Use the{" "}
+                    <strong className="text-card-foreground">same email</strong> on the right as this account — mentors,
+                    admins, and other roles can buy mentorship here; a separate student-only account is not required.
+                  </p>
+                  <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
+                    <p className="text-center text-xs text-muted-foreground">
+                      Complete payment on the right using your account email (prefilled).
+                    </p>
+                  </div>
+                </>
+              ) : meEmail && isLoggedInStudent(meRole) ? (
+                <>
+                  <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Checkout</h2>
+                  <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    You&apos;re signed in as a <strong className="text-card-foreground">student</strong>. Choose one of the
+                    three packages on the right and pay with Razorpay — you don&apos;t need to sign in again.
+                  </p>
+                  <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
+                    <p className="text-center text-xs text-muted-foreground">
+                      Email is prefilled. Add phone, pick a package, and pay.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">
+                    Sign in or continue as guest
+                  </h2>
+                  <p className="mb-6 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    Already have an account?{" "}
+                    <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
+                      Sign in
+                    </Link>
+                    . Need an account first?{" "}
+                    <Link href="/auth" className="font-semibold text-primary underline hover:text-primary/90">
+                      Create one
+                    </Link>{" "}
+                    or use Google. To pay as a guest, complete the form on the right — after payment you can set a password for the same email.
+                  </p>
+                  <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-full border-white/20 text-card-foreground hover:bg-white/5"
+                      onClick={() => {
+                        window.location.href = "/api/auth/google/start?role=student";
+                      }}
+                    >
+                      Continue with Google (student)
+                    </Button>
+                  </div>
+                </>
+              )}
               {meEmail ? (
-                <p className="mt-4 text-xs text-muted-foreground">Signed in as {meEmail}</p>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Signed in as {meEmail}
+                  {meRole && checkoutRoleBadge(meRole) ? ` (${checkoutRoleBadge(meRole)})` : ""}
+                </p>
               ) : (
                 <p className="mt-4 text-xs text-muted-foreground">Guest checkout: use the email you pay with.</p>
               )}
             </>
           ) : phase === "post_pay_setup" ? (
             <>
-              <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Set your password</h2>
+              <h2 className="mb-4 text-2xl font-semibold text-card-foreground md:text-3xl">Payment received</h2>
               <p className="mb-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Payment received for{" "}
-                <strong className="text-card-foreground">{guestEmail}</strong>. Choose a password to finish setting up your student account.
+                We&apos;ve received payment for{" "}
+                <strong className="text-card-foreground">{guestEmail}</strong>. Use the dialog in the center of the screen
+                to set your password and finish creating your student account.
               </p>
-              <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
-                <input
-                  type="password"
-                  placeholder="New password (min 6)"
-                  value={setupPassword}
-                  onChange={(e) => setSetupPassword(e.target.value)}
-                  className={contactField}
-                  autoComplete="new-password"
-                />
-                <input
-                  type="password"
-                  placeholder="Confirm password"
-                  value={setupPassword2}
-                  onChange={(e) => setSetupPassword2(e.target.value)}
-                  className={contactField}
-                  autoComplete="new-password"
-                />
-                {setupErr ? <p className="text-xs text-red-400">{setupErr}</p> : null}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={setupBusy}
-                  className="w-full rounded-full font-semibold"
-                  onClick={() => void submitGuestPassword()}
-                >
-                  {setupBusy ? "Saving…" : "Save password"}
-                </Button>
-              </div>
             </>
           ) : (
             <>
@@ -414,7 +421,8 @@ export default function BookMentorshipClient() {
           >
             <h3 className="mb-2 text-lg font-semibold text-white">Mentorship booking</h3>
             <p className="mb-6 text-xs text-slate-400 md:text-sm">
-              Choose a package. Your mentor will be assigned by the MADAlgos team after purchase — same email as your student account.
+              Three clear packages (INR · India): 1, 3, or 6 months with mocks and 1:1 sessions listed in the dropdown.
+              Your mentor is assigned by the MADAlgos team after purchase.
             </p>
 
             <div className="space-y-4">
@@ -428,19 +436,8 @@ export default function BookMentorshipClient() {
                       setEmail(e.target.value);
                       setErr(null);
                     }}
-                    className={`${contactField} ${emailWarning ? "border-amber-500/60" : ""}`}
-                    aria-invalid={emailWarning ? true : undefined}
+                    className={contactField}
                   />
-                  {emailCheckPending ? <p className="text-xs text-slate-500">Checking email…</p> : null}
-                  {emailWarning ? (
-                    <p className="text-xs text-amber-400">
-                      {emailWarning}{" "}
-                      <Link href="/auth" className="font-semibold text-primary underline">
-                        Sign in
-                      </Link>{" "}
-                      or use another email.
-                    </p>
-                  ) : null}
                 </div>
                 <div className="space-y-1.5">
                   <label className={contactLabel}>Phone</label>
@@ -458,26 +455,15 @@ export default function BookMentorshipClient() {
                   value={mid === "" ? "" : String(mid)}
                   onChange={(e) => setMid(e.target.value ? Number(e.target.value) : "")}
                 >
-                  <option value="">Select…</option>
+                  <option value="">Select a package…</option>
                   {rows.map((r) => (
                     <option key={r.id} value={r.id}>
-                      {r.durationMonths} mo · {r.personalSessions} sessions · {r.currency} {r.price}
+                      {formatMentorshipOptionLabel(r)}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="space-y-1.5 md:max-w-xs">
-                <label className={contactLabel}>Region</label>
-                <select
-                  className={`${contactField} appearance-none bg-[#1c1c1c]`}
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                >
-                  <option value="IND">IND</option>
-                  <option value="USA">USA</option>
-                  <option value="GBR">GBR</option>
-                </select>
-              </div>
+              <p className="text-[11px] text-slate-500">Pricing in INR for India. International options: contact us.</p>
               <div className="flex items-center gap-2">
                 <Checkbox id="mt" checked={terms} onCheckedChange={(v) => setTerms(v === true)} />
                 <label htmlFor="mt" className="text-sm text-slate-400">
@@ -487,7 +473,7 @@ export default function BookMentorshipClient() {
               {err ? <p className="text-sm text-red-400">{err}</p> : null}
               <button
                 type="button"
-                disabled={busy || phase !== "checkout" || !!emailWarning || emailCheckPending}
+                disabled={busy || phase !== "checkout"}
                 onClick={() => void pay()}
                 className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ab5a0] to-[#136b60] px-6 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-[0_12px_36px_rgba(42,181,160,0.55)] transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"
               >
@@ -498,6 +484,18 @@ export default function BookMentorshipClient() {
         </div>
       </div>
 
+      <GuestPasswordSetupDialog
+        open={phase === "post_pay_setup"}
+        email={guestEmail}
+        setupPassword={setupPassword}
+        setupPassword2={setupPassword2}
+        onSetupPasswordChange={setSetupPassword}
+        onSetupPassword2Change={setSetupPassword2}
+        setupErr={setupErr}
+        setupBusy={setupBusy}
+        onSave={() => void submitGuestPassword()}
+      />
+
       <Dialog open={accountCreatedDialogOpen} onOpenChange={setAccountCreatedDialogOpen}>
         <DialogContent className="border-border bg-card sm:max-w-md">
           <DialogHeader>
@@ -505,7 +503,7 @@ export default function BookMentorshipClient() {
             <DialogDescription asChild>
               <div className="space-y-3 pt-1 text-left text-sm text-muted-foreground">
                 <p>
-                  Your student account is now set up with{" "}
+                  Your MADAlgos account is now set up with{" "}
                   <strong className="text-card-foreground">{guestEmail}</strong>.
                 </p>
                 <p>

@@ -38,7 +38,8 @@ export default function BookMentorshipPage() {
               Book mentorship
             </h1>
             <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-muted-foreground leading-relaxed">
-              Razorpay → verify payment → create booked mentorship + session pool → SendGrid (optional).
+              Three packages (1, 3, or 6 months) in INR. Signed-in students and mentors use the same checkout — pick a
+              package, pay with Razorpay, and we&apos;ll confirm by email.
             </p>
           </div>
 

@@ -1,0 +1,2087 @@
+{
+  "_meta": {
+    "source": "c:/Users/heman/OneDrive/Desktop/old site/mad-master/exports/smart-export-2026-03-24T20-13-53",
+    "exportedAt": "2026-03-24",
+    "note": "Merged offering/pricing-related tables from smart-export"
+  },
+  "experience": [
+    {
+      "id": 1,
+      "minYears": 0,
+      "maxYears": 1,
+      "expString": "Less than 1 year"
+    },
+    {
+      "id": 2,
+      "minYears": 1,
+      "maxYears": 3,
+      "expString": "1 to 3 years"
+    },
+    {
+      "id": 3,
+      "minYears": 3,
+      "maxYears": 6,
+      "expString": "3 to 6 years"
+    },
+    {
+      "id": 4,
+      "minYears": 6,
+      "maxYears": 9,
+      "expString": "6 to 9 years"
+    },
+    {
+      "id": 5,
+      "minYears": 9,
+      "maxYears": 100,
+      "expString": "More than 9 years"
+    }
+  ],
+  "packagedetails": [
+    {
+      "id": 1,
+      "duration": 1,
+      "personalSessions": 2,
+      "mockInterviews": 2
+    },
+    {
+      "id": 2,
+      "duration": 2,
+      "personalSessions": 4,
+      "mockInterviews": 4
+    },
+    {
+      "id": 3,
+      "duration": 4,
+      "personalSessions": 8,
+      "mockInterviews": 8
+    }
+  ],
+  "currentmarkets": [
+    {
+      "id": 1,
+      "market": "IND",
+      "currency": "INR",
+      "stopService": 0,
+      "minMockPrice": 999,
+      "minResumePrice": 1199,
+      "minMentorPrice": 3999
+    },
+    {
+      "id": 2,
+      "market": "USA",
+      "currency": "USD",
+      "stopService": 0,
+      "minMockPrice": 50,
+      "minResumePrice": 50,
+      "minMentorPrice": 100
+    },
+    {
+      "id": 3,
+      "market": "GBR",
+      "currency": "GBP",
+      "stopService": 0,
+      "minMockPrice": 50,
+      "minResumePrice": 50,
+      "minMentorPrice": 100
+    }
+  ],
+  "resumeofferings": [
+    {
+      "id": 1,
+      "expId": 1,
+      "currency": "INR",
+      "description": null,
+      "price": 1499,
+      "region": "IND",
+      "offerPrice": null
+    },
+    {
+      "id": 2,
+      "expId": 2,
+      "currency": "INR",
+      "description": null,
+      "price": 1699,
+      "region": "IND",
+      "offerPrice": null
+    },
+    {
+      "id": 3,
+      "expId": 3,
+      "currency": "INR",
+      "description": null,
+      "price": 1699,
+      "region": "IND",
+      "offerPrice": null
+    },
+    {
+      "id": 4,
+      "expId": 4,
+      "currency": "INR",
+      "description": null,
+      "price": 1799,
+      "region": "IND",
+      "offerPrice": null
+    },
+    {
+      "id": 5,
+      "expId": 5,
+      "currency": "INR",
+      "description": null,
+      "price": 1999,
+      "region": "IND",
+      "offerPrice": null
+    },
+    {
+      "id": 6,
+      "expId": 1,
+      "currency": "GBP",
+      "description": null,
+      "price": 50,
+      "region": "GBR",
+      "offerPrice": null
+    },
+    {
+      "id": 7,
+      "expId": 2,
+      "currency": "GBP",
+      "description": null,
+      "price": 50,
+      "region": "GBR",
+      "offerPrice": null
+    },
+    {
+      "id": 8,
+      "expId": 3,
+      "currency": "GBP",
+      "description": null,
+      "price": 70,
+      "region": "GBR",
+      "offerPrice": null
+    },
+    {
+      "id": 9,
+      "expId": 4,
+      "currency": "GBP",
+      "description": null,
+      "price": 70,
+      "region": "GBR",
+      "offerPrice": null
+    },
+    {
+      "id": 10,
+      "expId": 5,
+      "currency": "GBP",
+      "description": null,
+      "price": 70,
+      "region": "GBR",
+      "offerPrice": null
+    },
+    {
+      "id": 11,
+      "expId": 1,
+      "currency": "USD",
+      "description": null,
+      "price": 50,
+      "region": "USA",
+      "offerPrice": null
+    },
+    {
+      "id": 12,
+      "expId": 2,
+      "currency": "USD",
+      "description": null,
+      "price": 50,
+      "region": "USA",
+      "offerPrice": null
+    },
+    {
+      "id": 13,
+      "expId": 3,
+      "currency": "USD",
+      "description": null,
+      "price": 70,
+      "region": "USA",
+      "offerPrice": null
+    },
+    {
+      "id": 14,
+      "expId": 4,
+      "currency": "USD",
+      "description": null,
+      "price": 70,
+      "region": "USA",
+      "offerPrice": null
+    },
+    {
+      "id": 15,
+      "expId": 5,
+      "currency": "USD",
+      "description": null,
+      "price": 70,
+      "region": "USA",
+      "offerPrice": null
+    }
+  ],
+  "mockinterviewofferings": [
+    {
+      "id": 1,
+      "mockType": "DSA",
+      "region": "IND",
+      "description": "Data Structures and Algorithms",
+      "expId": 1,
+      "currency": "INR",
+      "price": 999,
+      "normalOrdering": 1,
+      "rushPrice": 999,
+      "offerPrice": null
+    },
+    {
+      "id": 2,
+      "mockType": "DSA",
+      "region": "IND",
+      "description": "Data Structures and Algorithms",
+      "expId": 2,
+      "currency": "INR",
+      "price": 1199,
+      "normalOrdering": 1,
+      "rushPrice": 1199,
+      "offerPrice": null
+    },
+    {
+      "id": 3,
+      "mockType": "DSA",
+      "region": "IND",
+      "description": "Data Structures and Algorithms",
+      "expId": 3,
+      "currency": "INR",
+      "price": 1499,
+      "normalOrdering": 1,
+      "rushPrice": 1499,
+      "offerPrice": null
+    },
+    {
+      "id": 4,
+      "mockType": "DSA",
+      "region": "IND",
+      "description": "Data Structures and Algorithms",
+      "expId": 4,
+      "currency": "INR",
+      "price": 1699,
+      "normalOrdering": 1,
+      "rushPrice": 1699,
+      "offerPrice": null
+    },
+    {
+      "id": 5,
+      "mockType": "DSA",
+      "region": "IND",
+      "description": "Data Structures and Algorithms",
+      "expId": 5,
+      "currency": "INR",
+      "price": 1999,
+      "normalOrdering": 1,
+      "rushPrice": 1999,
+      "offerPrice": null
+    },
+    {
+      "id": 6,
+      "mockType": "SYS_DES",
+      "region": "IND",
+      "description": "System Design",
+      "expId": 1,
+      "currency": "INR",
+      "price": 1199,
+      "normalOrdering": 1,
+      "rushPrice": 1199,
+      "offerPrice": null
+    },
+    {
+      "id": 7,
+      "mockType": "SYS_DES",
+      "region": "IND",
+      "description": "System Design",
+      "expId": 2,
+      "currency": "INR",
+      "price": 1499,
+      "normalOrdering": 1,
+      "rushPrice": 1499,
+      "offerPrice": null
+    },
+    {
+      "id": 8,
+      "mockType": "SYS_DES",
+      "region": "IND",
+      "description": "System Design",
+      "expId": 3,
+      "currency": "INR",
+      "price": 1699,
+      "normalOrdering": 1,
+      "rushPrice": 1699,
+      "offerPrice": null
+    },
+    {
+      "id": 9,
+      "mockType": "SYS_DES",
+      "region": "IND",
+      "description": "System Design",
+      "expId": 4,
+      "currency": "INR",
+      "price": 1799,
+      "normalOrdering": 1,
+      "rushPrice": 1799,
+      "offerPrice": null
+    },
+    {
+      "id": 10,
+      "mockType": "SYS_DES",
+      "region": "IND",
+      "description": "System Design",
+      "expId": 5,
+      "currency": "INR",
+      "price": 2199,
+      "normalOrdering": 1,
+      "rushPrice": 2199,
+      "offerPrice": null
+    },
+    {
+      "id": 11,
+      "mockType": "DSA",
+      "region": "USA",
+      "description": "Data Structures and Algorithms",
+      "expId": 1,
+      "currency": "USD",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 12,
+      "mockType": "DSA",
+      "region": "USA",
+      "description": "Data Structures and Algorithms",
+      "expId": 2,
+      "currency": "USD",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 13,
+      "mockType": "DSA",
+      "region": "USA",
+      "description": "Data Structures and Algorithms",
+      "expId": 3,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 14,
+      "mockType": "DSA",
+      "region": "USA",
+      "description": "Data Structures and Algorithms",
+      "expId": 4,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 15,
+      "mockType": "DSA",
+      "region": "USA",
+      "description": "Data Structures and Algorithms",
+      "expId": 5,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 16,
+      "mockType": "SYS_DES",
+      "region": "USA",
+      "description": "System Design",
+      "expId": 1,
+      "currency": "USD",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 17,
+      "mockType": "SYS_DES",
+      "region": "USA",
+      "description": "System Design",
+      "expId": 2,
+      "currency": "USD",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 18,
+      "mockType": "SYS_DES",
+      "region": "USA",
+      "description": "System Design",
+      "expId": 3,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 19,
+      "mockType": "SYS_DES",
+      "region": "USA",
+      "description": "System Design",
+      "expId": 4,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 20,
+      "mockType": "SYS_DES",
+      "region": "USA",
+      "description": "System Design",
+      "expId": 5,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 21,
+      "mockType": "BEH_LED",
+      "region": "IND",
+      "description": "Behavioral & Leadership",
+      "expId": 1,
+      "currency": "INR",
+      "price": 1199,
+      "normalOrdering": 1,
+      "rushPrice": 1199,
+      "offerPrice": null
+    },
+    {
+      "id": 22,
+      "mockType": "BEH_LED",
+      "region": "IND",
+      "description": "Behavioral & Leadership",
+      "expId": 2,
+      "currency": "INR",
+      "price": 1499,
+      "normalOrdering": 1,
+      "rushPrice": 1499,
+      "offerPrice": null
+    },
+    {
+      "id": 23,
+      "mockType": "BEH_LED",
+      "region": "IND",
+      "description": "Behavioral & Leadership",
+      "expId": 3,
+      "currency": "INR",
+      "price": 1699,
+      "normalOrdering": 1,
+      "rushPrice": 1699,
+      "offerPrice": null
+    },
+    {
+      "id": 24,
+      "mockType": "BEH_LED",
+      "region": "IND",
+      "description": "Behavioral & Leadership",
+      "expId": 4,
+      "currency": "INR",
+      "price": 1799,
+      "normalOrdering": 1,
+      "rushPrice": 1799,
+      "offerPrice": null
+    },
+    {
+      "id": 25,
+      "mockType": "BEH_LED",
+      "region": "IND",
+      "description": "Behavioral & Leadership",
+      "expId": 5,
+      "currency": "INR",
+      "price": 2199,
+      "normalOrdering": 1,
+      "rushPrice": 2199,
+      "offerPrice": null
+    },
+    {
+      "id": 26,
+      "mockType": "BEH_LED",
+      "region": "USA",
+      "description": "Behavioral & Leadership",
+      "expId": 1,
+      "currency": "USD",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 27,
+      "mockType": "BEH_LED",
+      "region": "USA",
+      "description": "Behavioral & Leadership",
+      "expId": 2,
+      "currency": "USD",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 28,
+      "mockType": "BEH_LED",
+      "region": "USA",
+      "description": "Behavioral & Leadership",
+      "expId": 3,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 29,
+      "mockType": "BEH_LED",
+      "region": "USA",
+      "description": "Behavioral & Leadership",
+      "expId": 4,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 30,
+      "mockType": "BEH_LED",
+      "region": "USA",
+      "description": "Behavioral & Leadership",
+      "expId": 5,
+      "currency": "USD",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 31,
+      "mockType": "DSA",
+      "region": "GBR",
+      "description": "Data Structures and Algorithms",
+      "expId": 1,
+      "currency": "GBP",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 32,
+      "mockType": "DSA",
+      "region": "GBR",
+      "description": "Data Structures and Algorithms",
+      "expId": 2,
+      "currency": "GBP",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 33,
+      "mockType": "DSA",
+      "region": "GBR",
+      "description": "Data Structures and Algorithms",
+      "expId": 3,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 34,
+      "mockType": "DSA",
+      "region": "GBR",
+      "description": "Data Structures and Algorithms",
+      "expId": 4,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 35,
+      "mockType": "DSA",
+      "region": "GBR",
+      "description": "Data Structures and Algorithms",
+      "expId": 5,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 36,
+      "mockType": "SYS_DES",
+      "region": "GBR",
+      "description": "System Design",
+      "expId": 1,
+      "currency": "GBP",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 37,
+      "mockType": "SYS_DES",
+      "region": "GBR",
+      "description": "System Design",
+      "expId": 2,
+      "currency": "GBP",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 38,
+      "mockType": "SYS_DES",
+      "region": "GBR",
+      "description": "System Design",
+      "expId": 3,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 39,
+      "mockType": "SYS_DES",
+      "region": "GBR",
+      "description": "System Design",
+      "expId": 4,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 40,
+      "mockType": "SYS_DES",
+      "region": "GBR",
+      "description": "System Design",
+      "expId": 5,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 41,
+      "mockType": "BEH_LED",
+      "region": "GBR",
+      "description": "Behavioral & Leadership",
+      "expId": 1,
+      "currency": "GBP",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 42,
+      "mockType": "BEH_LED",
+      "region": "GBR",
+      "description": "Behavioral & Leadership",
+      "expId": 2,
+      "currency": "GBP",
+      "price": 50,
+      "normalOrdering": 1,
+      "rushPrice": 50,
+      "offerPrice": null
+    },
+    {
+      "id": 43,
+      "mockType": "BEH_LED",
+      "region": "GBR",
+      "description": "Behavioral & Leadership",
+      "expId": 3,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 44,
+      "mockType": "BEH_LED",
+      "region": "GBR",
+      "description": "Behavioral & Leadership",
+      "expId": 4,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    },
+    {
+      "id": 45,
+      "mockType": "BEH_LED",
+      "region": "GBR",
+      "description": "Behavioral & Leadership",
+      "expId": 5,
+      "currency": "GBP",
+      "price": 70,
+      "normalOrdering": 1,
+      "rushPrice": 70,
+      "offerPrice": null
+    }
+  ],
+  "mockinterviewofferingstest": [
+    {
+      "id": 99999,
+      "mockType": "DSA",
+      "price": 1,
+      "region": "IND",
+      "currency": "INR",
+      "description": "test mock",
+      "expId": 1
+    }
+  ],
+  "mentorshipofferings": [
+    {
+      "id": 1,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 3999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 2,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 3999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 3,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 4499,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 4,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 4499,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 5,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 4999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 6,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 15399,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 7,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 15399,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 8,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 17399,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 9,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 17399,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 10,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 19199,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 11,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 9599,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 12,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 9599,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 13,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 10799,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 14,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 10799,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 15,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 11999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 16,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 12,
+      "expId": 1,
+      "price": 9599,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 17,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 21,
+      "expId": 2,
+      "price": 9599,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 18,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 11,
+      "expId": 3,
+      "price": 11599,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 19,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 2,
+      "expId": 4,
+      "price": 11599,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 20,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 31,
+      "expId": 5,
+      "price": 13499,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 21,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 2,
+      "expId": 1,
+      "price": 5999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 22,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 17,
+      "expId": 2,
+      "price": 5999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 23,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 4,
+      "expId": 3,
+      "price": 7199,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 24,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 12,
+      "expId": 4,
+      "price": 7199,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 25,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 10,
+      "expId": 5,
+      "price": 8399,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 26,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 9,
+      "expId": 1,
+      "price": 2499,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 27,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 22,
+      "expId": 2,
+      "price": 2499,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 28,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 27,
+      "expId": 3,
+      "price": 2999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 29,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 12,
+      "expId": 4,
+      "price": 2999,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 30,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 5,
+      "expId": 5,
+      "price": 3499,
+      "region": "IND",
+      "currency": "INR",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 31,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 1,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 32,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 100,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 33,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 140,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 34,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 140,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 35,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 140,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 36,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 400,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 37,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 400,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 38,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 560,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 39,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 560,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 40,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 560,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 41,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 240,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 42,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 240,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 43,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 340,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 44,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 340,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 45,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 340,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 46,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 1,
+      "expId": 1,
+      "price": 50,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 47,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 2,
+      "expId": 2,
+      "price": 50,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 48,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 3,
+      "expId": 3,
+      "price": 70,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 49,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 4,
+      "expId": 4,
+      "price": 70,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 50,
+      "duration": 1,
+      "ifSolo": 0,
+      "groupSizes": 3,
+      "expId": 5,
+      "price": 70,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 51,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 2,
+      "expId": 1,
+      "price": 120,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 52,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 12,
+      "expId": 2,
+      "price": 120,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 53,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 4,
+      "expId": 3,
+      "price": 170,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 54,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 23,
+      "expId": 4,
+      "price": 170,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 55,
+      "duration": 3,
+      "ifSolo": 0,
+      "groupSizes": 12,
+      "expId": 5,
+      "price": 170,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 56,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 18,
+      "expId": 1,
+      "price": 200,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 57,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 9,
+      "expId": 2,
+      "price": 200,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 58,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 21,
+      "expId": 3,
+      "price": 280,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 59,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 25,
+      "expId": 4,
+      "price": 280,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 60,
+      "duration": 6,
+      "ifSolo": 0,
+      "groupSizes": 29,
+      "expId": 5,
+      "price": 280,
+      "region": "USA",
+      "currency": "USD",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 61,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 100,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 62,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 100,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 63,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 140,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 64,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 140,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 65,
+      "duration": 1,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 140,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 1
+    },
+    {
+      "id": 66,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 240,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 67,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 240,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 68,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 340,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 69,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 340,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 70,
+      "duration": 3,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 340,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 2
+    },
+    {
+      "id": 71,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 1,
+      "price": 400,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 72,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 2,
+      "price": 400,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 73,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 3,
+      "price": 560,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 74,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 4,
+      "price": 560,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    },
+    {
+      "id": 75,
+      "duration": 6,
+      "ifSolo": 1,
+      "groupSizes": 0,
+      "expId": 5,
+      "price": 600,
+      "region": "GBR",
+      "currency": "GBP",
+      "description": null,
+      "offerPrice": null,
+      "packageId": 3
+    }
+  ],
+  "negotiationofferings": [
+    {
+      "id": 1,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Amazon offers",
+      "company": "Amazon",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 2,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Amazon offers",
+      "company": "Amazon",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 3,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Microsoft offers",
+      "company": "Microsoft",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 4,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Microsoft offers",
+      "company": "Microsoft",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 5,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Goldman Sachs offers",
+      "company": "Goldman Sachs",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 6,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Goldman Sachs offers",
+      "company": "Goldman Sachs",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 7,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Salesforce offers",
+      "company": "Salesforce",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 8,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Saleforce offers",
+      "company": "Salesforce",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 9,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Compass offers",
+      "company": "Compass",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 10,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Compass offers",
+      "company": "Compass",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 11,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Adobe offers",
+      "company": "Adobe",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 12,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Adobe offers",
+      "company": "Adobe",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 13,
+      "role": "IC",
+      "region": "IND",
+      "price": 14999,
+      "description": "Salary Hike for Service Now offers",
+      "company": "Service Now",
+      "currency": "INR",
+      "offerPrice": null
+    },
+    {
+      "id": 14,
+      "role": "Manager",
+      "region": "IND",
+      "price": 19999,
+      "description": "Salary Hike for Service Now offers",
+      "company": "Service Now",
+      "currency": "INR",
+      "offerPrice": null
+    }
+  ],
+  "premiumpackages": [
+    {
+      "id": 1,
+      "companyName": "Amazon",
+      "region": "IND",
+      "personalSessionPrice": 1000,
+      "mockInterviewPrice": 2000,
+      "personalSessions": 2,
+      "mockInterviews": 1,
+      "currency": "INR"
+    },
+    {
+      "id": 2,
+      "companyName": "Microsoft",
+      "region": "IND",
+      "personalSessionPrice": 1000,
+      "mockInterviewPrice": 2000,
+      "personalSessions": 2,
+      "mockInterviews": 1,
+      "currency": "INR"
+    },
+    {
+      "id": 3,
+      "companyName": "Google",
+      "region": "IND",
+      "personalSessionPrice": 1500,
+      "mockInterviewPrice": 2500,
+      "personalSessions": 2,
+      "mockInterviews": 1,
+      "currency": "INR"
+    }
+  ],
+  "globaloffer": [
+    {
+      "id": 1,
+      "offerPercentage": 0,
+      "type": "global",
+      "status": "INACTIVE"
+    },
+    {
+      "id": 2,
+      "offerPercentage": 0,
+      "type": "mock",
+      "status": "INACTIVE"
+    },
+    {
+      "id": 3,
+      "offerPercentage": 0,
+      "type": "resume",
+      "status": "INACTIVE"
+    },
+    {
+      "id": 4,
+      "offerPercentage": 0,
+      "type": "negotiation",
+      "status": "INACTIVE"
+    },
+    {
+      "id": 5,
+      "offerPercentage": 0,
+      "type": "mentorship",
+      "status": "INACTIVE"
+    },
+    {
+      "id": 6,
+      "offerPercentage": 75,
+      "type": "event",
+      "status": "ACTIVE"
+    }
+  ],
+  "offers": [
+    {
+      "id": 1,
+      "offerHeading": "Get free 1:1 mentorship from experts",
+      "offerTitle": "For limited time only, sign up and use your free 1:1 session.",
+      "coupon": "MAD10",
+      "confirmationMailMessage": "Check madalgos.in/explore-mentors to book your mentor.",
+      "isActive": {
+        "type": "Buffer",
+        "data": [
+          1
+        ]
+      }
+    }
+  ],
+  "salaryhikeresults": [
+    {
+      "id": 1,
+      "hike": "4 Lakhs",
+      "img": "https://madalgosstorage.blob.core.windows.net/madalgos-assets/amazon.svg",
+      "role": "IC",
+      "comany": "Amazon",
+      "region": "IND",
+      "currency": "INR",
+      "currencyIcon": "₹"
+    },
+    {
+      "id": 2,
+      "hike": "27k",
+      "img": "https://madalgosstorage.blob.core.windows.net/madalgos-assets/microsoft.svg",
+      "role": "IC",
+      "comany": "Microsoft",
+      "region": "USA",
+      "currency": "USD",
+      "currencyIcon": "$"
+    }
+  ],
+  "course": [
+    {
+      "id": 4,
+      "title": "Grokking The System Design Interview For Beginners",
+      "description": "<h2><span style=\"font-family: 'book antiqua', palatino, serif;\">Grokking Modern System Design Interview for Beginners</span></h2>\n<hr>\n<p><span style=\"font-family: 'book antiqua', palatino, serif; font-size: 12pt;\">Introducing the \"System Design Mastery\" Course by MAD Algos!</span></p>\n<p><span style=\"font-family: 'book antiqua', palatino, serif; font-size: 12pt;\">In today's world, System Design interviews have become an integral part of Engineering and Product Management evaluations. Interviewers at MAD Algos recognize the significance of candidates showcasing their technical acumen in core building blocks and justifying their design strategies. Our course is meticulously crafted to present you with a curated set of system design challenges, accompanied by comprehensive solutions. These resources will empower you to adeptly tackle intricate scalability scenarios during interviews or while conceptualizing novel product ideas.</span></p>\n<p><span style=\"font-family: 'book antiqua', palatino, serif; font-size: 12pt;\">Embark on a journey that commences with a bottom-up methodology to crafting scalable systems. You will be introduced to the fundamental constituents of modern systems, wherein each element stands as an independently scalable application. Delve into the innovative, MADified way for architecting web-scale applications. This approach entails identifying requirements, acknowledging constraints, and making assumptions, all of which lay the foundation for a systematic, p",
+      "price": {
+        "GBR": {
+          "price": 35,
+          "currency": "GBP"
+        },
+        "IND": {
+          "price": 2999,
+          "currency": "INR"
+        },
+        "USA": {
+          "price": 35,
+          "currency": "USD"
+        }
+      },
+      "publisher": "Ashish Dey",
+      "editors": {
+        "primary": 24,
+        "teamMembers": []
+      },
+      "creatorOrigin": "IND",
+      "expiryTime": 12,
+      "bannerImageLink": "https://madalgosstorage.blob.core.windows.net/course-banners/Grokking%20T_2c8bd7ac-860b-46b5-ae57-4e5d6ffc1f30_.JPG",
+      "publishStatus": "PRIVATE"
+    },
+    {
+      "id": 5,
+      "title": "Python For Beginners",
+      "description": "<p><span style=\"font-family: 'book antiqua', palatino, serif;\">Use our free Python lesson for beginners to learn the language. It has properly written, rationally organized Python articles chock full of knowledge and guidance. Hence, it facilitates learning Python for both absolute novices and individuals with past programming knowledge.</span></p>",
+      "price": {
+        "GBR": {
+          "price": "1"
+        },
+        "IND": {
+          "price": "1"
+        },
+        "USA": {
+          "price": "1"
+        }
+      },
+      "publisher": "MAD Algos",
+      "editors": {
+        "primary": 335,
+        "teamMembers": []
+      },
+      "creatorOrigin": "IND",
+      "expiryTime": 12,
+      "bannerImageLink": "https://madalgosstorage.blob.core.windows.net/course-banners/Python%20For_b22310b9-85bc-4f3f-8e1d-3dd8d84bb466_.JPG",
+      "publishStatus": "PUBLIC"
+    },
+    {
+      "id": 6,
+      "title": "Learn Java From Scratch",
+      "description": "<p><span style=\"font-size: 14pt; font-family: 'book antiqua', palatino, serif;\">Hello and Welcome to our course, \"Learn Java from Scratch\"! </span></p>\n<p><span style=\"font-size: 12pt; font-family: 'book antiqua', palatino, serif;\">This course will help you learn Java, a flexible and effective programming language. We'll walk you through Java's foundations whether you're a total newbie or looking to brush up on your knowledge. You'll gain knowledge of fundamental programming ideas as well as how to develop code and solve problems.You'll be prepared to take on real-world programming difficulties at the end of this course.</span></p>\n<p><span style=\"font-size: 12pt; font-family: 'book antiqua', palatino, serif;\">&nbsp;Let's explore Java's fascinating universe together!</span></p>",
+      "price": {
+        "GBR": {
+          "price": "1",
+          "currency": "GBP"
+        },
+        "IND": {
+          "price": "1",
+          "currency": "INR"
+        },
+        "USA": {
+          "price": "1",
+          "currency": "USD"
+        }
+      },
+      "publisher": "MAD Algos",
+      "editors": {
+        "primary": 335,
+        "teamMembers": []
+      },
+      "creatorOrigin": "IND",
+      "expiryTime": 1000,
+      "bannerImageLink": "https://madalgosstorage.blob.core.windows.net/course-banners/Learn%20Java_f5fad849-3200-4f40-8bf8-70bdec96ad19_.JPG",
+      "publishStatus": "PUBLIC"
+    }
+  ]
+}
