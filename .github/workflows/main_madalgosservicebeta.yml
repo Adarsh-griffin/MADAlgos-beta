@@ -59,7 +59,6 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
           NEXT_PUBLIC_AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.NEXT_PUBLIC_AZURE_STORAGE_CONNECTION_STRING }}
           NEXT_PUBLIC_ACCOUNT_NAME: ${{ secrets.NEXT_PUBLIC_ACCOUNT_NAME }}
-          SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID: ${{ secrets.SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID }}
 
           NEXT_TELEMETRY_DISABLED: "1"
           NODE_ENV: production
@@ -99,5 +98,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: MADAlgosServiceBeta
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4A726CC869F44DD88AE311C0D01ECB2F }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_910D565C0A3740E6BE5368FDC6F579A5 }}
           package: deploy.zip

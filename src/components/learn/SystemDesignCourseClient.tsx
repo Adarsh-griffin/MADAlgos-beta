@@ -1,0 +1,485 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  MapPin,
+  LayoutGrid,
+  Zap,
+  Atom,
+  Lock,
+  Menu,
+  X,
+  Twitter,
+  Linkedin,
+  Youtube,
+  MessageCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  SYSTEM_DESIGN_SECTIONS,
+  type CourseSectionDef,
+  type LessonItem,
+} from "@/lib/system-design-course";
+import { IntroductionLessonContent } from "@/components/learn/introduction-lesson-content";
+import { HowToPrepareLessonContent } from "@/components/learn/how-to-prepare-lesson-content";
+import { DeliveryFrameworkLessonContent } from "@/components/learn/delivery-framework-lesson-content";
+import { CoreConceptsLessonContent } from "@/components/learn/core-concepts-lesson-content";
+
+const ICON_MAP = {
+  clock: Clock,
+  "book-open": BookOpen,
+  "map-pin": MapPin,
+  "layout-grid": LayoutGrid,
+  zap: Zap,
+  atom: Atom,
+} as const;
+
+function SectionIcon({ name }: { name: CourseSectionDef["icon"] }) {
+  const I = ICON_MAP[name];
+  return <I className="h-4 w-4 shrink-0 text-teal-500/70" aria-hidden />;
+}
+
+const LESSON_TOC: Record<
+  string,
+  { title: string; headings: { id: string; label: string; depth: number }[] }
+> = {
+  introduction: {
+    title: "Introduction",
+    headings: [
+      { id: "intro-overview", label: "Overview", depth: 0 },
+      { id: "overview-structure", label: "Course map", depth: 0 },
+      { id: "what-is-sd", label: "What are system design interviews?", depth: 0 },
+      { id: "types", label: "Types of System Design Interviews", depth: 0 },
+      { id: "assessment", label: "Assessment", depth: 0 },
+      { id: "assessment-problem", label: "Problem Navigation", depth: 1 },
+      { id: "assessment-solution", label: "Solution Design", depth: 1 },
+      { id: "assessment-technical", label: "Technical Excellence", depth: 1 },
+      { id: "assessment-communication", label: "Communication & Collaboration", depth: 1 },
+      { id: "how-to-use", label: "How to Use This Guide", depth: 0 },
+      { id: "time-needed", label: "How much time do I need?", depth: 1 },
+      { id: "conclusion", label: "Conclusion", depth: 0 },
+    ],
+  },
+  "how-to-prepare": {
+    title: "How to Prepare",
+    headings: [
+      { id: "build-foundation", label: "Build a Foundation", depth: 0 },
+      { id: "practice", label: "Practice Practice Practice", depth: 0 },
+      { id: "questions", label: "Interview Questions", depth: 0 },
+      { id: "next-steps", label: "Next steps", depth: 0 },
+    ],
+  },
+  "delivery-framework": {
+    title: "Delivery Framework",
+    headings: [
+      { id: "overall-structure", label: "Overall Structure", depth: 0 },
+      { id: "df-course-map", label: "Course map (you are here)", depth: 1 },
+      { id: "interview-structure", label: "Six-step framework", depth: 1 },
+      { id: "requirements", label: "Requirements (~5 min)", depth: 0 },
+      { id: "functional-reqs", label: "Functional Requirements", depth: 1 },
+      { id: "non-functional-reqs", label: "Non-functional Requirements", depth: 1 },
+      { id: "capacity-estimation", label: "Capacity Estimation", depth: 1 },
+      { id: "core-entities", label: "Core Entities (~2 min)", depth: 0 },
+      { id: "api-interface", label: "API or Interface (~5 min)", depth: 0 },
+      { id: "data-flow", label: "Data Flow (optional)", depth: 0 },
+      { id: "high-level-design", label: "High Level Design (~10-15 min)", depth: 0 },
+      { id: "deep-dives", label: "Deep Dives (~10 min)", depth: 0 },
+    ],
+  },
+  "core-concepts-intro": {
+    title: "Core Concepts",
+    headings: [
+      { id: "cc-structure", label: "Overall Structure", depth: 0 },
+      { id: "networking", label: "Networking Essentials", depth: 0 },
+      { id: "api-design", label: "API Design", depth: 0 },
+      { id: "data-modeling", label: "Data Modeling", depth: 0 },
+      { id: "db-indexing", label: "Database Indexing", depth: 0 },
+      { id: "caching-section", label: "Caching", depth: 0 },
+      { id: "sharding-section", label: "Sharding", depth: 0 },
+      { id: "consistent-hashing-section", label: "Consistent Hashing", depth: 0 },
+      { id: "cap-section", label: "CAP Theorem", depth: 0 },
+      { id: "numbers-section", label: "Numbers to Know", depth: 0 },
+    ],
+  },
+};
+
+function placeholderBody(lessonId: string) {
+  return (
+    <p className="text-gray-400 leading-relaxed">
+      Content for <strong className="text-white">{lessonId}</strong> will appear here once you add it.
+    </p>
+  );
+}
+
+export default function SystemDesignCourseClient() {
+  const [activeLesson, setActiveLesson] = React.useState("introduction");
+  const [openSections, setOpenSections] = React.useState<Record<string, boolean>>(() => {
+    const o: Record<string, boolean> = {};
+    for (const s of SYSTEM_DESIGN_SECTIONS) {
+      o[s.id] = s.defaultOpen ?? false;
+    }
+    return o;
+  });
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  const [readProgress, setReadProgress] = React.useState(0);
+
+  const mainRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const max = scrollHeight - clientHeight;
+      setReadProgress(max <= 0 ? 100 : Math.min(100, Math.round((scrollTop / max) * 100)));
+    };
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [activeLesson]);
+
+  const toggleSection = (id: string) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const selectLesson = (lesson: LessonItem) => {
+    if (lesson.locked) return;
+    setActiveLesson(lesson.id);
+    setMobileNavOpen(false);
+    mainRef.current?.scrollTo({ top: 0 });
+  };
+
+  const toc = LESSON_TOC[activeLesson];
+  const lessonTitle = toc?.title ?? activeLesson.replace(/-/g, " ");
+
+  return (
+    <div className="min-h-screen bg-[#0b0c14]">
+      {/* Mobile nav bar */}
+      <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-white/[0.08] bg-[#0b0c14]/95 px-3 py-2 backdrop-blur-xl xl:hidden">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Link
+            href="/"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+            aria-label="Back to MADAlgos home"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-white"
+          >
+            <Menu className="h-4 w-4" />
+            Menu
+          </button>
+        </div>
+        <span className="truncate text-[11px] text-gray-400">{lessonTitle}</span>
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileNavOpen ? (
+        <div className="fixed inset-0 z-50 xl:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/70"
+            aria-label="Close menu"
+            onClick={() => setMobileNavOpen(false)}
+          />
+          <div className="absolute left-0 top-0 flex h-full w-[min(100%,360px)] flex-col border-r border-white/[0.08] bg-[#0b0c14] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                Learn system design
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(false)}
+                className="rounded-full p-2 text-gray-400 hover:bg-white/5"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+              <CourseSidebarNav
+                openSections={openSections}
+                toggleSection={toggleSection}
+                activeLesson={activeLesson}
+                onSelectLesson={selectLesson}
+              />
+            </div>
+            <SidebarFooter />
+          </div>
+        </div>
+      ) : null}
+
+      {/* 3-column grid */}
+      <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[280px_1fr_260px]">
+
+        {/* LEFT SIDEBAR */}
+        <aside className="hidden xl:flex flex-col border-r border-white/[0.08] bg-[#0b0c14]">
+          <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
+            <div className="border-b border-white/[0.08] px-4 py-3">
+              <Link
+                href="/"
+                className="flex items-center gap-2 text-xs text-gray-400 transition-colors hover:text-white"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to main
+              </Link>
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.25em] text-gray-500">
+                Learn system design
+              </p>
+            </div>
+            <div className="flex-1 overflow-y-auto px-2 py-2">
+              <CourseSidebarNav
+                openSections={openSections}
+                toggleSection={toggleSection}
+                activeLesson={activeLesson}
+                onSelectLesson={selectLesson}
+              />
+            </div>
+            <SidebarFooter />
+          </div>
+        </aside>
+
+        {/* MAIN CONTENT */}
+        <main ref={mainRef} className="h-screen overflow-y-auto">
+          <div className="mx-auto max-w-[720px] px-6 py-8 text-[15.5px] leading-[1.8] tracking-[0.01em] text-white">
+            {activeLesson === "introduction" ? (
+              <article className="max-w-none">
+                <IntroductionLessonContent />
+              </article>
+            ) : activeLesson === "how-to-prepare" ? (
+              <article className="max-w-none">
+                <HowToPrepareLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "delivery-framework" ? (
+              <article className="max-w-none">
+                <DeliveryFrameworkLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "core-concepts-intro" ? (
+              <article className="max-w-none">
+                <CoreConceptsLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : (
+              <>
+                <p className="text-sm text-gray-400">System design in a hurry</p>
+                <h1 className="mt-2 text-4xl font-semibold tracking-tight">{lessonTitle}</h1>
+                <p className="mt-3 text-gray-400">
+                  Structured like a documentation lesson — swap in your screenshots and copy anytime.
+                </p>
+                <div className="mt-8 space-y-6 text-gray-300">
+                  {placeholderBody(activeLesson)}
+                </div>
+              </>
+            )}
+          </div>
+        </main>
+
+        {/* RIGHT SIDEBAR */}
+        <aside className="hidden xl:block border-l border-white/[0.08]">
+          <div className="sticky top-0 flex h-screen flex-col gap-6 px-3 py-6">
+
+            {/* Promo card */}
+            <div className="relative shrink-0 overflow-hidden rounded-xl border border-white/[0.06] bg-[#0f111a] p-4">
+              <span className="absolute right-3 top-3 rounded-full bg-teal-500/20 px-2.5 py-0.5 text-[10px] font-bold text-teal-400">
+                Up to 20% off
+              </span>
+              <p className="text-base font-bold text-white">MADAlgos Premium</p>
+              <p className="mt-1 text-xs text-gray-500">Unlock the full learning experience</p>
+              <ul className="mt-4 space-y-2.5 text-[13px] text-gray-400">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-500" />
+                  Live mentorship tracks
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-500" />
+                  Interview-style mocks
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-500" />
+                  Mentor-reviewed feedback
+                </li>
+              </ul>
+              <Link
+                href="/book-mentorship"
+                className="mt-4 flex w-full items-center justify-center rounded-full bg-white py-2 text-sm font-semibold text-black transition hover:bg-gray-200"
+              >
+                Learn more
+              </Link>
+            </div>
+
+            {/* Reading progress */}
+            <div className="shrink-0">
+              <div className="mb-2 flex items-center justify-between text-xs text-gray-400">
+                <span className="flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Reading progress
+                </span>
+                <span className="text-teal-400">{readProgress}%</span>
+              </div>
+              <div className="h-[3px] overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-[3px] rounded-full bg-teal-500 transition-[width] duration-300"
+                  style={{ width: `${readProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* TOC */}
+            {toc ? (
+              <div className="flex-1 overflow-hidden">
+                <p className="mb-3 text-xs text-gray-400">On this page</p>
+                <ul className="space-y-2 border-l border-white/10 pl-3 text-[13px] text-gray-500">
+                  {toc.headings.map((h, i) => (
+                    <li key={h.id} style={{ paddingLeft: h.depth * 10 }}>
+                      <a
+                        href={`#${h.id}`}
+                        className={cn(
+                          "block transition-colors hover:text-teal-400",
+                          i === 0 && "text-teal-400"
+                        )}
+                      >
+                        {h.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function CourseSidebarNav({
+  openSections,
+  toggleSection,
+  activeLesson,
+  onSelectLesson,
+}: {
+  openSections: Record<string, boolean>;
+  toggleSection: (id: string) => void;
+  activeLesson: string;
+  onSelectLesson: (l: LessonItem) => void;
+}) {
+  return (
+    <nav className="space-y-0.5" aria-label="Course lessons">
+      {SYSTEM_DESIGN_SECTIONS.map((section) => {
+        const open = openSections[section.id] ?? false;
+        const hasLessons = section.lessons.length > 0;
+        return (
+          <div key={section.id}>
+            <button
+              type="button"
+              onClick={() => toggleSection(section.id)}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[13px] font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <SectionIcon name={section.icon} />
+              <span className="min-w-0 flex-1 truncate">{section.title}</span>
+              {open ? (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-600" />
+              )}
+            </button>
+            {open && !hasLessons ? (
+              <p className="px-2 pb-2 pl-9 text-[12px] text-gray-600">Lessons coming soon.</p>
+            ) : null}
+            {hasLessons && open ? (
+              <ul className="ml-[18px] border-l border-white/[0.06] py-0.5 pl-3">
+                {section.lessons.map((lesson) => {
+                  const isActive = activeLesson === lesson.id;
+                  return (
+                    <li key={lesson.id}>
+                      <button
+                        type="button"
+                        disabled={lesson.locked}
+                        onClick={() => onSelectLesson(lesson)}
+                        className={cn(
+                          "flex w-full items-center gap-2.5 py-[7px] pl-2 pr-1 text-left text-[13px] transition-colors",
+                          isActive
+                            ? "-ml-[13px] border-l-2 border-teal-500 bg-teal-500/10 pl-[calc(0.5rem+11px)] font-medium text-teal-300"
+                            : "text-gray-500 hover:bg-white/5 hover:text-gray-300",
+                          lesson.locked && "cursor-not-allowed opacity-50"
+                        )}
+                      >
+                        {lesson.locked ? (
+                          <Lock className="h-3 w-3 shrink-0 text-gray-600" />
+                        ) : isActive ? (
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-400" />
+                        ) : (
+                          <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-white/15" aria-hidden />
+                        )}
+                        <span className="min-w-0 flex-1 truncate">{lesson.title}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+function SidebarFooter() {
+  return (
+    <div className="shrink-0 border-t border-white/[0.08] px-3 py-3">
+      <Link
+        href="/auth"
+        className="flex items-center gap-2 text-xs font-medium text-gray-400 transition-colors hover:text-white"
+      >
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5">
+          <span className="text-[10px]">👤</span>
+        </span>
+        Sign in / Sign up
+      </Link>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {[
+          { href: "https://twitter.com", icon: Twitter, label: "Twitter" },
+          { href: "https://linkedin.com", icon: Linkedin, label: "LinkedIn" },
+          { href: "https://youtube.com", icon: Youtube, label: "YouTube" },
+          { href: "https://discord.com", icon: MessageCircle, label: "Discord" },
+        ].map(({ href, icon: Icon, label }) => (
+          <a
+            key={label}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-gray-500 transition-colors hover:border-white/20 hover:text-white"
+            aria-label={label}
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}

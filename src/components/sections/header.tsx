@@ -18,6 +18,8 @@ import {
   Users,
   GraduationCap,
   Shield,
+  Library,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -59,6 +61,19 @@ const NAV_ITEMS: NavItem[] = [
         href: "/mentors",
         description: "Browse verified mentors",
         icon: <Users className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    name: "LEARN",
+    href: "/learn/system-design",
+    icon: <Library className="w-3.5 h-3.5" />,
+    dropdown: [
+      {
+        name: "System design",
+        href: "/learn/system-design",
+        description: "Course: patterns, core concepts & interviews",
+        icon: <Layers className="w-5 h-5" />,
       },
     ],
   },
