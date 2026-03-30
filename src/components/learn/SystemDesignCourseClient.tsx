@@ -368,7 +368,12 @@ export default function SystemDesignCourseClient() {
           <div className="mx-auto max-w-[720px] px-6 py-8 text-[15.5px] leading-[1.8] tracking-[0.01em] text-white">
             {activeLesson === "introduction" ? (
               <article className="max-w-none">
-                <IntroductionLessonContent />
+                <IntroductionLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
               </article>
             ) : activeLesson === "how-to-prepare" ? (
               <article className="max-w-none">

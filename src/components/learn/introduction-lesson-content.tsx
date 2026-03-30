@@ -8,7 +8,11 @@ import {
   SixInterviewTypesDiagram,
 } from "@/components/learn/introduction-lesson-diagrams";
 
-export function IntroductionLessonContent() {
+export function IntroductionLessonContent({
+  onNavigate,
+}: {
+  onNavigate: (lessonId: string) => void;
+}) {
   const [timeOpen, setTimeOpen] = React.useState(false);
 
   return (
@@ -361,14 +365,25 @@ export function IntroductionLessonContent() {
             We&apos;re excited to help you land your next senior role. Dive into the Foundation next.
           </p>
           <div className="mt-8">
-            <button className="rounded-full bg-orange-600 px-8 py-3 font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95">
+            <button
+              type="button"
+              onClick={() => onNavigate("core-concepts-intro")}
+              className="rounded-full bg-orange-600 px-8 py-3 font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+            >
               Start Foundation &rarr;
             </button>
           </div>
         </div>
         
         <p className="text-center text-xs text-muted-foreground">
-          Next: <span className="text-orange-500 font-medium cursor-pointer hover:underline">How to Prepare</span>
+          Next:{" "}
+          <button
+            type="button"
+            onClick={() => onNavigate("how-to-prepare")}
+            className="text-orange-500 font-medium hover:underline"
+          >
+            How to Prepare
+          </button>
         </p>
       </section>
     </div>  </div>

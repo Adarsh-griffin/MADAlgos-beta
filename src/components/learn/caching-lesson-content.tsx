@@ -2,6 +2,8 @@
 
 import React from "react";
 import { ChevronRight, Info, AlertTriangle, Lightbulb } from "lucide-react";
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+import { LoginProgressToggle } from "@/components/learn/LoginProgressToggle";
 
 export function CachingLessonContent({
   onNavigate,
@@ -18,9 +20,9 @@ export function CachingLessonContent({
       </header>
 
       <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">
-        <img 
-          src="/images/caching_handdrawn.png" 
-          alt="Caching Architecture" 
+        <ZoomableImage
+          src="/images/caching_handdrawn.png"
+          alt="Caching Architecture"
           className="mx-auto max-w-2xl w-full h-auto drop-shadow-xl"
         />
       </div>
@@ -252,13 +254,7 @@ export function CachingLessonContent({
       </section>
 
       {/* Progress toggle */}
-      <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-gray-400">
-        <span className="text-[13px]">Login to track your progress</span>
-        <label className="relative inline-flex cursor-pointer items-center">
-          <input type="checkbox" className="peer sr-only" disabled />
-          <div className="h-5 w-9 rounded-full bg-white/10 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white/40 after:transition-all peer-checked:bg-teal-500 peer-checked:after:translate-x-full" />
-        </label>
-      </div>
+      <LoginProgressToggle />
 
       {/* Navigation */}
       <section className="space-y-4 border-t border-white/[0.06] pt-8">

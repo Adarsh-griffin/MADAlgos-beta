@@ -2,7 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, Lightbulb, Calendar } from "lucide-react";
+import { LoginProgressToggle } from "@/components/learn/LoginProgressToggle";
 
 const QUESTIONS: { name: string; difficulty: "Easy" | "Medium" | "Hard" }[] = [
   { name: "Bit.ly", difficulty: "Easy" },
@@ -42,6 +44,8 @@ const DIFF_STYLE: Record<string, string> = {
 };
 
 export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonId: string) => void }) {
+  const router = useRouter();
+
   return (
     <div className="not-prose space-y-12">
       <header className="space-y-4">
@@ -230,13 +234,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
       </section>
 
       {/* Login progress toggle */}
-      <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-gray-400">
-        <span className="text-[13px]">Login to track your progress</span>
-        <label className="relative inline-flex cursor-pointer items-center">
-          <input type="checkbox" className="peer sr-only" disabled />
-          <div className="h-5 w-9 rounded-full bg-white/10 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white/40 after:transition-all peer-checked:bg-teal-500 peer-checked:after:translate-x-full" />
-        </label>
-      </div>
+      <LoginProgressToggle />
 
       {/* Navigation + CTA */}
       <section id="next-steps" className="scroll-mt-12 space-y-6 border-t border-white/[0.06] pt-8">
@@ -267,13 +265,14 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
                 Meet with a FAANG senior+ engineer or manager and learn exactly what it takes to get the job.
               </p>
             </div>
-            <Link
-              href="/book-mock"
+            <button
+              type="button"
+              onClick={() => router.push("/book-mock")}
               className="inline-flex shrink-0 items-center gap-2 rounded-full bg-teal-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg transition hover:bg-teal-400"
             >
               <Calendar className="h-4 w-4" />
               Book now
-            </Link>
+            </button>
           </div>
         </div>
       </section>

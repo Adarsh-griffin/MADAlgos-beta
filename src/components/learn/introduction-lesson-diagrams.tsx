@@ -151,32 +151,32 @@ export function InterviewerRubricDiagram() {
       <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-10">
         {/* Problem Navigation */}
         <div className="relative">
-          <p className={`${RUBRIC_NOTE} mb-2 max-w-[200px] sm:absolute sm:-top-12 sm:left-0 sm:mb-0`}>
-            <span className="text-amber-400/90">&ldquo;</span>
-            They spent all their time on the User table, never touching the most important part!
-            <span className="text-amber-400/90">&rdquo;</span>
-          </p>
           <div className="rounded-2xl border-2 border-emerald-500/75 bg-gradient-to-br from-emerald-500/12 to-transparent p-5 shadow-[0_12px_40px_rgba(16,185,129,0.12)]">
             <h3 className="text-base font-bold text-emerald-200">Problem Navigation</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Explore the problem, prioritize what matters, and ship a coherent path through ambiguity.
             </p>
           </div>
+          <p className={`${RUBRIC_NOTE} mt-2 max-w-[200px]`}>
+            <span className="text-amber-400/90">&ldquo;</span>
+            They spent all their time on the User table, never touching the most important part!
+            <span className="text-amber-400/90">&rdquo;</span>
+          </p>
         </div>
 
         {/* Solution Design */}
         <div className="relative">
-          <p className={`${RUBRIC_NOTE} mb-2 ml-auto max-w-[210px] text-right sm:absolute sm:-top-12 sm:right-0 sm:mb-0`}>
-            <span className="text-amber-400/90">&ldquo;</span>
-            The multi-layer cache was an elegant solution to the massive read volume
-            <span className="text-amber-400/90">&rdquo;</span>
-          </p>
           <div className="rounded-2xl border-2 border-sky-500/75 bg-gradient-to-br from-sky-500/12 to-transparent p-5 shadow-[0_12px_40px_rgba(14,165,233,0.12)]">
             <h3 className="text-base font-bold text-sky-200">Solution Design</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Turn requirements into a coherent architecture that fits together end-to-end.
             </p>
           </div>
+          <p className={`${RUBRIC_NOTE} mt-2 ml-auto max-w-[210px] text-right`}>
+            <span className="text-amber-400/90">&ldquo;</span>
+            The multi-layer cache was an elegant solution to the massive read volume
+            <span className="text-amber-400/90">&rdquo;</span>
+          </p>
         </div>
 
         {/* Technical Excellence */}
