@@ -31,6 +31,18 @@ import { IntroductionLessonContent } from "@/components/learn/introduction-lesso
 import { HowToPrepareLessonContent } from "@/components/learn/how-to-prepare-lesson-content";
 import { DeliveryFrameworkLessonContent } from "@/components/learn/delivery-framework-lesson-content";
 import { CoreConceptsLessonContent } from "@/components/learn/core-concepts-lesson-content";
+import { NetworkingEssentialsLessonContent } from "@/components/learn/networking-essentials-lesson-content";
+import { CachingLessonContent } from "@/components/learn/caching-lesson-content";
+import { CAPTheoremLessonContent } from "@/components/learn/cap-theorem-lesson-content";
+import { ShardingLessonContent } from "@/components/learn/sharding-lesson-content";
+import { ConsistentHashingLessonContent } from "@/components/learn/consistent-hashing-lesson-content";
+import { KeyTechnologiesLessonContent } from "@/components/learn/key-technologies-lesson-content";
+import { CommonPatternsLessonContent } from "@/components/learn/common-patterns-lesson-content";
+import { QuestionBreakdownsLessonContent } from "@/components/learn/question-breakdowns-lesson-content";
+import { APIDesignLessonContent } from "@/components/learn/api-design-lesson-content";
+import { DataModelingLessonContent } from "@/components/learn/data-modeling-lesson-content";
+import { DatabaseIndexingLessonContent } from "@/components/learn/database-indexing-lesson-content";
+import { NumbersToKnowLessonContent } from "@/components/learn/numbers-to-know-lesson-content";
 
 const ICON_MAP = {
   clock: Clock,
@@ -106,6 +118,108 @@ const LESSON_TOC: Record<
       { id: "consistent-hashing-section", label: "Consistent Hashing", depth: 0 },
       { id: "cap-section", label: "CAP Theorem", depth: 0 },
       { id: "numbers-section", label: "Numbers to Know", depth: 0 },
+    ],
+  },
+  "networking-essentials": {
+    title: "Networking Essentials",
+    headings: [
+      { id: "osi-model", label: "The OSI Model", depth: 0 },
+      { id: "tcp-udp", label: "TCP vs UDP", depth: 0 },
+      { id: "http", label: "HTTP (1.1, 2, 3)", depth: 0 },
+      { id: "dns", label: "DNS", depth: 0 },
+    ],
+  },
+  "api-design": {
+    title: "API Design",
+    headings: [
+      { id: "api-types", label: "API Types", depth: 0 },
+      { id: "rest", label: "REST", depth: 0 },
+      { id: "graphql", label: "GraphQL", depth: 0 },
+      { id: "grpc", label: "gRPC", depth: 0 },
+      { id: "idempotency", label: "Idempotency", depth: 0 },
+    ],
+  },
+  "data-modeling": {
+    title: "Data Modeling",
+    headings: [
+      { id: "db-model-options", label: "Database Options", depth: 0 },
+      { id: "schema-design", label: "Schema Design", depth: 0 },
+    ],
+  },
+  "database-indexing": {
+    title: "Database Indexing",
+    headings: [
+      { id: "indexing-overview", label: "Overview", depth: 0 },
+      { id: "index-types", label: "Index Types", depth: 0 },
+      { id: "composite-indexes", label: "Composite Indexes", depth: 0 },
+    ],
+  },
+  "caching": {
+    title: "Caching",
+    headings: [
+      { id: "caching-strategies", label: "Caching Strategies", depth: 0 },
+      { id: "eviction-policies", label: "Eviction Policies", depth: 0 },
+      { id: "distributed-caching", label: "Distributed Caching", depth: 0 },
+    ],
+  },
+  "sharding": {
+    title: "Sharding",
+    headings: [
+      { id: "sharding-why", label: "Why Shard?", depth: 0 },
+      { id: "sharding-strategies", label: "Strategies", depth: 0 },
+      { id: "sharding-tradeoffs", label: "Tradeoffs", depth: 0 },
+    ],
+  },
+  "consistent-hashing": {
+    title: "Consistent Hashing",
+    headings: [
+      { id: "hashing-problem", label: "The Problem", depth: 0 },
+      { id: "consistent-hashing-sol", label: "The Solution", depth: 0 },
+      { id: "virtual-nodes", label: "Virtual Nodes", depth: 0 },
+    ],
+  },
+  "cap-theorem": {
+    title: "CAP Theorem",
+    headings: [
+      { id: "what-is-cap", label: "What is CAP?", depth: 0 },
+      { id: "choose-consistency", label: "Choosing Consistency", depth: 0 },
+      { id: "choose-availability", label: "Choosing Availability", depth: 0 },
+      { id: "consistency-spectrum", label: "Consistency Spectrum", depth: 0 },
+    ],
+  },
+  "numbers-to-know": {
+    title: "Numbers to Know",
+    headings: [
+      { id: "latency-numbers", label: "Latency Numbers", depth: 0 },
+      { id: "scale-estimates", label: "Scale Estimates", depth: 0 },
+      { id: "quick-math", label: "Interview Math", depth: 0 },
+    ],
+  },
+  "key-technologies-intro": {
+    title: "Key Technologies",
+    headings: [
+      { id: "kt-intro", label: "Introduction", depth: 0 },
+      { id: "databases", label: "Databases", depth: 0 },
+      { id: "queues", label: "Message Queues", depth: 0 },
+      { id: "search", label: "Search", depth: 0 },
+      { id: "storage", label: "Storage & CDN", depth: 0 },
+    ],
+  },
+  "common-patterns-intro": {
+    title: "Common Patterns",
+    headings: [
+      { id: "patterns-intro", label: "Introduction", depth: 0 },
+      { id: "fanout", label: "Fan-out", depth: 0 },
+      { id: "saga", label: "Saga Pattern", depth: 0 },
+      { id: "rate-limiting", label: "Rate Limiting", depth: 0 },
+      { id: "circuit-breaker", label: "Circuit Breaker", depth: 0 },
+    ],
+  },
+  "question-breakdowns-intro": {
+    title: "Question Breakdowns",
+    headings: [
+      { id: "qb-how-to-use", label: "How to Use", depth: 0 },
+      { id: "qb-list", label: "Question List", depth: 0 },
     ],
   },
 };
@@ -283,12 +397,120 @@ export default function SystemDesignCourseClient() {
                   }}
                 />
               </article>
+            ) : activeLesson === "networking-essentials" ? (
+              <article className="max-w-none">
+                <NetworkingEssentialsLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "caching" ? (
+              <article className="max-w-none">
+                <CachingLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "cap-theorem" ? (
+              <article className="max-w-none">
+                <CAPTheoremLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "sharding" ? (
+              <article className="max-w-none">
+                <ShardingLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "consistent-hashing" ? (
+              <article className="max-w-none">
+                <ConsistentHashingLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "key-technologies-intro" ? (
+              <article className="max-w-none">
+                <KeyTechnologiesLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "common-patterns-intro" ? (
+              <article className="max-w-none">
+                <CommonPatternsLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "question-breakdowns-intro" ? (
+              <article className="max-w-none">
+                <QuestionBreakdownsLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "api-design" ? (
+              <article className="max-w-none">
+                <APIDesignLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "data-modeling" ? (
+              <article className="max-w-none">
+                <DataModelingLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "database-indexing" ? (
+              <article className="max-w-none">
+                <DatabaseIndexingLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
+            ) : activeLesson === "numbers-to-know" ? (
+              <article className="max-w-none">
+                <NumbersToKnowLessonContent
+                  onNavigate={(id) => {
+                    setActiveLesson(id);
+                    mainRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </article>
             ) : (
               <>
                 <p className="text-sm text-gray-400">System design in a hurry</p>
                 <h1 className="mt-2 text-4xl font-semibold tracking-tight">{lessonTitle}</h1>
                 <p className="mt-3 text-gray-400">
-                  Structured like a documentation lesson — swap in your screenshots and copy anytime.
+                  Full lesson content coming soon. Check back after we finish the course rollout.
                 </p>
                 <div className="mt-8 space-y-6 text-gray-300">
                   {placeholderBody(activeLesson)}

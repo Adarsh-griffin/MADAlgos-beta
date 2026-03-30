@@ -9,103 +9,67 @@ export function CoreConceptsLessonContent({
   onNavigate: (lessonId: string) => void;
 }) {
   return (
-    <div className="not-prose space-y-10">
-      {/* Hero banner */}
-      <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-orange-700 shadow-lg">
-        <img
-          src="/images/course-banner-sd.png"
-          alt="System Design in a hurry — course banner"
-          className="h-auto w-full object-cover"
-          onError={(e) => {
-            const t = e.currentTarget;
-            t.style.display = "none";
-            if (t.nextElementSibling) (t.nextElementSibling as HTMLElement).style.display = "flex";
-          }}
-        />
-        <div className="hidden items-center justify-center px-4 py-12 md:py-14">
-          <div className="rounded-lg border-2 border-white/90 bg-white px-8 py-4 text-center shadow-md">
-            <p className="text-lg font-bold tracking-tight text-slate-900 md:text-xl">System Design in a hurry</p>
-          </div>
-        </div>
-        <div className="flex justify-center gap-1.5 bg-black/20 py-2.5">
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-          <span className="h-[6px] w-5 rounded-full bg-white/80" />
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-        </div>
-      </div>
-
+    <div className="not-prose space-y-12">
       {/* Header */}
-      <header className="space-y-3">
-        <p className="text-sm text-gray-500">System Design in a Hurry</p>
-        <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">Core Concepts</h1>
-        <p className="text-base leading-[1.8] text-gray-400">
-          Learn the most important concepts you&apos;ll need for system design interviews, put together by
-          FAANG managers and staff engineers.
+      <header className="space-y-4">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-orange-500">
+          <span className="h-px w-8 bg-orange-500/30" />
+          System Design in a Hurry
+        </div>
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Core Concepts</h1>
+        <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
+          Master the fundamental principles that form the foundation of every distributed system design.
         </p>
-        <p className="text-xs text-gray-600">Updated Feb 16, 2026</p>
       </header>
 
       {/* Intro */}
-      <section id="cc-intro" className="scroll-mt-12 space-y-5">
-        <p className="leading-[1.8] text-gray-400">
-          Core concepts are the fundamental principles and techniques that form the foundation of every system
-          design interview. Unlike specific technologies (Redis, Kafka) or problem-specific patterns, these are
-          technology-agnostic building blocks that show up across nearly every design problem you&apos;ll
-          encounter.
-        </p>
-        <p className="leading-[1.8] text-gray-400">
-          Think of core concepts as the vocabulary and grammar of system design. Before you can discuss how to
-          scale Instagram or design a ride-sharing service, you need to understand what caching is, when to
-          shard a database, and how networks actually work. Interviewers assume you know these and will probe
-          your understanding when you propose using them.
-        </p>
+      <section id="cc-intro" className="scroll-mt-12 space-y-6">
+        <div className="prose prose-invert max-w-none">
+          <p className="text-lg leading-relaxed text-muted-foreground/90">
+            Core concepts are the fundamental principles and techniques that form the foundation of every system
+            design interview. Unlike specific technologies, these are technology-agnostic building blocks.
+          </p>
+          <p className="leading-relaxed text-muted-foreground">
+            Think of core concepts as the vocabulary and grammar of system design. Before you can discuss how to
+            scale Instagram, you need to understand caching, sharding, and networking.
+          </p>
+        </div>
       </section>
 
       {/* Overall Structure */}
-      <section id="cc-structure" className="scroll-mt-12 space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Overall Structure</h2>
-        <p className="leading-[1.8] text-gray-400">
-          This page provides a quick overview of each core concept with just enough context to understand what
-          it is, why it matters, and when to reach for it. Each section links to a deeper article where you can
-          learn the full details, common pitfalls, and interview-specific guidance. If you&apos;re short on
-          time, this overview will get you functional knowledge. If you&apos;re serious about mastering system
-          design, read the full articles.
+      <section id="cc-structure" className="scroll-mt-12 space-y-6">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Overall Structure</h2>
+        <p className="leading-relaxed text-muted-foreground">
+          This page provides a quick overview of each core concept. The map below shows how these concepts 
+          stack to form a complete system foundation.
         </p>
+        <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">
+          <img 
+            src="/images/core_concepts_handdrawn.png" 
+            alt="Core Concepts Hierarchy" 
+            className="mx-auto max-w-2xl w-full h-auto drop-shadow-2xl"
+          />
+        </div>
       </section>
 
       {/* ─── Networking Essentials ─── */}
-      <section id="networking" className="scroll-mt-12 space-y-5">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Networking Essentials</h2>
+      <section id="networking" className="scroll-mt-12 space-y-6">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Networking Essentials</h2>
 
-        <p className="leading-[1.8] text-gray-400">
-          Networking is one of those topics where you can go incredibly deep, but for system design interviews
-          you need to know the practical bits that come up when you&apos;re designing distributed systems. At a
-          basic level, you need to understand how services talk to each other and what happens when those
-          connections fail or get slow.
-        </p>
-        <p className="leading-[1.8] text-gray-400">
-          The most important decision you&apos;ll make is choosing your communication protocol. For most
-          systems, you&apos;ll default to{" "}
-          <strong className="text-white">HTTP over TCP</strong>. It&apos;s well-understood, works everywhere,
-          and handles 90% of use cases. Your interviewer will expect this unless you have a specific reason to
-          use something else.
+        <p className="leading-relaxed text-muted-foreground">
+          Networking is the plumbing of distributed systems. You need to know the practical tradeoffs 
+          of how services talk to each other.
         </p>
 
-        {/* Networking Layers placeholder diagram */}
-        <figure className="overflow-x-auto rounded-xl border border-white/10 bg-slate-950/50 p-5 md:p-8">
-          <div className="mx-auto grid max-w-lg grid-cols-1 gap-3">
-            {["WebSockets / SSE", "HTTP / REST / gRPC", "TCP / UDP", "IP"].map((layer, i) => (
-              <div
-                key={layer}
-                className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center text-sm font-medium text-gray-300"
-                style={{ opacity: 1 - i * 0.15 }}
-              >
-                {layer}
-              </div>
-            ))}
-          </div>
-          <figcaption className="mt-4 text-center text-xs text-gray-500">Networking Layers</figcaption>
-        </figure>
+        {/* Networking Layers hand-drawn diagram */}
+        <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">
+          <img 
+            src="/images/networking_stack_handdrawn.png" 
+            alt="Hand-drawn Networking Stack" 
+            className="mx-auto max-w-md w-full h-auto drop-shadow-xl"
+          />
+          <p className="mt-4 text-center text-xs text-muted-foreground font-medium italic">Practical Networking Stack</p>
+        </div>
 
         <p className="leading-[1.8] text-gray-400">
           <strong className="text-white">WebSockets and Server-Sent Events (SSE)</strong> come up when you need

@@ -47,8 +47,8 @@ export const SYSTEM_DESIGN_SECTIONS: CourseSectionDef[] = [
       { id: "sharding", title: "Sharding" },
       { id: "consistent-hashing", title: "Consistent Hashing" },
       { id: "cap-theorem", title: "CAP Theorem" },
-      { id: "database-indexing", title: "Database Indexing", locked: true },
-      { id: "numbers-to-know", title: "Numbers to Know", locked: true },
+      { id: "database-indexing", title: "Database Indexing" },
+      { id: "numbers-to-know", title: "Numbers to Know" },
     ],
   },
   {

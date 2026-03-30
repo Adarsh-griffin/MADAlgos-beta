@@ -1,0 +1,285 @@
+"use client";
+
+import React from "react";
+import { ChevronRight, Info, AlertTriangle, Lightbulb } from "lucide-react";
+
+export function CachingLessonContent({
+  onNavigate,
+}: {
+  onNavigate: (lessonId: string) => void;
+}) {
+  return (
+    <div className="not-prose space-y-12">
+      <header className="space-y-4">
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Caching</h1>
+        <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
+          Speed up your system by storing frequently accessed data in memory.
+        </p>
+      </header>
+
+      <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">
+        <img 
+          src="/images/caching_handdrawn.png" 
+          alt="Caching Architecture" 
+          className="mx-auto max-w-2xl w-full h-auto drop-shadow-xl"
+        />
+      </div>
+
+      {/* Intro */}
+      <section id="caching-intro" className="scroll-mt-12 space-y-4">
+        <p className="leading-[1.8] text-gray-400">
+          Caching is one of the most important concepts to understand for system design interviews. It&apos;s the primary
+          way we reduce latency and scale reads. In system design interviews, caching comes up almost every time you need
+          to handle high read traffic. Your database becomes the bottleneck, latency starts creeping up, and the
+          interviewer is waiting for you to say the word: <strong className="text-white">cache</strong>.
+        </p>
+        <p className="leading-[1.8] text-gray-400">
+          Reading a user profile from Postgres may take 50 milliseconds, but reading from an in-memory cache like Redis
+          takes just <strong className="text-white">1 millisecond</strong>. That&apos;s a 50x improvement in latency.
+          Databases store data on disk, and every query pays the cost of disk access. Memory sits much closer to the CPU
+          and avoids that entirely.
+        </p>
+      </section>
+
+      {/* Where to Cache */}
+      <section id="where-to-cache" className="scroll-mt-12 space-y-5">
+        <h2 className="text-2xl font-bold tracking-tight text-white">Where to Cache</h2>
+        <p className="leading-[1.8] text-gray-400">
+          When most engineers hear &ldquo;caching,&rdquo; they immediately think of Redis or Memcached sitting between
+          the application and the database. This is the most common type of cache and the one interviewers care about
+          the most. However, caching occurs at multiple layers in a system.
+        </p>
+
+        {/* External Caching */}
+        <div className="space-y-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
+          <h3 className="text-lg font-bold text-white">External Caching</h3>
+          <p className="text-sm leading-[1.8] text-gray-400">
+            This is what most people mean by &ldquo;caching&rdquo; in an interview. You use separate, dedicated cache
+            stores like Redis or Memcached.
+          </p>
+          <ul className="space-y-2 text-sm text-gray-400">
+            {[
+              "Application checks the cache first. If the data is there (a \"cache hit\"), it returns it.",
+              "If not (a \"cache miss\"), it fetches the data from the database, stores it in the cache with a TTL, and returns it.",
+              "External caches are shared across multiple application servers and can scale independently of your database.",
+            ].map((item, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500" />
+                <span className="leading-[1.8]">{item}</span>
+              </li>
+            ))}
+          </ul>
+          <aside className="rounded-lg border-l-4 border-teal-500 bg-teal-500/10 px-4 py-3 text-sm leading-[1.8] text-gray-400">
+            <div className="flex gap-3">
+              <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-teal-400" aria-hidden />
+              <p>
+                In system design interviews, <strong className="text-white">external caching with Redis</strong> is the
+                default answer when discussing caching strategies. Interviewers expect you to mention it for any
+                high-traffic system. Start here, then layer on CDN or client-side caching only if the problem calls for
+                them.
+              </p>
+            </div>
+          </aside>
+        </div>
+
+        {/* CDN */}
+        <div className="space-y-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
+          <h3 className="text-lg font-bold text-white">CDN (Content Delivery Network)</h3>
+          <p className="text-sm leading-[1.8] text-gray-400">
+            A CDN is a distributed network of servers that caches static assets (images, CSS, JS, videos) closer to
+            users. CDNs reduce latency for users and offload significant traffic from your origin servers. They are
+            essential for global applications and any system with large amounts of static media.
+          </p>
+        </div>
+
+        {/* In-Process */}
+        <div className="space-y-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
+          <h3 className="text-lg font-bold text-white">In-Process Caching</h3>
+          <p className="text-sm leading-[1.8] text-gray-400">
+            Storing data in the memory of the application server itself. Light-weight and makes sense for small,
+            frequently-requested data like secrets, feature flags, or configuration settings.
+          </p>
+          <aside className="rounded-lg border-l-4 border-amber-500 bg-amber-500/10 px-3 py-3 text-sm text-gray-400">
+            <div className="flex gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden />
+              <p>
+                In-process caches are not shared across servers. If you have 10 servers, each with their own cache, and
+                you update a value, you have to update all 10 caches or wait for them to expire.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* Cache Architectures */}
+      <section id="cache-architectures" className="scroll-mt-12 space-y-5">
+        <h2 className="text-2xl font-bold tracking-tight text-white">Cache Architectures</h2>
+        <p className="leading-[1.8] text-gray-400">
+          How your application interacts with the cache and the database determines your system&apos;s consistency,
+          latency, and complexity. There are four main patterns you should know.
+        </p>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            {
+              name: "Cache-Aside (Lazy Loading)",
+              desc: "The most common pattern. Application manages both cache and DB. On miss: fetch from DB, store in cache, return. Great for read-heavy workloads.",
+              pros: "Resilient to cache failures.",
+              cons: "Cache misses cause 3 round trips. Data can go stale.",
+            },
+            {
+              name: "Write-Through Caching",
+              desc: "Data is written to both cache and DB at the same time. Cache is never stale.",
+              pros: "Cache always fresh, high read performance.",
+              cons: "Slower writes (two destinations). Wasted space for write-heavy data.",
+            },
+            {
+              name: "Write-Behind (Write-Back)",
+              desc: "Application writes only to cache. Cache asynchronously writes to DB in batches.",
+              pros: "Extremely fast write performance.",
+              cons: "Risk of data loss if cache crashes before writing to DB.",
+            },
+            {
+              name: "Read-Through Caching",
+              desc: "Cache itself fetches data from DB on miss. Application only ever talks to the cache.",
+              pros: "Simplifies application code.",
+              cons: "Requires a cache provider that supports this pattern.",
+            },
+          ].map((item) => (
+            <div key={item.name} className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <p className="text-sm font-bold text-white">{item.name}</p>
+              <p className="text-xs leading-relaxed text-gray-400">{item.desc}</p>
+              <div className="space-y-1 text-xs">
+                <p className="text-emerald-400">✓ {item.pros}</p>
+                <p className="text-rose-400">✗ {item.cons}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Eviction Policies */}
+      <section id="eviction-policies" className="scroll-mt-12 space-y-5">
+        <h2 className="text-2xl font-bold tracking-tight text-white">Cache Eviction Policies</h2>
+        <p className="leading-[1.8] text-gray-400">
+          Caches have limited memory. When they get full, they have to decide which data to delete to make room for new
+          data. This is called <strong className="text-white">eviction</strong>.
+        </p>
+
+        <div className="overflow-hidden rounded-xl border border-white/[0.08]">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.08] bg-white/[0.03]">
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Policy</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">How It Works</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Best For</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.06]">
+              {[
+                ["LRU", "Evicts least recently accessed items first", "General purpose — most common default"],
+                ["LFU", "Evicts items accessed least frequently", "Trending content like videos or playlists"],
+                ["FIFO", "Evicts oldest items by insertion time", "Simple queues — ignores usage patterns"],
+                ["TTL", "Sets expiration time per key", "Any data that must eventually refresh"],
+              ].map(([policy, how, best]) => (
+                <tr key={policy} className="transition-colors hover:bg-white/[0.03]">
+                  <td className="px-4 py-3 font-semibold text-white">{policy}</td>
+                  <td className="px-4 py-3 text-gray-400">{how}</td>
+                  <td className="px-4 py-3 text-gray-400">{best}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Common Problems */}
+      <section id="caching-problems" className="scroll-mt-12 space-y-5">
+        <h2 className="text-2xl font-bold tracking-tight text-white">Common Caching Problems</h2>
+        <p className="leading-[1.8] text-gray-400">
+          Caching makes systems faster, but it also introduces new failure modes. If you bring up caching in an
+          interview, you should also show you can handle these edge cases.
+        </p>
+
+        <div className="space-y-4">
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/[0.05] p-4 space-y-2">
+            <p className="text-sm font-bold text-white">Cache Stampede (Thundering Herd)</p>
+            <p className="text-sm leading-[1.8] text-gray-400">
+              A heavily cached item expires, and many requests hit the database simultaneously, potentially overwhelming
+              it.
+            </p>
+            <p className="text-xs text-gray-500 font-medium">Solutions:</p>
+            <ul className="space-y-1 text-xs text-gray-400">
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Locking: only the first request fetches from DB, others wait.</li>
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Probabilistic early recomputation: refresh before the TTL expires.</li>
+            </ul>
+          </div>
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.05] p-4 space-y-2">
+            <p className="text-sm font-bold text-white">Hot Keys</p>
+            <p className="text-sm leading-[1.8] text-gray-400">
+              A single key gets overwhelming traffic (e.g., a celebrity&apos;s profile), overloading one Redis node.
+            </p>
+            <p className="text-xs text-gray-500 font-medium">Solutions:</p>
+            <ul className="space-y-1 text-xs text-gray-400">
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Replicate the hot key across multiple nodes.</li>
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Use a local in-process cache for extremely hot keys.</li>
+            </ul>
+          </div>
+          <div className="rounded-xl border border-sky-500/30 bg-sky-500/[0.05] p-4 space-y-2">
+            <p className="text-sm font-bold text-white">Cache Consistency (Stale Data)</p>
+            <p className="text-sm leading-[1.8] text-gray-400">
+              Data updated in the database but not in the cache leads to &ldquo;stale&rdquo; data. The most common fix is
+              to invalidate the cache entry whenever the database is updated.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Interview Tips */}
+      <section id="caching-interview" className="scroll-mt-12 space-y-5">
+        <h2 className="text-2xl font-bold tracking-tight text-white">Caching in System Design Interviews</h2>
+        <p className="leading-[1.8] text-gray-400">
+          Don&apos;t just throw &quot;Redis&quot; at every problem the moment you start. Bring it up when you identify a
+          read-heavy workload or a clear latency bottleneck — during the High-Level Design or Deep Dive phases.
+        </p>
+        <div className="rounded-xl border border-teal-500/20 bg-teal-500/[0.05] p-4">
+          <p className="text-sm text-gray-400 italic">
+            &ldquo;To handle the high read volume and reduce latency for our most popular features, I&apos;d introduce a
+            caching layer using Redis. We&apos;ll use a cache-aside pattern to keep it simple, with an LRU eviction
+            policy to ensure we&apos;re only storing the most relevant data.&rdquo;
+          </p>
+        </div>
+      </section>
+
+      {/* Progress toggle */}
+      <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-gray-400">
+        <span className="text-[13px]">Login to track your progress</span>
+        <label className="relative inline-flex cursor-pointer items-center">
+          <input type="checkbox" className="peer sr-only" disabled />
+          <div className="h-5 w-9 rounded-full bg-white/10 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white/40 after:transition-all peer-checked:bg-teal-500 peer-checked:after:translate-x-full" />
+        </label>
+      </div>
+
+      {/* Navigation */}
+      <section className="space-y-4 border-t border-white/[0.06] pt-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 text-left text-sm font-medium text-teal-400 hover:underline"
+            onClick={() => onNavigate("data-modeling")}
+          >
+            ← Previous: Data Modeling
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-full border border-teal-500/40 bg-teal-500/10 px-5 py-2.5 text-sm font-semibold text-teal-400 transition hover:bg-teal-500/20"
+            onClick={() => onNavigate("sharding")}
+          >
+            Next: Sharding
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}

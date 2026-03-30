@@ -15,78 +15,53 @@ export function DeliveryFrameworkLessonContent({
 }) {
   return (
     <div className="not-prose space-y-10">
-      {/* Hero banner */}
-      <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-orange-700 shadow-lg">
-        <img
-          src="/images/course-banner-sd.png"
-          alt="System Design in a hurry — course banner"
-          className="h-auto w-full object-cover"
-          onError={(e) => {
-            const t = e.currentTarget;
-            t.style.display = "none";
-            if (t.nextElementSibling) (t.nextElementSibling as HTMLElement).style.display = "flex";
-          }}
-        />
-        <div className="hidden items-center justify-center px-4 py-12 md:py-14">
-          <div className="rounded-lg border-2 border-white/90 bg-white px-8 py-4 text-center shadow-md">
-            <p className="text-lg font-bold tracking-tight text-slate-900 md:text-xl">System Design in a hurry</p>
-          </div>
-        </div>
-        <div className="flex justify-center gap-1.5 bg-black/20 py-2.5">
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-          <span className="h-[6px] w-5 rounded-full bg-white/80" />
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-        </div>
-      </div>
-
       {/* Header */}
-      <header className="space-y-3">
-        <p className="text-sm text-gray-500">System Design in a Hurry</p>
-        <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">Delivery Framework</h1>
-        <p className="text-base leading-[1.8] text-gray-400">
-          The best way to structure your system design interviews to structure your thoughts and focus on the
-          most important aspects, built by FAANG managers and staff engineers.
+      <header className="space-y-4">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-orange-500">
+          <span className="h-px w-8 bg-orange-500/30" />
+          System Design in a Hurry
+        </div>
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Delivery Framework</h1>
+        <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
+          The best way to structure your system design interviews to focus on what actually matters, built by FAANG managers and staff engineers.
         </p>
       </header>
 
       {/* Intro */}
-      <section id="intro" className="scroll-mt-12 space-y-5">
-        <p className="leading-[1.8] text-gray-400">
+      <section id="intro" className="scroll-mt-12 space-y-6">
+        <p className="text-lg leading-relaxed text-muted-foreground/90">
           The easiest way to sabotage your chances of getting an offer in your system design interview is to
           fail to deliver a working system. This is the most common reason that mid-level candidates fail these
-          interviews and it often manifests as the opaque &ldquo;time management&rdquo;. This issue isn&apos;t
-          (always) that you need to work twice as fast &mdash; many times you just need to focus on the right
-          things.
+          interviews and it often manifests as the opaque &ldquo;time management&rdquo;.
         </p>
       </section>
 
       {/* ─── Overall Structure ─── */}
-      <section id="overall-structure" className="scroll-mt-12 space-y-5">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Overall Structure</h2>
+      <section id="overall-structure" className="scroll-mt-12 space-y-6">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Overall Structure</h2>
 
-        <p className="leading-[1.8] text-gray-400">
+        <p className="leading-relaxed text-muted-foreground">
           Our delivery framework is a sequence of steps and timings we recommend for your interview. By
           structuring your interview in this way, you&apos;ll stay focused on the bits that are most important
-          to your interviewer. An added benefit is that you&apos;ll have a clear path to fall back if
-          you&apos;re overwhelmed. Many candidates are (understandably!) nervous in their interview. It&apos;s
-          easy to get lost if you aren&apos;t building up a solution in a linear way.
+          to your interviewer.
         </p>
 
-        <aside className="rounded-lg border-l-4 border-teal-500 bg-teal-500/10 px-4 py-4 text-sm leading-[1.8] text-gray-400">
-          <div className="flex gap-3">
-            <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-teal-400" aria-hidden />
-            <p>
-              While a firm structure to your approach is important and your interviewer is not trained
-              specifically to assess you on your delivery (often this gets bucketed into
-              &ldquo;communication&rdquo;), in practice we&apos;ve seen many candidates that perform
-              significantly better by following a structure which both keeps them from getting stuck and ensures
-              they deliver a working system.
+        <aside className="rounded-2xl border border-teal-500/20 bg-teal-500/[0.02] p-6">
+          <div className="flex gap-4">
+            <Lightbulb className="h-6 w-6 shrink-0 text-teal-400" />
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              While a firm structure to your approach is important, its main value is keeping you from getting stuck 
+              and ensuring you deliver a working system &mdash; something many candidates fail to do under pressure.
             </p>
           </div>
         </aside>
 
-        <div id="df-course-map" className="scroll-mt-12">
-          <DeliveryFrameworkRoadmapDiagram />
+        <div id="df-course-map" className="scroll-mt-12 rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">
+          <img 
+            src="/images/delivery_framework_handdrawn.png" 
+            alt="Delivery Framework Roadmap" 
+            className="mx-auto max-w-2xl w-full h-auto drop-shadow-2xl"
+          />
         </div>
 
         <div id="interview-structure" className="scroll-mt-12">

@@ -43,38 +43,12 @@ const DIFF_STYLE: Record<string, string> = {
 
 export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonId: string) => void }) {
   return (
-    <div className="not-prose space-y-10">
-      {/* Hero banner */}
-      <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-orange-700 shadow-lg">
-        <img
-          src="/images/course-banner-sd.png"
-          alt="System Design in a hurry — course banner"
-          className="h-auto w-full object-cover"
-          onError={(e) => {
-            const t = e.currentTarget;
-            t.style.display = "none";
-            if (t.nextElementSibling) (t.nextElementSibling as HTMLElement).style.display = "flex";
-          }}
-        />
-        <div className="hidden items-center justify-center px-4 py-12 md:py-14">
-          <div className="rounded-lg border-2 border-white/90 bg-white px-8 py-4 text-center shadow-md">
-            <p className="text-lg font-bold tracking-tight text-slate-900 md:text-xl">System Design in a hurry</p>
-          </div>
-        </div>
-        <div className="flex justify-center gap-1.5 bg-black/20 py-2.5">
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-          <span className="h-[6px] w-5 rounded-full bg-white/80" />
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-        </div>
-      </div>
-
-      {/* Header */}
-      <header className="space-y-3">
-        <p className="text-sm text-gray-500">System Design in a Hurry &middot; In a Hurry</p>
-        <h1 id="page-title" className="text-3xl font-bold tracking-tight text-white md:text-4xl">
-          How to Prepare for System Design Interviews
+    <div className="not-prose space-y-12">
+      <header className="space-y-4">
+        <h1 id="page-title" className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
+          How to Prepare
         </h1>
-        <p className="text-base leading-[1.8] text-gray-400">
+        <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
           Having helped thousands of candidates pass their FAANG interviews, we&apos;ve learned exactly what works.
         </p>
       </header>

@@ -151,7 +151,7 @@ export function InterviewerRubricDiagram() {
       <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-10">
         {/* Problem Navigation */}
         <div className="relative">
-          <p className={`${RUBRIC_NOTE} mb-2 max-w-[200px] sm:absolute sm:-top-1 sm:left-0 sm:mb-0`}>
+          <p className={`${RUBRIC_NOTE} mb-2 max-w-[200px] sm:absolute sm:-top-12 sm:left-0 sm:mb-0`}>
             <span className="text-amber-400/90">&ldquo;</span>
             They spent all their time on the User table, never touching the most important part!
             <span className="text-amber-400/90">&rdquo;</span>
@@ -166,7 +166,7 @@ export function InterviewerRubricDiagram() {
 
         {/* Solution Design */}
         <div className="relative">
-          <p className={`${RUBRIC_NOTE} mb-2 ml-auto max-w-[210px] text-right sm:absolute sm:-top-1 sm:right-0 sm:mb-0`}>
+          <p className={`${RUBRIC_NOTE} mb-2 ml-auto max-w-[210px] text-right sm:absolute sm:-top-12 sm:right-0 sm:mb-0`}>
             <span className="text-amber-400/90">&ldquo;</span>
             The multi-layer cache was an elegant solution to the massive read volume
             <span className="text-amber-400/90">&rdquo;</span>
