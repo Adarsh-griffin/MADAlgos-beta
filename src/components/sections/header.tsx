@@ -64,6 +64,7 @@ const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
+/*
   {
     name: "LEARN",
     href: "/learn/system-design",
@@ -77,6 +78,7 @@ const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
+*/
   { name: "BLOGS", href: "/blogs", icon: <BookOpen className="w-3.5 h-3.5" /> },
   { name: "CONTACT US", href: "/contact", icon: <Mail className="w-3.5 h-3.5" /> },
 ];
