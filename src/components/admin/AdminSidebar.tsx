@@ -35,6 +35,7 @@ export function AdminSidebar() {
 
     const navItems = [
         { name: "Requests Dashboard", path: "/admin", icon: ListChecks, exact: true },
+        { name: "Assessments", path: "/admin/assessment", icon: ListChecks, exact: false },
         { name: "Order history", path: "/admin/orders", icon: ShoppingBag, exact: false },
         { name: "Mentors", path: "/admin/mentors", icon: Users, exact: false },
         { name: "Blogs", path: "/admin/blogs", icon: BookOpen, exact: false },

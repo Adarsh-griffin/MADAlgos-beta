@@ -1,0 +1,55 @@
+import mongoose, { Schema, model, models, Document } from "mongoose";
+
+export interface TestResultDocument extends Document {
+  tokenId: mongoose.Types.ObjectId;
+  testId: mongoose.Types.ObjectId;
+  studentEmail: string;
+  studentName?: string;
+  mcqAnswers: { questionIndex: number; selectedOption: number; isCorrect?: boolean }[];
+  codingSubmissions: { problemIndex: number; sourceCode: string; status: string; score: number }[];
+  mcqScore: number;
+  codingScore: number;
+  totalScore: number;
+  maxScore: number;
+  submittedAt: Date;
+  status: "COMPLETED" | "AUTO_SUBMITTED";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const TestResultSchema = new Schema<TestResultDocument>(
+  {
+    tokenId: { type: Schema.Types.ObjectId, ref: "TestToken", required: true, unique: true },
+    testId: { type: Schema.Types.ObjectId, ref: "Test", required: true },
+    studentEmail: { type: String, required: true },
+    studentName: { type: String },
+    mcqAnswers: [
+      {
+        questionIndex: { type: Number, required: true },
+        selectedOption: { type: Number, required: true },
+        isCorrect: { type: Boolean },
+      },
+    ],
+    codingSubmissions: [
+      {
+        problemIndex: { type: Number, required: true },
+        sourceCode: { type: String, required: true },
+        status: { type: String },
+        score: { type: Number, default: 0 },
+      },
+    ],
+    mcqScore: { type: Number, default: 0 },
+    codingScore: { type: Number, default: 0 },
+    totalScore: { type: Number, default: 0 },
+    maxScore: { type: Number, required: true },
+    submittedAt: { type: Date, required: true },
+    status: { type: String, enum: ["COMPLETED", "AUTO_SUBMITTED"], default: "COMPLETED" },
+  },
+  { collection: "test_results", timestamps: true }
+);
+
+const TestResultModel =
+  (models.TestResult as mongoose.Model<TestResultDocument>) ||
+  model<TestResultDocument>("TestResult", TestResultSchema);
+
+export default TestResultModel;
