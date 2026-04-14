@@ -106,17 +106,4 @@ export async function sendAssessmentInvitationEmails(
   }
 }
 
-/** Parse bulk paste: newlines, commas, semicolons. Dedupe, basic validation. */
-export function parseEmailList(raw: string): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  const parts = raw.split(/[\n,;]+/);
-  for (const p of parts) {
-    const e = p.trim().toLowerCase();
-    if (!e.includes("@") || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) continue;
-    if (seen.has(e)) continue;
-    seen.add(e);
-    out.push(e);
-  }
-  return out;
-}
+export { parseEmailList, partitionEmailList, type InvalidEmailEntry, type PartitionedEmailList } from "@/lib/email-list-partition";

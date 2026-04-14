@@ -5,7 +5,12 @@ export interface TestResultDocument extends Document {
   testId: mongoose.Types.ObjectId;
   studentEmail: string;
   studentName?: string;
-  mcqAnswers: { questionIndex: number; selectedOption: number; isCorrect?: boolean }[];
+  mcqAnswers: {
+    questionIndex: number;
+    selectedOption?: number;
+    selectedOptions?: number[];
+    isCorrect?: boolean;
+  }[];
   codingSubmissions: { problemIndex: number; sourceCode: string; status: string; score: number }[];
   mcqScore: number;
   codingScore: number;
@@ -26,7 +31,8 @@ const TestResultSchema = new Schema<TestResultDocument>(
     mcqAnswers: [
       {
         questionIndex: { type: Number, required: true },
-        selectedOption: { type: Number, required: true },
+        selectedOption: { type: Number },
+        selectedOptions: [{ type: Number }],
         isCorrect: { type: Boolean },
       },
     ],

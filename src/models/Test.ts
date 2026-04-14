@@ -3,7 +3,11 @@ import mongoose, { Schema, model, models, Document } from "mongoose";
 export interface MCQQuestion {
   questionText: string;
   options: string[];
-  correctOption: number; // 0-3
+  /** single-select (default): one correct index */
+  correctOption?: number;
+  /** multi-select: all correct indices (at least 2) */
+  correctOptions?: number[];
+  selectionType?: "single" | "multiple";
   marks: number;
 }
 
@@ -15,6 +19,8 @@ export interface CodingProblem {
   sampleTestCases: { input: string; output: string }[];
   hiddenTestCases: { input: string; output: string }[];
   marks: number;
+  /** Optional per-language starter (keys: Javascript, Python, …) */
+  starterCode?: Record<string, string>;
 }
 
 export interface TestDocument extends Document {
@@ -37,7 +43,9 @@ const TestSchema = new Schema<TestDocument>(
       {
         questionText: { type: String, required: true },
         options: [{ type: String, required: true }],
-        correctOption: { type: Number, required: true },
+        correctOption: { type: Number },
+        correctOptions: [{ type: Number }],
+        selectionType: { type: String, enum: ["single", "multiple"], default: "single" },
         marks: { type: Number, required: true, default: 1 },
       },
     ],
@@ -60,6 +68,7 @@ const TestSchema = new Schema<TestDocument>(
           },
         ],
         marks: { type: Number, required: true, default: 10 },
+        starterCode: { type: Schema.Types.Mixed, default: {} },
       },
     ],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },

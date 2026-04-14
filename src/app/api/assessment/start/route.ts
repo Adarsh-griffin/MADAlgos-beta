@@ -23,6 +23,10 @@ export async function POST(req: Request) {
     redirect(`/test/${token}`);
   }
 
+  if (!testToken.profileSubmittedAt) {
+    redirect(`/test/${token}`);
+  }
+
   // Lock session
   const headerList = await headers();
   const ip = headerList.get("x-forwarded-for") || "unknown";

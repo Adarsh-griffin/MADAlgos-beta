@@ -5,6 +5,10 @@ export interface TestTokenDocument extends Document {
   testId: mongoose.Types.ObjectId;
   studentEmail: string;
   studentName?: string;
+  /** After student submits name/details before instructions */
+  profileSubmittedAt?: Date;
+  /** Linked MADAlgos user (created or matched on profile submit) */
+  linkedUserId?: mongoose.Types.ObjectId;
   expiresAt: Date;
   usedAt?: Date; // When they first clicked/started
   submittedAt?: Date; // When they finished
@@ -20,6 +24,8 @@ const TestTokenSchema = new Schema<TestTokenDocument>(
     testId: { type: Schema.Types.ObjectId, ref: "Test", required: true },
     studentEmail: { type: String, required: true },
     studentName: { type: String },
+    profileSubmittedAt: { type: Date },
+    linkedUserId: { type: Schema.Types.ObjectId, ref: "User" },
     expiresAt: { type: Date, required: true },
     usedAt: { type: Date },
     submittedAt: { type: Date },

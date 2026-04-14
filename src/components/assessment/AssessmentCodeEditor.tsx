@@ -18,6 +18,8 @@ interface AssessmentCodeEditorProps {
   setSourceCode: (code: string) => void;
   language: string;
   setLanguage: (lang: string) => void;
+  /** Starter template for this problem + language (Reset restores this, not empty). */
+  defaultCode: string;
   onRun?: () => void;
   isRunning?: boolean;
 }
@@ -37,14 +39,15 @@ export default function AssessmentCodeEditor({
   setSourceCode,
   language,
   setLanguage,
+  defaultCode,
   onRun,
   isRunning = false,
 }: AssessmentCodeEditorProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const handleResetCode = () => {
-    if (confirm("Are you sure you want to reset your code? All progress for this problem will be lost.")) {
-      setSourceCode("");
+    if (confirm("Reset your code to the default starter template for this language? Your edits will be replaced.")) {
+      setSourceCode(defaultCode);
     }
   };
 

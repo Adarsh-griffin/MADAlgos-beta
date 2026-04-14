@@ -5,7 +5,7 @@ import TestTokenModel from "@/models/TestToken";
 import { getSessionFromRequestCookies } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import mongoose from "mongoose";
-import { parseEmailList, sendAssessmentInvitationEmails } from "@/lib/assessment-emails";
+import { partitionEmailList, sendAssessmentInvitationEmails } from "@/lib/assessment-emails";
 
 const MAX_EMAILS_PER_REQUEST = 500;
 
@@ -24,13 +24,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid test id." }, { status: 400 });
     }
 
-    const emails = parseEmailList(rawEmails);
+    const { valid: emails, invalid: invalidEntries, ignoredDuplicates } = partitionEmailList(rawEmails);
     if (emails.length === 0) {
-      return NextResponse.json({ message: "No valid email addresses provided." }, { status: 400 });
+      return NextResponse.json(
+        {
+          message:
+            invalidEntries.length > 0
+              ? "No valid email addresses. Fix or remove invalid entries and try again."
+              : "No email addresses provided.",
+          added: 0,
+          invalidEntries,
+          ignoredDuplicates,
+          skippedExisting: 0,
+          skippedEmails: [],
+        },
+        { status: 400 }
+      );
     }
     if (emails.length > MAX_EMAILS_PER_REQUEST) {
       return NextResponse.json(
-        { message: `Too many emails at once (max ${MAX_EMAILS_PER_REQUEST}). Split into multiple batches.` },
+        {
+          message: `Too many valid emails at once (max ${MAX_EMAILS_PER_REQUEST}). Split into multiple batches.`,
+          invalidEntries,
+          ignoredDuplicates,
+        },
         { status: 400 }
       );
     }
@@ -59,6 +76,8 @@ export async function POST(req: Request) {
         added: 0,
         skippedExisting: skippedEmails.length,
         skippedEmails,
+        invalidEntries,
+        ignoredDuplicates,
       });
     }
 
@@ -92,6 +111,8 @@ export async function POST(req: Request) {
       added: newEmails.length,
       skippedExisting: skippedEmails.length,
       skippedEmails,
+      invalidEntries,
+      ignoredDuplicates,
       emailsDispatched: sendResult.emailsDispatched,
       emailSkipped: sendResult.emailSkipped,
       ...(sendResult.emailError ? { emailError: sendResult.emailError } : {}),

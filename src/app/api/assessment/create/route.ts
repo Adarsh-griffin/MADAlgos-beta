@@ -4,7 +4,33 @@ import TestModel from "@/models/Test";
 import TestTokenModel from "@/models/TestToken";
 import { getSessionFromRequestCookies } from "@/lib/auth";
 import { nanoid } from "nanoid";
-import { parseEmailList, sendAssessmentInvitationEmails } from "@/lib/assessment-emails";
+import { partitionEmailList, sendAssessmentInvitationEmails } from "@/lib/assessment-emails";
+import { syncTestContentToQuestionBank } from "@/lib/question-bank";
+
+function normalizeMcqsForCreate(mcqs: unknown[]): { ok: true; mcqs: Record<string, unknown>[] } | { ok: false; message: string } {
+  const out: Record<string, unknown>[] = [];
+  for (const raw of mcqs as Record<string, unknown>[]) {
+    const n = (raw.options as unknown[] | undefined)?.length ?? 0;
+    const selectionType = raw.selectionType === "multiple" ? "multiple" : "single";
+    if (selectionType === "single") {
+      const c = raw.correctOption as number;
+      if (typeof c !== "number" || Number.isNaN(c) || c < 0 || c >= n) {
+        return { ok: false, message: "Each single-choice MCQ needs a valid correct option index." };
+      }
+      out.push({ ...raw, selectionType: "single", correctOption: c, correctOptions: [] });
+    } else {
+      const arr = Array.isArray(raw.correctOptions) ? (raw.correctOptions as number[]) : [];
+      const uniq = [...new Set(arr.filter((i) => typeof i === "number" && !Number.isNaN(i) && i >= 0 && i < n))].sort(
+        (a, b) => a - b
+      );
+      if (uniq.length < 2) {
+        return { ok: false, message: "Multi-select MCQs need at least two distinct correct options." };
+      }
+      out.push({ ...raw, selectionType: "multiple", correctOptions: uniq, correctOption: uniq[0] });
+    }
+  }
+  return { ok: true, mcqs: out };
+}
 
 export async function POST(req: Request) {
   try {
@@ -15,25 +41,21 @@ export async function POST(req: Request) {
 
     const { title, duration, linkValidity, mcqs, codingProblems, emails: emailsRaw } = await req.json();
 
-    const emails = Array.isArray(emailsRaw)
-      ? parseEmailList(emailsRaw.map((e: unknown) => String(e)).join("\n"))
+    const rawEmailBlock = Array.isArray(emailsRaw)
+      ? emailsRaw.map((e: unknown) => String(e)).join("\n")
       : typeof emailsRaw === "string"
-        ? parseEmailList(emailsRaw)
-        : [];
+        ? emailsRaw
+        : "";
+    const { valid: emails, invalid: invalidEmailEntries, ignoredDuplicates } =
+      partitionEmailList(rawEmailBlock);
 
     if (!title || (!mcqs.length && !codingProblems.length)) {
       return NextResponse.json({ message: "Invalid payload" }, { status: 400 });
     }
 
-    for (const m of mcqs as { options?: string[]; correctOption?: number }[]) {
-      const n = m.options?.length ?? 0;
-      const c = m.correctOption;
-      if (typeof c !== "number" || Number.isNaN(c) || c < 0 || c >= n) {
-        return NextResponse.json(
-          { message: "Each MCQ must include a valid correct answer (option index)." },
-          { status: 400 }
-        );
-      }
+    const mcqNorm = normalizeMcqsForCreate(mcqs);
+    if (!mcqNorm.ok) {
+      return NextResponse.json({ message: mcqNorm.message }, { status: 400 });
     }
 
     await connectDB();
@@ -48,10 +70,14 @@ export async function POST(req: Request) {
       title,
       duration,
       linkValidity,
-      mcqs,
+      mcqs: mcqNorm.mcqs,
       codingProblems: cleanedCodingProblems,
       createdBy: session.uid,
     });
+
+    await syncTestContentToQuestionBank(mcqNorm.mcqs as never[], cleanedCodingProblems, session.uid).catch((err) =>
+      console.error("Question bank sync (non-fatal):", err)
+    );
 
     const expirationDate = new Date();
     expirationDate.setHours(expirationDate.getHours() + linkValidity);
@@ -91,6 +117,8 @@ export async function POST(req: Request) {
       previewToken: tokens[0]?.token,
       emailsDispatched,
       emailSkipped: tokens.length > 0 ? emailSkipped : false,
+      invalidEmailEntries,
+      ignoredDuplicatesFromPaste: ignoredDuplicates,
       ...(emailError ? { emailError } : {}),
     });
   } catch (error: unknown) {
