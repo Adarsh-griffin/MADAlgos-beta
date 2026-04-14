@@ -15,6 +15,8 @@ export interface CodingProblem {
   sampleTestCases: { input: string; output: string }[];
   hiddenTestCases: { input: string; output: string }[];
   marks: number;
+  /** Per-language starter (Javascript, Python, Java, C++, C) */
+  starterCode?: Record<string, string>;
 }
 
 interface CodingProblemBuilderProps {

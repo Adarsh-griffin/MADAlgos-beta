@@ -4,7 +4,7 @@ import { getSessionFromRequestCookies } from "@/lib/auth";
 import QuestionBankItemModel from "@/models/QuestionBankItem";
 import type { MCQQuestion, CodingProblem } from "@/models/Test";
 import {
-  ensureDefaultQuestionBankSeeded,
+  ensureCatalogPacksSeeded,
   fingerprintForCoding,
   fingerprintForMcq,
   upsertBankItem,
@@ -24,9 +24,11 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const q = (searchParams.get("q") || "").trim().toLowerCase();
     const kind = searchParams.get("kind"); // MCQ | CODING | null
+    const section = (searchParams.get("section") || "").trim();
+    const tag = (searchParams.get("tag") || "").trim().toLowerCase();
 
     await connectDB();
-    await ensureDefaultQuestionBankSeeded();
+    await ensureCatalogPacksSeeded();
 
     const filter: Record<string, unknown> = {};
     if (q) {
@@ -35,10 +37,16 @@ export async function GET(req: Request) {
     if (kind === "MCQ" || kind === "CODING") {
       filter.kind = kind;
     }
+    if (section) {
+      filter.section = section;
+    }
+    if (tag) {
+      filter.tags = tag;
+    }
 
     const items = await QuestionBankItemModel.find(filter)
       .sort({ updatedAt: -1 })
-      .limit(80)
+      .limit(300)
       .lean()
       .exec();
 
@@ -48,6 +56,10 @@ export async function GET(req: Request) {
         kind: doc.kind,
         mcq: doc.mcq,
         coding: doc.coding,
+        section: doc.section,
+        tags: doc.tags,
+        leetcodeSlug: doc.leetcodeSlug,
+        sourcePack: doc.sourcePack,
       })),
     });
   } catch (e: unknown) {
@@ -68,7 +80,7 @@ export async function POST(req: Request) {
     const kind = body.kind as string;
 
     await connectDB();
-    await ensureDefaultQuestionBankSeeded();
+    await ensureCatalogPacksSeeded();
 
     if (kind === "MCQ") {
       const mcq = body.mcq as MCQQuestion | undefined;

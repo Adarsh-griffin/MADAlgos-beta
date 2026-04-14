@@ -9,7 +9,8 @@
     "lint": "eslint",
     "download:logos": "node scripts/download-logos.cjs",
     "seed:booking": "node scripts/seed-booking-test-data.mjs",
-    "seed:pricing": "node scripts/seed-pricing-from-json.mjs"
+    "seed:pricing": "node scripts/seed-pricing-from-json.mjs",
+    "seed:leetcode": "node scripts/seed-leetcode-list.mjs"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.31.0",

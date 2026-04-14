@@ -132,7 +132,7 @@ function CreateAssessmentForm() {
     <div className="max-w-6xl mx-auto space-y-8 pb-20">
       <PageHeader
         title="Create Assessment"
-        description="Defaults are filled for speed — edit anything you need. Pull MCQs and coding tasks from the repository, or add your own (they are saved to the repository when you create this test)."
+        description="Defaults are filled for speed — edit anything you need. In the repository, filter by section (DSA theory MCQs, Blind 75–style coding with per-language starters) or search by topic; add your own questions (saved to the bank when you create this test)."
       />
 
       {templateLoading ? (

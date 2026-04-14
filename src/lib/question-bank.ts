@@ -3,6 +3,9 @@ import type { MCQQuestion, CodingProblem } from "@/models/Test";
 import { getMcqCorrectIndices } from "@/lib/assessment-mcq";
 import type { QuestionBankKind } from "@/models/QuestionBankItem";
 import QuestionBankItemModel from "@/models/QuestionBankItem";
+import { BLIND_75, type Blind75Row } from "@/data/blind75-slugs";
+import { buildBlind75CodingProblem } from "@/data/blind75-builders";
+import { DSA_MCQ_LIBRARY } from "@/data/dsa-mcq-library";
 
 export function searchTextForBankEntry(
   kind: QuestionBankKind,
@@ -32,6 +35,7 @@ export function fingerprintForMcq(mcq: MCQQuestion): string {
 export function fingerprintForCoding(p: CodingProblem): string {
   const normTc = (tcs: { input: string; output: string }[]) =>
     (tcs || []).map((t) => ({ i: t.input.trim(), o: t.output.trim() }));
+  const starters = p.starterCode ? JSON.stringify(p.starterCode) : "";
   const normalized = {
     title: p.title.trim().toLowerCase(),
     desc: p.description.trim(),
@@ -40,6 +44,7 @@ export function fingerprintForCoding(p: CodingProblem): string {
     s: normTc(p.sampleTestCases || []),
     h: normTc(p.hiddenTestCases || []),
     m: p.marks,
+    starters,
   };
   return createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
 }
@@ -103,8 +108,94 @@ export async function ensureDefaultQuestionBankSeeded(): Promise<void> {
           : s.kind === "CODING" && s.coding
             ? searchTextForBankEntry("CODING", undefined, s.coding)
             : "",
+      sourcePack: "default-samples",
     }))
   );
+}
+
+function sectionToTag(section: string): string {
+  return section.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function buildBlindSearchText(row: Blind75Row, coding: CodingProblem): string {
+  return [
+    "blind 75 blind75 leetcode dsa",
+    row.section,
+    sectionToTag(row.section),
+    row.slug,
+    row.title,
+    searchTextForBankEntry("CODING", undefined, coding),
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+async function ensureBlind75PackSeeded(): Promise<void> {
+  const n = await QuestionBankItemModel.countDocuments({ sourcePack: "blind75" });
+  if (n >= BLIND_75.length) return;
+  const slugs = new Set(
+    (await QuestionBankItemModel.find({ sourcePack: "blind75" }).select("leetcodeSlug").lean())
+      .map((d: { leetcodeSlug?: string }) => d.leetcodeSlug)
+      .filter(Boolean)
+  );
+  for (const row of BLIND_75) {
+    if (slugs.has(row.slug)) continue;
+    const coding = buildBlind75CodingProblem(row);
+    const fingerprint = fingerprintForCoding(coding);
+    const dup = await QuestionBankItemModel.findOne({ fingerprint }).lean();
+    if (dup) continue;
+    await QuestionBankItemModel.create({
+      kind: "CODING",
+      coding,
+      fingerprint,
+      searchText: buildBlindSearchText(row, coding),
+      sourcePack: "blind75",
+      section: row.section,
+      tags: ["dsa", "blind-75", sectionToTag(row.section)],
+      leetcodeSlug: row.slug,
+    });
+  }
+}
+
+async function ensureDsaMcqPackSeeded(): Promise<void> {
+  const n = await QuestionBankItemModel.countDocuments({ sourcePack: "dsa-mcq" });
+  if (n >= DSA_MCQ_LIBRARY.length) return;
+  const fingerprints = new Set(
+    (await QuestionBankItemModel.find({ sourcePack: "dsa-mcq" }).select("fingerprint").lean()).map(
+      (d: { fingerprint: string }) => d.fingerprint
+    )
+  );
+  for (const item of DSA_MCQ_LIBRARY) {
+    const fp = fingerprintForMcq(item.mcq);
+    if (fingerprints.has(fp)) continue;
+    const exists = await QuestionBankItemModel.findOne({ fingerprint: fp }).lean();
+    if (exists) continue;
+    const searchText = [
+      "dsa mcq theory",
+      item.section,
+      sectionToTag(item.section),
+      ...item.tags,
+      searchTextForBankEntry("MCQ", item.mcq),
+    ]
+      .join(" ")
+      .toLowerCase();
+    await QuestionBankItemModel.create({
+      kind: "MCQ",
+      mcq: item.mcq,
+      fingerprint: fp,
+      searchText,
+      sourcePack: "dsa-mcq",
+      section: item.section,
+      tags: item.tags,
+    });
+  }
+}
+
+/** Seeds starter samples, Blind 75 coding catalog, and DSA MCQs (idempotent). */
+export async function ensureCatalogPacksSeeded(): Promise<void> {
+  await ensureDefaultQuestionBankSeeded();
+  await ensureBlind75PackSeeded();
+  await ensureDsaMcqPackSeeded();
 }
 
 export async function upsertBankItem(

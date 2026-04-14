@@ -1,17 +1,29 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { MCQ } from "@/components/admin/assessment/MCQBuilder";
 import type { CodingProblem } from "@/components/admin/assessment/CodingProblemBuilder";
 import { Loader2, Library, Plus } from "lucide-react";
+import { QUESTION_BANK_SECTIONS } from "@/data/question-bank-ui";
 
 type BankRow = {
   id: string;
   kind: "MCQ" | "CODING";
   mcq?: MCQ;
   coding?: CodingProblem;
+  section?: string;
+  tags?: string[];
+  leetcodeSlug?: string;
+  sourcePack?: string;
 };
 
 function cloneMcq(m: MCQ): MCQ {
@@ -19,6 +31,8 @@ function cloneMcq(m: MCQ): MCQ {
     questionText: m.questionText,
     options: [...(m.options || [])],
     correctOption: m.correctOption,
+    correctOptions: m.correctOptions ? [...m.correctOptions] : undefined,
+    selectionType: m.selectionType,
     marks: m.marks,
   };
 }
@@ -32,6 +46,7 @@ function cloneCoding(p: CodingProblem): CodingProblem {
     sampleTestCases: (p.sampleTestCases || []).map((t) => ({ input: t.input, output: t.output })),
     hiddenTestCases: (p.hiddenTestCases || []).map((t) => ({ input: t.input, output: t.output })),
     marks: p.marks,
+    ...(p.starterCode && Object.keys(p.starterCode).length > 0 ? { starterCode: { ...p.starterCode } } : {}),
   };
 }
 
@@ -44,8 +59,15 @@ interface QuestionBankPickerProps {
 export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBankPickerProps) {
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
+  const [section, setSection] = useState<string>("");
+  const [tag, setTag] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<BankRow[]>([]);
+
+  const tagPresets = useMemo(() => {
+    if (kind === "CODING") return ["dsa", "blind-75"];
+    return ["dsa", "complexity", "graphs"];
+  }, [kind]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q.trim()), 320);
@@ -60,6 +82,8 @@ export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBa
         const params = new URLSearchParams();
         params.set("kind", kind);
         if (debounced) params.set("q", debounced);
+        if (section) params.set("section", section);
+        if (tag) params.set("tag", tag);
         const res = await fetch(`/api/assessment/question-bank?${params.toString()}`);
         if (!res.ok || cancelled) return;
         const data = await res.json();
@@ -71,7 +95,7 @@ export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBa
     return () => {
       cancelled = true;
     };
-  }, [debounced, kind]);
+  }, [debounced, kind, section, tag]);
 
   const preview = (row: BankRow) => {
     if (row.kind === "MCQ" && row.mcq) {
@@ -92,11 +116,40 @@ export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBa
         <h4 className="text-sm font-semibold text-white">Question repository</h4>
       </div>
       <p className="text-[11px] text-slate-500 leading-relaxed">
-        Search admin-curated samples and questions from past assessments. Add to this test; anything you create from scratch is also saved to the repository when you dispatch this assessment.
+        Filter by <strong className="text-slate-400">section</strong> (e.g. DSA blind list, complexity theory) or search
+        by name. Blind 75 coding items link to LeetCode; replace sample/hidden tests before high-stakes use.
       </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Select value={section || "__all__"} onValueChange={(v) => setSection(v === "__all__" ? "" : v)}>
+          <SelectTrigger className="bg-black/40 border-white/10 text-white rounded-xl h-10">
+            <SelectValue placeholder="All sections" />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="__all__">All sections</SelectItem>
+            {QUESTION_BANK_SECTIONS.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={tag || "__tag_all__"} onValueChange={(v) => setTag(v === "__tag_all__" ? "" : v)}>
+          <SelectTrigger className="bg-black/40 border-white/10 text-white rounded-xl h-10">
+            <SelectValue placeholder="Tag (optional)" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__tag_all__">Any tag</SelectItem>
+            {tagPresets.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex gap-2 items-center">
         <Input
-          placeholder={kind === "MCQ" ? "Search MCQs…" : "Search coding problems…"}
+          placeholder={kind === "MCQ" ? "Search MCQs (e.g. complexity)…" : "Search (e.g. two-sum, heap)…"}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="bg-black/40 border-white/10 text-white rounded-xl h-10"
@@ -110,7 +163,15 @@ export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBa
           items.map((row) => (
             <div key={row.id} className="flex items-center gap-3 p-3 text-left">
               <div className="flex-1 min-w-0 text-xs text-slate-300">
-                <span className="text-[10px] uppercase tracking-wider text-slate-500 mr-2">{row.kind}</span>
+                <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500">{row.kind}</span>
+                  {row.section ? (
+                    <span className="text-[9px] px-1.5 py-0 rounded bg-white/10 text-slate-400">{row.section}</span>
+                  ) : null}
+                  {row.sourcePack === "blind75" ? (
+                    <span className="text-[9px] text-primary/90">Blind 75</span>
+                  ) : null}
+                </div>
                 <span className="min-w-0 break-words">{preview(row)}</span>
               </div>
               <Button
