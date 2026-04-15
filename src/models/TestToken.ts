@@ -14,6 +14,11 @@ export interface TestTokenDocument extends Document {
   submittedAt?: Date; // When they finished
   activatedIp?: string;
   isStarted: boolean;
+  draftSubmission?: {
+    mcqAnswers: Array<{ questionIndex: number; selectedOption?: number; selectedOptions?: number[] }>;
+    codingSubmissions: Array<{ problemIndex: number; sourceCode: string; language: string }>;
+    savedAt: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +36,23 @@ const TestTokenSchema = new Schema<TestTokenDocument>(
     submittedAt: { type: Date },
     activatedIp: { type: String },
     isStarted: { type: Boolean, default: false },
+    draftSubmission: {
+      mcqAnswers: [
+        {
+          questionIndex: { type: Number, required: true },
+          selectedOption: { type: Number },
+          selectedOptions: [{ type: Number }],
+        },
+      ],
+      codingSubmissions: [
+        {
+          problemIndex: { type: Number, required: true },
+          sourceCode: { type: String, required: true },
+          language: { type: String, required: true },
+        },
+      ],
+      savedAt: { type: Date },
+    },
   },
   { collection: "test_tokens", timestamps: true }
 );

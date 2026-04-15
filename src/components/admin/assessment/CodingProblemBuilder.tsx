@@ -17,6 +17,7 @@ export interface CodingProblem {
   marks: number;
   /** Per-language starter (Javascript, Python, Java, C++, C) */
   starterCode?: Record<string, string>;
+  leetcodeSlug?: string;
 }
 
 interface CodingProblemBuilderProps {

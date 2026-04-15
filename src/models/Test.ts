@@ -21,6 +21,8 @@ export interface CodingProblem {
   marks: number;
   /** Optional per-language starter (keys: Javascript, Python, …) */
   starterCode?: Record<string, string>;
+  /** Optional — used for dedupe when imported from LeetCode bank */
+  leetcodeSlug?: string;
 }
 
 export interface TestDocument extends Document {
@@ -69,6 +71,7 @@ const TestSchema = new Schema<TestDocument>(
         ],
         marks: { type: Number, required: true, default: 10 },
         starterCode: { type: Schema.Types.Mixed, default: {} },
+        leetcodeSlug: { type: String },
       },
     ],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },

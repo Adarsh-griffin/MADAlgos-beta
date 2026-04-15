@@ -19,11 +19,12 @@ const LANGUAGE_MAP: Record<string, number> = {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { token, problemIndex, sourceCode, language } = body as {
+    const { token, problemIndex, sourceCode, language, runScope } = body as {
       token?: string;
       problemIndex?: number;
       sourceCode?: string;
       language?: string;
+      runScope?: "sample" | "all";
     };
 
     if (!token || typeof problemIndex !== "number" || sourceCode === undefined || !language) {
@@ -52,16 +53,30 @@ export async function POST(req: Request) {
 
     const langId = LANGUAGE_MAP[language] ?? 93;
     const samples = problem.sampleTestCases || [];
-    if (samples.length === 0) {
+    const hidden = problem.hiddenTestCases || [];
+    const scope = runScope === "all" ? "all" : "sample";
+
+    if (scope === "sample" && samples.length === 0) {
       return NextResponse.json({ message: "No sample test cases for this problem" }, { status: 400 });
+    }
+    if (scope === "all" && samples.length === 0 && hidden.length === 0) {
+      return NextResponse.json({ message: "No test cases configured for this problem" }, { status: 400 });
     }
 
     const results = [];
-    for (const tc of samples) {
+    const allCases =
+      scope === "all"
+        ? [
+            ...samples.map((tc: { input: string; output: string }) => ({ ...tc, visibility: "sample" as const })),
+            ...hidden.map((tc: { input: string; output: string }) => ({ ...tc, visibility: "hidden" as const })),
+          ]
+        : samples.map((tc: { input: string; output: string }) => ({ ...tc, visibility: "sample" as const }));
+
+    for (const tc of allCases) {
       const r = await runJudge0Submission(sourceCode, langId, tc.input, tc.output);
       results.push({
-        input: tc.input,
-        expected: tc.output,
+        visibility: tc.visibility,
+        ...(tc.visibility === "sample" ? { input: tc.input, expected: tc.output } : {}),
         passed: r.passed,
         status: r.status,
         stdout: r.stdout ?? "",
@@ -72,7 +87,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ results });
+    return NextResponse.json({ results, scope });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Internal server error";
     console.error("Assessment run error:", error);

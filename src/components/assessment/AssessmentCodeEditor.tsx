@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { CodeXml, Copy, RotateCcw, Maximize2, Minimize2, Play } from "lucide-react";
 import {
@@ -20,8 +20,11 @@ interface AssessmentCodeEditorProps {
   setLanguage: (lang: string) => void;
   /** Starter template for this problem + language (Reset restores this, not empty). */
   defaultCode: string;
-  onRun?: () => void;
+  onRunSamples?: () => void;
+  onRunAllTests?: () => void;
+  onSaveProgress?: () => void;
   isRunning?: boolean;
+  isSaving?: boolean;
 }
 
 export const JUDGE0_LANGUAGES = {
@@ -40,8 +43,11 @@ export default function AssessmentCodeEditor({
   language,
   setLanguage,
   defaultCode,
-  onRun,
+  onRunSamples,
+  onRunAllTests,
+  onSaveProgress,
   isRunning = false,
+  isSaving = false,
 }: AssessmentCodeEditorProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -85,20 +91,51 @@ export default function AssessmentCodeEditor({
         </div>
 
         <div className="flex items-center gap-2">
-          {onRun && (
+          {onRunSamples && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  onClick={onRun}
+                  onClick={onRunSamples}
                   disabled={isRunning}
                   className="h-8 px-3 gap-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg"
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
-                  {isRunning ? "Running…" : "Run samples"}
+                  {isRunning ? "Running…" : "Run sample tests"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Execute against sample cases (Judge0)</TooltipContent>
+            </Tooltip>
+          )}
+          {onRunAllTests && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  onClick={onRunAllTests}
+                  disabled={isRunning}
+                  className="h-8 px-3 gap-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg"
+                >
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  {isRunning ? "Running…" : "Run all tests"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Execute against sample + hidden test cases</TooltipContent>
+            </Tooltip>
+          )}
+          {onSaveProgress && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  onClick={onSaveProgress}
+                  disabled={isSaving}
+                  className="h-8 px-3 gap-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg"
+                >
+                  {isSaving ? "Saving…" : "Submit test (save)"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Save current answers/code to backend without finishing</TooltipContent>
             </Tooltip>
           )}
           <Tooltip>
@@ -155,7 +192,10 @@ export default function AssessmentCodeEditor({
 }
 
 // Internal Button component specifically for the editor header to avoid importing the larger UI button if already in a complex layout
-function Button({ className, variant, size, ...props }: any) {
+function Button({
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; size?: string }) {
   return (
     <button
       className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 ${className}`}

@@ -54,6 +54,7 @@ export async function GET(req: Request) {
       items: items.map((doc) => ({
         id: String(doc._id),
         kind: doc.kind,
+        fingerprint: doc.fingerprint,
         mcq: doc.mcq,
         coding: doc.coding,
         section: doc.section,

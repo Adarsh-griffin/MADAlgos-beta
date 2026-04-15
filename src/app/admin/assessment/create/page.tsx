@@ -14,6 +14,7 @@ import { Send, Loader2, ListChecks, Code2, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { partitionEmailList } from "@/lib/email-list-partition";
+import { codingPickKey, mcqPickKey } from "@/lib/assessment-pick-keys";
 
 const DEFAULT_TITLE = "Coding Challenge";
 const DEFAULT_DURATION = 90;
@@ -34,6 +35,9 @@ function CreateAssessmentForm() {
   const [emails, setEmails] = useState("");
 
   const emailPreview = useMemo(() => partitionEmailList(emails), [emails]);
+
+  const pickedMcqKeys = useMemo(() => mcqs.map(mcqPickKey), [mcqs]);
+  const pickedCodingKeys = useMemo(() => problems.map(codingPickKey), [problems]);
 
   useEffect(() => {
     if (!fromTest) return;
@@ -193,11 +197,21 @@ function CreateAssessmentForm() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="mcqs" className="space-y-6">
-              <QuestionBankPicker kind="MCQ" onPickMcq={(m) => setMcqs((prev) => [...prev, m])} />
+              <QuestionBankPicker
+                kind="MCQ"
+                pickedMcqKeys={pickedMcqKeys}
+                pickedCodingKeys={pickedCodingKeys}
+                onPickMcq={(m) => setMcqs((prev) => [...prev, m])}
+              />
               <MCQBuilder questions={mcqs} onChange={setMcqs} />
             </TabsContent>
             <TabsContent value="coding" className="space-y-6">
-              <QuestionBankPicker kind="CODING" onPickCoding={(p) => setProblems((prev) => [...prev, p])} />
+              <QuestionBankPicker
+                kind="CODING"
+                pickedMcqKeys={pickedMcqKeys}
+                pickedCodingKeys={pickedCodingKeys}
+                onPickCoding={(p) => setProblems((prev) => [...prev, p])}
+              />
               <CodingProblemBuilder problems={problems} onChange={setProblems} />
             </TabsContent>
           </Tabs>

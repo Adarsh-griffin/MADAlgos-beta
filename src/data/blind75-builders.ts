@@ -1,4 +1,5 @@
 import type { CodingProblem } from "@/models/Test";
+import { STUDENT_CODE_ZONE_BANNER } from "@/lib/assessment-code-starters";
 import type { Blind75Row } from "./blind75-slugs";
 
 const PLACEHOLDER_IO = `**Platform template (replace before grading students):** Read two integers from the first line of stdin (space-separated) and print their sum on one line. This lets auto-grading run; it is **not** the real LeetCode I/O for this topic — adapt samples and hidden tests to match your course copy of the problem.
@@ -18,35 +19,29 @@ const TRIVIAL_TESTS = {
 
 /**
  * Multi-language boilerplate: read two ints from first line, print sum.
- * Mirrors platform judge (stdin/stdout). Header points to official LeetCode statement.
+ * Mirrors platform judge (stdin/stdout). No LeetCode URL / Blind 75 labels in code — those stay in the problem description only.
  */
-export function blind75StarterCode(title: string, leetcodeUrl: string): Record<string, string> {
-  const bannerJs = `/**
- * Blind 75 / DSA: ${title}
- * Full problem: ${leetcodeUrl}
- * Starter reads two integers (stdin) — replace logic + I/O for your assessment version.
- */\n`;
-  const bannerPy = `"""Blind 75: ${title}
-Full statement: ${leetcodeUrl}
-Replace solver + I/O for your assessment.
-"""\n`;
-  const bannerJava = `/**
- * Blind 75: ${title}
- * ${leetcodeUrl}
- */\n`;
-
+export function blind75StarterCode(_title: string, _leetcodeUrl: string): Record<string, string> {
   return {
     Javascript:
-      bannerJs +
-      `const readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const [a, b] = lines[0].trim().split(/\\s+/).map(Number);\n  console.log(String((a || 0) + (b || 0)));\n});\n`,
+      STUDENT_CODE_ZONE_BANNER.Javascript +
+      `const readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  // --- your logic here (template: sum of two numbers) ---\n  const [a, b] = lines[0].trim().split(/\\s+/).map(Number);\n  console.log(String((a || 0) + (b || 0)));\n});\n`,
     Python:
-      bannerPy +
-      `import sys\n\ndef main() -> None:\n    line = sys.stdin.readline().strip()\n    parts = line.split()\n    a = int(parts[0]) if len(parts) > 0 else 0\n    b = int(parts[1]) if len(parts) > 1 else 0\n    print(a + b)\n\nif __name__ == "__main__":\n    main()\n`,
+      `import sys\n\n` +
+      STUDENT_CODE_ZONE_BANNER.Python +
+      `def main() -> None:\n    line = sys.stdin.readline().strip()\n    parts = line.split()\n    # --- your logic here (template: sum of two numbers) ---\n    a = int(parts[0]) if len(parts) > 0 else 0\n    b = int(parts[1]) if len(parts) > 1 else 0\n    print(a + b)\n\nif __name__ == "__main__":\n    main()\n`,
     Java:
-      bannerJava +
-      `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        long a = sc.hasNextLong() ? sc.nextLong() : 0;\n        long b = sc.hasNextLong() ? sc.nextLong() : 0;\n        System.out.println(a + b);\n        sc.close();\n    }\n}\n`,
-    "C++": `#include <iostream>\nusing namespace std;\n// ${title}\n// ${leetcodeUrl}\nint main() {\n    long long a = 0, b = 0;\n    if (cin >> a >> b) { cout << (a + b) << "\\n"; }\n    return 0;\n}\n`,
-    C: `#include <stdio.h>\n/* ${title} — ${leetcodeUrl} */\nint main(void) {\n    long long a = 0, b = 0;\n    if (scanf("%lld %lld", &a, &b) == 2) printf("%lld\\n", a + b);\n    return 0;\n}\n`,
+      `import java.util.Scanner;\n\n` +
+      STUDENT_CODE_ZONE_BANNER.Java +
+      `public class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // --- your logic here (template: sum of two numbers) ---\n        long a = sc.hasNextLong() ? sc.nextLong() : 0;\n        long b = sc.hasNextLong() ? sc.nextLong() : 0;\n        System.out.println(a + b);\n        sc.close();\n    }\n}\n`,
+    "C++":
+      `#include <iostream>\nusing namespace std;\n\n` +
+      STUDENT_CODE_ZONE_BANNER["C++"] +
+      `int main() {\n    // --- your logic here (template: sum of two numbers) ---\n    long long a = 0, b = 0;\n    if (cin >> a >> b) { cout << (a + b) << "\\n"; }\n    return 0;\n}\n`,
+    C:
+      `#include <stdio.h>\n\n` +
+      STUDENT_CODE_ZONE_BANNER.C +
+      `int main(void) {\n    /* --- your logic here (template: sum of two numbers) --- */\n    long long a = 0, b = 0;\n    if (scanf("%lld %lld", &a, &b) == 2) printf("%lld\\n", a + b);\n    return 0;\n}\n`,
   };
 }
 

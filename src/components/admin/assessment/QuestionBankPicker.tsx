@@ -14,10 +14,12 @@ import type { MCQ } from "@/components/admin/assessment/MCQBuilder";
 import type { CodingProblem } from "@/components/admin/assessment/CodingProblemBuilder";
 import { Loader2, Library, Plus } from "lucide-react";
 import { QUESTION_BANK_SECTIONS } from "@/data/question-bank-ui";
+import { codingPickKey, mcqPickKey } from "@/lib/assessment-pick-keys";
 
 type BankRow = {
   id: string;
   kind: "MCQ" | "CODING";
+  fingerprint?: string;
   mcq?: MCQ;
   coding?: CodingProblem;
   section?: string;
@@ -37,7 +39,8 @@ function cloneMcq(m: MCQ): MCQ {
   };
 }
 
-function cloneCoding(p: CodingProblem): CodingProblem {
+function cloneCoding(p: CodingProblem, leetcodeSlug?: string): CodingProblem {
+  const slug = p.leetcodeSlug?.trim() || leetcodeSlug?.trim();
   return {
     title: p.title,
     description: p.description,
@@ -47,16 +50,40 @@ function cloneCoding(p: CodingProblem): CodingProblem {
     hiddenTestCases: (p.hiddenTestCases || []).map((t) => ({ input: t.input, output: t.output })),
     marks: p.marks,
     ...(p.starterCode && Object.keys(p.starterCode).length > 0 ? { starterCode: { ...p.starterCode } } : {}),
+    ...(slug ? { leetcodeSlug: slug } : {}),
   };
+}
+
+function rowDedupeKey(row: BankRow): string {
+  if (row.fingerprint) return row.fingerprint;
+  if (row.kind === "MCQ" && row.mcq) return mcqPickKey(row.mcq);
+  if (row.kind === "CODING" && row.coding) {
+    return codingPickKey({
+      title: row.coding.title,
+      leetcodeSlug: row.leetcodeSlug ?? undefined,
+    });
+  }
+  return row.id;
 }
 
 interface QuestionBankPickerProps {
   kind: "MCQ" | "CODING";
   onPickMcq?: (mcq: MCQ) => void;
   onPickCoding?: (p: CodingProblem) => void;
+  /** Keys already present in the current assessment draft — those rows cannot be added again */
+  pickedMcqKeys?: string[];
+  pickedCodingKeys?: string[];
 }
 
-export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBankPickerProps) {
+export function QuestionBankPicker({
+  kind,
+  onPickMcq,
+  onPickCoding,
+  pickedMcqKeys = [],
+  pickedCodingKeys = [],
+}: QuestionBankPickerProps) {
+  const pickedMcq = useMemo(() => new Set(pickedMcqKeys), [pickedMcqKeys]);
+  const pickedCoding = useMemo(() => new Set(pickedCodingKeys), [pickedCodingKeys]);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
   const [section, setSection] = useState<string>("");
@@ -160,34 +187,46 @@ export function QuestionBankPicker({ kind, onPickMcq, onPickCoding }: QuestionBa
         {items.length === 0 && !loading ? (
           <p className="p-4 text-xs text-slate-500 text-center">No matches. Try another keyword.</p>
         ) : (
-          items.map((row) => (
-            <div key={row.id} className="flex items-center gap-3 p-3 text-left">
-              <div className="flex-1 min-w-0 text-xs text-slate-300">
-                <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500">{row.kind}</span>
-                  {row.section ? (
-                    <span className="text-[9px] px-1.5 py-0 rounded bg-white/10 text-slate-400">{row.section}</span>
-                  ) : null}
-                  {row.sourcePack === "blind75" ? (
-                    <span className="text-[9px] text-primary/90">Blind 75</span>
-                  ) : null}
+          items.map((row) => {
+            const key = rowDedupeKey(row);
+            const already =
+              kind === "MCQ" ? pickedMcq.has(key) : pickedCoding.has(key);
+            return (
+              <div key={row.id} className="flex items-center gap-3 p-3 text-left">
+                <div className="flex-1 min-w-0 text-xs text-slate-300">
+                  <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">{row.kind}</span>
+                    {row.section ? (
+                      <span className="text-[9px] px-1.5 py-0 rounded bg-white/10 text-slate-400">{row.section}</span>
+                    ) : null}
+                    {row.sourcePack === "blind75" ? (
+                      <span className="text-[9px] text-primary/90">Blind 75</span>
+                    ) : null}
+                  </div>
+                  <span className="min-w-0 break-words">{preview(row)}</span>
                 </div>
-                <span className="min-w-0 break-words">{preview(row)}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={already}
+                  className="shrink-0 rounded-full border-primary/40 text-primary hover:bg-primary/10 h-8 disabled:opacity-40 disabled:pointer-events-none"
+                  onClick={() => {
+                    if (already) return;
+                    if (row.kind === "MCQ" && row.mcq) onPickMcq?.(cloneMcq(row.mcq));
+                    if (row.kind === "CODING" && row.coding)
+                      onPickCoding?.(cloneCoding(row.coding, row.leetcodeSlug));
+                  }}
+                >
+                  {already ? "Added" : (
+                    <>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="shrink-0 rounded-full border-primary/40 text-primary hover:bg-primary/10 h-8"
-                onClick={() => {
-                  if (row.kind === "MCQ" && row.mcq) onPickMcq?.(cloneMcq(row.mcq));
-                  if (row.kind === "CODING" && row.coding) onPickCoding?.(cloneCoding(row.coding));
-                }}
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" /> Add
-              </Button>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

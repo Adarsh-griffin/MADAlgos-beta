@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, PanelLeft, PanelLeftClose } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Checkbox } from "@/components/ui/checkbox";
 import AssessmentCodeEditor from "./AssessmentCodeEditor";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ interface TestRoomProps {
 }
 
 type ActivePanel = "mcq" | number;
+type ProblemState = { lang: string; codeByLang: Record<string, string> };
 
 function getSecondsLeft(usedAt: string | Date | undefined, durationMinutes: number) {
   const startMs = new Date(usedAt ?? new Date()).getTime();
@@ -40,11 +42,11 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
 
   const [mcqSelections, setMcqSelections] = useState<Record<number, number[]>>({});
 
-  const [problemStates, setProblemStates] = useState<Record<number, { code: string; lang: string }>>(() => {
-    const init: Record<number, { code: string; lang: string }> = {};
+  const [problemStates, setProblemStates] = useState<Record<number, ProblemState>>(() => {
+    const init: Record<number, ProblemState> = {};
     const lang: AssessmentLangKey = "Javascript";
     codingProblems.forEach((p: any, idx: number) => {
-      init[idx] = { code: getDefaultStarterCode(lang, p), lang };
+      init[idx] = { lang, codeByLang: { [lang]: getDefaultStarterCode(lang, p) } };
     });
     return init;
   });
@@ -52,17 +54,49 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [runOutput, setRunOutput] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [problemPaneCollapsed, setProblemPaneCollapsed] = useState(false);
 
   const mcqSelectionsRef = useRef(mcqSelections);
-  const problemStatesRef = useRef(problemStates);
+  const problemStatesRef = useRef<Record<number, ProblemState>>(problemStates);
   const isSubmittingRef = useRef(false);
   const autoSubmitFiredRef = useRef(false);
+  const tabAwayCountRef = useRef(0);
   const codingIdx = typeof activePanel === "number" ? activePanel : 0;
 
   useEffect(() => {
     mcqSelectionsRef.current = mcqSelections;
     problemStatesRef.current = problemStates;
   });
+
+  useEffect(() => {
+    if (activePanel === "mcq") setProblemPaneCollapsed(false);
+  }, [activePanel]);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState !== "hidden") return;
+      tabAwayCountRef.current += 1;
+      toast.warning(
+        `You left this tab (${tabAwayCountRef.current}). Stay in the assessment window until you submit.`,
+        { id: "assessment-tab-leave", duration: 7000 }
+      );
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  const getCodingSubmissionsPayload = useCallback((states: Record<number, ProblemState>) => {
+    return Object.entries(states).map(([idx, state]) => {
+      const sourceCode = state.codeByLang[state.lang] ?? "";
+      return {
+        problemIndex: parseInt(idx, 10),
+        sourceCode,
+        language: state.lang,
+      };
+    });
+  }, []);
 
   const submitAssessment = useCallback(
     async (submitStatus: "COMPLETED" | "AUTO_SUBMITTED" = "COMPLETED") => {
@@ -81,11 +115,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         const payload = {
           token: tokenData.token,
           mcqAnswers,
-          codingSubmissions: Object.entries(ps).map(([idx, state]) => ({
-            problemIndex: parseInt(idx, 10),
-            sourceCode: state.code,
-            language: state.lang,
-          })),
+          codingSubmissions: getCodingSubmissionsPayload(ps),
           status: submitStatus,
         };
 
@@ -124,7 +154,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         setIsSubmitting(false);
       }
     },
-    [tokenData.token, mcqs]
+    [tokenData.token, mcqs, getCodingSubmissionsPayload]
   );
 
   useEffect(() => {
@@ -177,14 +207,97 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     };
   }, [test.duration, tokenData.usedAt, submitAssessment]);
 
-  const handleRunSamples = async () => {
+  useEffect(() => {
+    let cancelled = false;
+    const loadDraft = async () => {
+      try {
+        const res = await fetch(`/api/assessment/save?token=${encodeURIComponent(tokenData.token)}`);
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        const draft = data?.draft;
+        if (!draft || cancelled) return;
+
+        if (Array.isArray(draft.mcqAnswers)) {
+          const nextMcq: Record<number, number[]> = {};
+          for (const a of draft.mcqAnswers as Array<{ questionIndex: number; selectedOption?: number; selectedOptions?: number[] }>) {
+            if (typeof a.questionIndex !== "number") continue;
+            if (Array.isArray(a.selectedOptions)) nextMcq[a.questionIndex] = a.selectedOptions;
+            else if (typeof a.selectedOption === "number") nextMcq[a.questionIndex] = [a.selectedOption];
+          }
+          setMcqSelections(nextMcq);
+        }
+
+        if (Array.isArray(draft.codingSubmissions)) {
+          setProblemStates((prev) => {
+            const next = { ...prev };
+            for (const row of draft.codingSubmissions as Array<{ problemIndex: number; sourceCode?: string; language?: string }>) {
+              if (typeof row.problemIndex !== "number") continue;
+              const lang = row.language || next[row.problemIndex]?.lang || "Javascript";
+              const existing = next[row.problemIndex] ?? { lang, codeByLang: {} };
+              next[row.problemIndex] = {
+                lang,
+                codeByLang: {
+                  ...existing.codeByLang,
+                  [lang]: typeof row.sourceCode === "string" ? row.sourceCode : existing.codeByLang[lang] ?? "",
+                },
+              };
+            }
+            return next;
+          });
+          toast.success("Recovered your previously saved draft.");
+        }
+      } catch {
+        // Best-effort load only.
+      }
+    };
+    void loadDraft();
+    return () => {
+      cancelled = true;
+    };
+  }, [tokenData.token]);
+
+  const saveProgress = useCallback(async () => {
+    setIsSavingDraft(true);
+    try {
+      const ms = mcqSelectionsRef.current;
+      const ps = problemStatesRef.current;
+      const mcqAnswers = mcqs.map((_: unknown, i: number) => {
+        const sel = ms[i] ?? [];
+        const base = { questionIndex: i, selectedOptions: sel };
+        return sel.length === 1 ? { ...base, selectedOption: sel[0] } : base;
+      });
+      const payload = {
+        token: tokenData.token,
+        mcqAnswers,
+        codingSubmissions: getCodingSubmissionsPayload(ps),
+      };
+      const res = await fetch("/api/assessment/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.message || "Could not save draft.");
+        return;
+      }
+      toast.success("Progress saved to backend.");
+    } catch {
+      toast.error("Network error while saving.");
+    } finally {
+      setIsSavingDraft(false);
+    }
+  }, [mcqs, tokenData.token, getCodingSubmissionsPayload]);
+
+  const handleRun = async (scope: "sample" | "all") => {
     if (!hasCoding) return;
     setIsRunning(true);
     setRunOutput(null);
     try {
       const idx = codingIdx;
       const state = problemStatesRef.current[idx];
-      if (!state?.code?.trim()) {
+      const codeToRun = state?.codeByLang?.[state.lang] ?? "";
+      if (!codeToRun.trim()) {
         toast.error("Write some code before running.");
         return;
       }
@@ -194,8 +307,9 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         body: JSON.stringify({
           token: tokenData.token,
           problemIndex: idx,
-          sourceCode: state.code,
-          language: state.lang,
+          sourceCode: codeToRun,
+          language: state?.lang || "Javascript",
+          runScope: scope,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -203,9 +317,21 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         toast.error(data.message || "Run failed.");
         return;
       }
-      const lines = (data.results as Array<{ passed: boolean; status: string; stdout?: string; stderr?: string }>).map(
+      const lines = (
+        data.results as Array<{
+          passed: boolean;
+          status: string;
+          stdout?: string;
+          stderr?: string;
+          visibility?: "sample" | "hidden";
+          input?: string;
+          expected?: string;
+        }>
+      ).map(
         (r, i) =>
-          `Sample ${i + 1}: ${r.passed ? "PASS" : "FAIL"} (${r.status})\nstdout:\n${r.stdout ?? ""}\nstderr:\n${r.stderr ?? ""}`
+          `${r.visibility === "hidden" ? "Hidden" : "Sample"} ${i + 1}: ${r.passed ? "PASS" : "FAIL"} (${r.status})` +
+          (r.visibility === "sample" ? `\ninput:\n${r.input ?? ""}\nexpected:\n${r.expected ?? ""}` : "") +
+          `\nstdout:\n${r.stdout ?? ""}\nstderr:\n${r.stderr ?? ""}`
       );
       setRunOutput(lines.join("\n\n---\n\n"));
     } catch {
@@ -214,6 +340,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       setIsRunning(false);
     }
   };
+  const handleRunSamples = () => void handleRun("sample");
+  const handleRunAllTests = () => void handleRun("all");
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -239,7 +367,13 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const handleUpdateCode = (code: string) => {
     setProblemStates((prev) => ({
       ...prev,
-      [codingIdx]: { ...(prev[codingIdx] ?? { code: "", lang: "Javascript" }), code },
+      [codingIdx]: {
+        ...(prev[codingIdx] ?? { lang: "Javascript", codeByLang: {} }),
+        codeByLang: {
+          ...(prev[codingIdx]?.codeByLang ?? {}),
+          [(prev[codingIdx]?.lang ?? "Javascript")]: code,
+        },
+      },
     }));
   };
 
@@ -248,7 +382,14 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     const starter = getDefaultStarterCode(lang, prob);
     setProblemStates((prev) => ({
       ...prev,
-      [codingIdx]: { code: starter, lang },
+      [codingIdx]: {
+        ...(prev[codingIdx] ?? { lang: "Javascript", codeByLang: {} }),
+        lang,
+        codeByLang: {
+          ...(prev[codingIdx]?.codeByLang ?? {}),
+          [lang]: prev[codingIdx]?.codeByLang?.[lang] ?? starter,
+        },
+      },
     }));
   };
 
@@ -256,11 +397,12 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     ? codingProblems[codingIdx]
     : null;
   const currentState = hasCoding
-    ? problemStates[codingIdx] ?? { code: "", lang: "Javascript" }
-    : { code: "", lang: "Javascript" };
+    ? problemStates[codingIdx] ?? { lang: "Javascript", codeByLang: {} }
+    : { lang: "Javascript", codeByLang: {} };
   const defaultCodeForEditor = hasCoding
     ? getDefaultStarterCode(currentState.lang, currentProblem)
     : "";
+  const currentCode = currentState.codeByLang[currentState.lang] ?? defaultCodeForEditor;
 
   const goNextFromMcq = () => {
     if (hasCoding) setActivePanel(0);
@@ -308,45 +450,67 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       </header>
 
       <main className="flex-1 flex min-h-0 overflow-hidden">
-        {(hasMcq || hasCoding) && (
-          <aside className="w-40 md:w-44 shrink-0 border-r border-white/10 bg-[#080808] flex flex-col py-3 gap-0.5 px-2 overflow-y-auto">
-            <p className="px-2 pb-2 text-[9px] font-bold uppercase tracking-widest text-slate-600">Navigate</p>
-            {hasMcq ? (
-              <button
-                type="button"
-                onClick={() => setActivePanel("mcq")}
-                title="Multiple choice"
-                className={`rounded-lg px-2 py-2 text-left text-xs font-medium leading-snug transition-colors ${
-                  activePanel === "mcq"
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "text-slate-400 hover:bg-white/5 border border-transparent"
-                }`}
-              >
-                <span className="line-clamp-3">Multiple choice</span>
-              </button>
-            ) : null}
-            {hasCoding
-              ? codingProblems.map((p: any, i: number) => {
-                  const label = (p.title as string)?.trim() || `Coding ${i + 1}`;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      title={label}
-                      onClick={() => setActivePanel(i)}
-                      className={`rounded-lg px-2 py-2 text-left text-xs font-medium leading-snug transition-colors ${
-                        activePanel === i
-                          ? "bg-primary/15 text-primary border border-primary/30"
-                          : "text-slate-400 hover:bg-white/5 border border-transparent"
-                      }`}
-                    >
-                      <span className="line-clamp-3">{label}</span>
-                    </button>
-                  );
-                })
-              : null}
-          </aside>
-        )}
+        {(hasMcq || hasCoding) &&
+          (!navCollapsed ? (
+            <aside className="w-40 md:w-44 shrink-0 border-r border-white/10 bg-[#080808] flex flex-col py-2 gap-0.5 px-2 overflow-y-auto transition-[width] duration-200">
+              <div className="flex items-center justify-between gap-1 px-1 pb-1">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Navigate</p>
+                <button
+                  type="button"
+                  onClick={() => setNavCollapsed(true)}
+                  className="p-1 rounded-md text-slate-500 hover:text-white hover:bg-white/10"
+                  title="Collapse navigation"
+                  aria-label="Collapse navigation"
+                >
+                  <PanelLeftClose className="h-4 w-4" />
+                </button>
+              </div>
+              {hasMcq ? (
+                <button
+                  type="button"
+                  onClick={() => setActivePanel("mcq")}
+                  title="Multiple choice"
+                  className={`rounded-lg px-2 py-2 text-left text-xs font-medium leading-snug transition-colors ${
+                    activePanel === "mcq"
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "text-slate-400 hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  <span className="line-clamp-3">Multiple choice</span>
+                </button>
+              ) : null}
+              {hasCoding
+                ? codingProblems.map((p: any, i: number) => {
+                    const label = (p.title as string)?.trim() || `Coding ${i + 1}`;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        title={label}
+                        onClick={() => setActivePanel(i)}
+                        className={`rounded-lg px-2 py-2 text-left text-xs font-medium leading-snug transition-colors ${
+                          activePanel === i
+                            ? "bg-primary/15 text-primary border border-primary/30"
+                            : "text-slate-400 hover:bg-white/5 border border-transparent"
+                        }`}
+                      >
+                        <span className="line-clamp-3">{label}</span>
+                      </button>
+                    );
+                  })
+                : null}
+            </aside>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setNavCollapsed(false)}
+              className="shrink-0 w-9 border-r border-white/10 bg-[#080808] flex flex-col items-center py-3 text-slate-400 hover:text-primary hover:bg-white/5"
+              title="Show navigation"
+              aria-label="Show navigation"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </button>
+          ))}
 
         <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
           {activePanel === "mcq" && hasMcq ? (
@@ -438,87 +602,153 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
           ) : null}
 
           {typeof activePanel === "number" && hasCoding ? (
-            <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-              <div className="flex-1 min-w-0 min-h-0 overflow-y-auto border-b lg:border-b-0 lg:border-r border-white/10 p-5 md:p-8 bg-[#050505]">
-                <div className="max-w-3xl mx-auto w-full space-y-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={codingIdx === 0 && !hasMcq}
-                      onClick={() => {
-                        if (codingIdx > 0) setActivePanel(codingIdx - 1);
-                        else if (hasMcq) setActivePanel("mcq");
-                      }}
-                      className="text-slate-400"
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" /> {codingIdx === 0 && hasMcq ? "MCQs" : "Back"}
-                    </Button>
-                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest text-center flex-1">
-                      Problem {codingIdx + 1} / {codingProblems.length}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={codingIdx >= codingProblems.length - 1}
-                      onClick={() => setActivePanel(codingIdx + 1)}
-                      className="text-slate-400"
-                    >
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
+            problemPaneCollapsed ? (
+              <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-black">
+                <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-[#050505]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-primary/40 text-primary hover:bg-primary/10"
+                    onClick={() => setProblemPaneCollapsed(false)}
+                  >
+                    <PanelLeft className="h-4 w-4 mr-1" /> Show problem
+                  </Button>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest">
+                    Problem {codingIdx + 1} / {codingProblems.length}
+                  </span>
+                </div>
+                <div className="flex-1 min-h-0 flex flex-col p-2 gap-2">
+                  <div className="flex-1 min-h-0">
+                    <AssessmentCodeEditor
+                      sourceCode={currentCode}
+                      setSourceCode={handleUpdateCode}
+                      language={currentState.lang}
+                      setLanguage={handleUpdateLang}
+                      defaultCode={defaultCodeForEditor}
+                      onRunSamples={handleRunSamples}
+                      onRunAllTests={handleRunAllTests}
+                      onSaveProgress={saveProgress}
+                      isRunning={isRunning}
+                      isSaving={isSavingDraft}
+                    />
                   </div>
-                  <h2 className="text-xl font-bold text-white">{currentProblem?.title}</h2>
-                  <p className="text-slate-300 whitespace-pre-wrap text-sm leading-relaxed">
-                    {currentProblem?.description}
-                  </p>
-                  <div className="space-y-3 text-sm">
-                    <h4 className="font-semibold text-white">Input</h4>
-                    <p className="text-slate-400 italic">{currentProblem?.inputFormat || "—"}</p>
-                    <h4 className="font-semibold text-white">Output</h4>
-                    <p className="text-slate-400 italic">{currentProblem?.outputFormat || "—"}</p>
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Samples</h4>
-                    {(currentProblem?.sampleTestCases || []).map((tc: any, i: number) => (
-                      <div key={i} className="p-3 rounded-xl bg-black/50 border border-white/10 text-xs space-y-2">
-                        <div>
-                          <span className="text-slate-500 font-bold">IN</span>
-                          <pre className="text-slate-300 mt-1 whitespace-pre-wrap">{tc.input}</pre>
+                  {runOutput !== null && (
+                    <div className="shrink-0 max-h-36 overflow-auto rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                      {runOutput}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <ResizablePanelGroup
+                direction="horizontal"
+                autoSaveId="madalgos-testroom-split"
+                className="flex-1 flex min-h-0 min-w-0 bg-black"
+              >
+                <ResizablePanel defaultSize={52} minSize={22} className="min-h-0 flex flex-col border-r border-white/10 bg-[#050505]">
+                  <div className="flex-1 min-h-0 overflow-y-auto p-5 md:p-8 custom-scrollbar">
+                    <div className="max-w-3xl mx-auto w-full space-y-6">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={codingIdx === 0 && !hasMcq}
+                            onClick={() => {
+                              if (codingIdx > 0) setActivePanel(codingIdx - 1);
+                              else if (hasMcq) setActivePanel("mcq");
+                            }}
+                            className="text-slate-400"
+                          >
+                            <ChevronLeft className="h-4 w-4 mr-1" />{" "}
+                            {codingIdx === 0 && hasMcq ? "MCQs" : "Back"}
+                          </Button>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+                            Problem {codingIdx + 1} / {codingProblems.length}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={codingIdx >= codingProblems.length - 1}
+                            onClick={() => setActivePanel(codingIdx + 1)}
+                            className="text-slate-400"
+                          >
+                            Next <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
                         </div>
-                        <div>
-                          <span className="text-slate-500 font-bold">OUT</span>
-                          <pre className="text-green-400/90 mt-1 whitespace-pre-wrap">{tc.output}</pre>
-                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-slate-400 hover:text-primary shrink-0"
+                          onClick={() => setProblemPaneCollapsed(true)}
+                          title="Hide problem — wider code editor"
+                        >
+                          <PanelLeftClose className="h-4 w-4 mr-1" /> Hide problem
+                        </Button>
                       </div>
-                    ))}
+                      <h2 className="text-xl font-bold text-white">{currentProblem?.title}</h2>
+                      <p className="text-slate-300 whitespace-pre-wrap text-sm leading-relaxed">
+                        {currentProblem?.description}
+                      </p>
+                      <div className="space-y-3 text-sm">
+                        <h4 className="font-semibold text-white">Input</h4>
+                        <p className="text-slate-400 italic">{currentProblem?.inputFormat || "—"}</p>
+                        <h4 className="font-semibold text-white">Output</h4>
+                        <p className="text-slate-400 italic">{currentProblem?.outputFormat || "—"}</p>
+                      </div>
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Samples</h4>
+                        {(currentProblem?.sampleTestCases || []).map((tc: any, i: number) => (
+                          <div
+                            key={i}
+                            className="p-3 rounded-xl bg-black/50 border border-white/10 text-xs space-y-2"
+                          >
+                            <div>
+                              <span className="text-slate-500 font-bold">IN</span>
+                              <pre className="text-slate-300 mt-1 whitespace-pre-wrap">{tc.input}</pre>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-bold">OUT</span>
+                              <pre className="text-green-400/90 mt-1 whitespace-pre-wrap">{tc.output}</pre>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs text-slate-300">
+                        <p className="font-semibold text-primary mb-1">Tips for {currentState.lang}</p>
+                        <p>{hintText}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs text-slate-300">
-                    <p className="font-semibold text-primary mb-1">Tips for {currentState.lang}</p>
-                    <p>{hintText}</p>
+                </ResizablePanel>
+                <ResizableHandle withHandle className="w-2 bg-white/10 hover:bg-primary/25" />
+                <ResizablePanel defaultSize={48} minSize={28} className="min-h-0 flex flex-col p-2 gap-2 bg-black">
+                  <div className="flex-1 min-h-0">
+                    <AssessmentCodeEditor
+                      sourceCode={currentCode}
+                      setSourceCode={handleUpdateCode}
+                      language={currentState.lang}
+                      setLanguage={handleUpdateLang}
+                      defaultCode={defaultCodeForEditor}
+                      onRunSamples={handleRunSamples}
+                      onRunAllTests={handleRunAllTests}
+                      onSaveProgress={saveProgress}
+                      isRunning={isRunning}
+                      isSaving={isSavingDraft}
+                    />
                   </div>
-                </div>
-              </div>
-              <div className="w-full lg:w-[min(46vw,520px)] lg:max-w-[520px] shrink-0 lg:shrink-0 min-h-[40vh] lg:min-h-0 min-w-0 flex flex-col p-2 gap-2 bg-black border-t lg:border-t-0 lg:border-l border-white/10">
-                <div className="flex-1 min-h-0">
-                  <AssessmentCodeEditor
-                    sourceCode={currentState.code}
-                    setSourceCode={handleUpdateCode}
-                    language={currentState.lang}
-                    setLanguage={handleUpdateLang}
-                    defaultCode={defaultCodeForEditor}
-                    onRun={handleRunSamples}
-                    isRunning={isRunning}
-                  />
-                </div>
-                {runOutput !== null && (
-                  <div className="shrink-0 max-h-36 overflow-auto rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
-                    {runOutput}
-                  </div>
-                )}
-              </div>
-            </div>
+                  {runOutput !== null && (
+                    <div className="shrink-0 max-h-36 overflow-auto rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                      {runOutput}
+                    </div>
+                  )}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            )
           ) : null}
 
         </div>
