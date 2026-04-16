@@ -3,6 +3,7 @@ import TestResultModel from "@/models/TestResult";
 import TestTokenModel from "@/models/TestToken";
 import TestModel from "@/models/Test";
 import { runJudge0Submission } from "@/lib/judge0";
+import { sendAssessmentCompletionEmail } from "@/lib/assessment-emails";
 import { getMcqCorrectIndices, normalizeMcqStudentSelection, selectionsEqual } from "@/lib/assessment-mcq";
 
 const LANGUAGE_MAP: Record<string, number> = {
@@ -35,6 +36,7 @@ export async function persistGradedAssessment(
   testToken: { _id: unknown },
   test: {
     _id?: unknown;
+    title?: string;
     mcqs: unknown[];
     codingProblems: Array<{
       marks: number;
@@ -122,9 +124,10 @@ export async function persistGradedAssessment(
     });
   }
 
+  const mcqsForMax = test.mcqs as { marks: number }[];
+  const codingForMax = test.codingProblems as { marks: number }[];
   const maxScore =
-    test.mcqs.reduce((a: number, b: { marks: number }) => a + b.marks, 0) +
-    test.codingProblems.reduce((a: number, b: { marks: number }) => a + b.marks, 0);
+    mcqsForMax.reduce((a, b) => a + b.marks, 0) + codingForMax.reduce((a, b) => a + b.marks, 0);
 
   const result = await TestResultModel.create({
     tokenId: fresh._id,
@@ -143,6 +146,17 @@ export async function persistGradedAssessment(
 
   fresh.submittedAt = new Date();
   await fresh.save();
+
+  const testTitle = String((test as { title?: string }).title || "Assessment");
+  void sendAssessmentCompletionEmail({
+    to: fresh.studentEmail,
+    studentName: fresh.studentName,
+    testTitle,
+    totalScore: mcqScore + codingScore,
+    maxScore,
+    status,
+    submittedAt: result.submittedAt,
+  }).catch((err) => console.error("[assessment-email] completion:", err));
 
   return { skipped: false, resultId: String(result._id) };
 }

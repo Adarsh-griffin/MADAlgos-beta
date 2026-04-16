@@ -18,6 +18,10 @@ export interface TestResultDocument extends Document {
   maxScore: number;
   submittedAt: Date;
   status: "COMPLETED" | "AUTO_SUBMITTED";
+  /** Optional student feedback after submit (1–5). */
+  feedbackRating?: number;
+  feedbackComment?: string;
+  feedbackSubmittedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +54,9 @@ const TestResultSchema = new Schema<TestResultDocument>(
     maxScore: { type: Number, required: true },
     submittedAt: { type: Date, required: true },
     status: { type: String, enum: ["COMPLETED", "AUTO_SUBMITTED"], default: "COMPLETED" },
+    feedbackRating: { type: Number, min: 1, max: 5 },
+    feedbackComment: { type: String, maxlength: 2000 },
+    feedbackSubmittedAt: { type: Date },
   },
   { collection: "test_results", timestamps: true }
 );

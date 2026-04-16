@@ -6,6 +6,18 @@ import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Checkbox } from "@/components/ui/checkbox";
 import AssessmentCodeEditor from "./AssessmentCodeEditor";
+import { AssessmentMarkdown } from "./AssessmentMarkdown";
+import { AssessmentPostSubmitFeedback } from "./AssessmentPostSubmitFeedback";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { isMcqMultiple } from "@/lib/assessment-mcq";
 import { ASSESSMENT_CODE_HINTS, getDefaultStarterCode } from "@/lib/assessment-code-starters";
@@ -57,6 +69,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [problemPaneCollapsed, setProblemPaneCollapsed] = useState(false);
+  const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  const [postSubmitOpen, setPostSubmitOpen] = useState(false);
 
   const mcqSelectionsRef = useRef(mcqSelections);
   const problemStatesRef = useRef<Record<number, ProblemState>>(problemStates);
@@ -129,7 +143,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
           toast.success(
             submitStatus === "AUTO_SUBMITTED" ? "Time is up — responses saved." : "Assessment submitted successfully!"
           );
-          window.location.reload();
+          setPostSubmitOpen(true);
+          return;
         } else {
           const err = await res.json().catch(() => ({}));
           const msg = String(err.message || "");
@@ -438,9 +453,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
             {formatTime(timeLeft)}
           </div>
           <Button
-            onClick={() => {
-              if (confirm("Are you sure you want to finish the test?")) void submitAssessment("COMPLETED");
-            }}
+            type="button"
+            onClick={() => setFinishDialogOpen(true)}
             disabled={isSubmitting}
             className="rounded-full bg-primary hover:bg-primary/90 text-black px-6 font-bold"
           >
@@ -691,14 +705,16 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                         </Button>
                       </div>
                       <h2 className="text-xl font-bold text-white">{currentProblem?.title}</h2>
-                      <p className="text-slate-300 whitespace-pre-wrap text-sm leading-relaxed">
-                        {currentProblem?.description}
-                      </p>
+                      <AssessmentMarkdown>{String(currentProblem?.description ?? "")}</AssessmentMarkdown>
                       <div className="space-y-3 text-sm">
                         <h4 className="font-semibold text-white">Input</h4>
-                        <p className="text-slate-400 italic">{currentProblem?.inputFormat || "—"}</p>
+                        <div className="text-slate-400 italic">
+                          <AssessmentMarkdown>{String(currentProblem?.inputFormat || "—")}</AssessmentMarkdown>
+                        </div>
                         <h4 className="font-semibold text-white">Output</h4>
-                        <p className="text-slate-400 italic">{currentProblem?.outputFormat || "—"}</p>
+                        <div className="text-slate-400 italic">
+                          <AssessmentMarkdown>{String(currentProblem?.outputFormat || "—")}</AssessmentMarkdown>
+                        </div>
                       </div>
                       <div className="space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Samples</h4>
@@ -753,6 +769,39 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
 
         </div>
       </main>
+
+      <AlertDialog open={finishDialogOpen} onOpenChange={setFinishDialogOpen}>
+        <AlertDialogContent className="bg-[#050505] border-white/10 text-white sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Finish test?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Your answers will be graded and you won&apos;t be able to change them. Continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/15 bg-transparent text-slate-300 hover:bg-white/10 hover:text-white">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-primary text-black font-bold"
+              onClick={() => {
+                setFinishDialogOpen(false);
+                void submitAssessment("COMPLETED");
+              }}
+            >
+              Yes, submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {postSubmitOpen ? (
+        <AssessmentPostSubmitFeedback
+          token={tokenData.token}
+          testTitle={String(test.title ?? "Assessment")}
+          onDone={() => window.location.reload()}
+        />
+      ) : null}
 
       <footer className="h-8 px-6 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] text-slate-500 font-medium shrink-0">
         <div className="flex gap-4 truncate">

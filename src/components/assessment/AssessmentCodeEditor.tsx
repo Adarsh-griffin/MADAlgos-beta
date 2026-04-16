@@ -11,6 +11,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ChevronDown } from "lucide-react";
 
 interface AssessmentCodeEditorProps {
@@ -50,11 +60,11 @@ export default function AssessmentCodeEditor({
   isSaving = false,
 }: AssessmentCodeEditorProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
-  const handleResetCode = () => {
-    if (confirm("Reset your code to the default starter template for this language? Your edits will be replaced.")) {
-      setSourceCode(defaultCode);
-    }
+  const applyResetCode = () => {
+    setSourceCode(defaultCode);
+    setResetDialogOpen(false);
   };
 
   const handleCopyToClipboard = () => {
@@ -149,12 +159,36 @@ export default function AssessmentCodeEditor({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleResetCode} className="h-8 w-8 text-slate-400 hover:text-red-400">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setResetDialogOpen(true)}
+                className="h-8 w-8 text-slate-400 hover:text-red-400"
+              >
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Reset Code</TooltipContent>
           </Tooltip>
+
+          <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+            <AlertDialogContent className="bg-[#050505] border-white/10 text-white sm:max-w-md">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset code?</AlertDialogTitle>
+                <AlertDialogDescription className="text-slate-400">
+                  Replace your editor with the default starter for {language}. Your current edits will be lost.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="border-white/15 bg-transparent text-slate-300 hover:bg-white/10 hover:text-white">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction className="bg-red-600 text-white hover:bg-red-600/90 font-semibold" onClick={applyResetCode}>
+                  Reset
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <Tooltip>
             <TooltipTrigger asChild>
