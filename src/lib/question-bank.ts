@@ -119,7 +119,7 @@ function sectionToTag(section: string): string {
 
 function buildBlindSearchText(row: Blind75Row, coding: CodingProblem): string {
   return [
-    "blind 75 blind75 leetcode dsa",
+    "dsa interview catalog",
     row.section,
     sectionToTag(row.section),
     row.slug,
@@ -131,29 +131,26 @@ function buildBlindSearchText(row: Blind75Row, coding: CodingProblem): string {
 }
 
 async function ensureBlind75PackSeeded(): Promise<void> {
-  const n = await QuestionBankItemModel.countDocuments({ sourcePack: "blind75" });
-  if (n >= BLIND_75.length) return;
-  const slugs = new Set(
-    (await QuestionBankItemModel.find({ sourcePack: "blind75" }).select("leetcodeSlug").lean())
-      .map((d: { leetcodeSlug?: string }) => d.leetcodeSlug)
-      .filter(Boolean)
-  );
   for (const row of BLIND_75) {
-    if (slugs.has(row.slug)) continue;
     const coding = buildBlind75CodingProblem(row);
     const fingerprint = fingerprintForCoding(coding);
-    const dup = await QuestionBankItemModel.findOne({ fingerprint }).lean();
-    if (dup) continue;
-    await QuestionBankItemModel.create({
-      kind: "CODING",
-      coding,
-      fingerprint,
-      searchText: buildBlindSearchText(row, coding),
-      sourcePack: "blind75",
-      section: row.section,
-      tags: ["dsa", "blind-75", sectionToTag(row.section)],
-      leetcodeSlug: row.slug,
-    });
+    const searchText = buildBlindSearchText(row, coding);
+    await QuestionBankItemModel.findOneAndUpdate(
+      { sourcePack: "blind75", leetcodeSlug: row.slug },
+      {
+        $set: {
+          kind: "CODING",
+          coding,
+          fingerprint,
+          searchText,
+          sourcePack: "blind75",
+          section: row.section,
+          tags: ["dsa", sectionToTag(row.section)],
+          leetcodeSlug: row.slug,
+        },
+      },
+      { upsert: true }
+    );
   }
 }
 

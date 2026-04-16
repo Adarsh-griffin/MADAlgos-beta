@@ -1,14 +1,9 @@
 import type { CodingProblem } from "@/models/Test";
 import { STUDENT_CODE_ZONE_BANNER } from "@/lib/assessment-code-starters";
 import type { Blind75Row } from "./blind75-slugs";
+import { getInHouseBlind75Entry } from "./blind75-in-house-catalog";
 
-const PLACEHOLDER_IO = `**Platform template (replace before grading students):** Read two integers from the first line of stdin (space-separated) and print their sum on one line. This lets auto-grading run; it is **not** the real LeetCode I/O for this topic — adapt samples and hidden tests to match your course copy of the problem.
-
----
-
-`;
-
-/** Minimal stdin tests so seeded rows pass validation (admin should replace for real exams). */
+/** Minimal stdin tests — only used if a slug is missing from the in-house catalog. */
 const TRIVIAL_TESTS = {
   sampleTestCases: [{ input: "2 2\n", output: "4\n" }],
   hiddenTestCases: [
@@ -18,8 +13,7 @@ const TRIVIAL_TESTS = {
 };
 
 /**
- * Multi-language boilerplate: read two ints from first line, print sum.
- * Mirrors platform judge (stdin/stdout). No LeetCode URL / Blind 75 labels in code — those stay in the problem description only.
+ * Fallback multi-language boilerplate: read two ints from first line, print sum.
  */
 export function blind75StarterCode(_title: string, _leetcodeUrl: string): Record<string, string> {
   void _title;
@@ -48,19 +42,28 @@ export function blind75StarterCode(_title: string, _leetcodeUrl: string): Record
 }
 
 export function buildBlind75CodingProblem(row: Blind75Row): CodingProblem {
-  const title = `[Blind 75] ${row.title}`;
-  const description =
-    PLACEHOLDER_IO +
-    `### ${row.title} (${row.section})\n\n` +
-    `Use the statement shown in this test as the source of truth. ` +
-    `The **starter code** below matches this platform’s function-harness judge — ` +
-    `edit samples and hidden tests on the test so they match the exact I/O you teach for this problem.`;
+  const title = row.title;
+  const fromCatalog = getInHouseBlind75Entry(row.slug);
+  if (fromCatalog) {
+    return {
+      title,
+      description: fromCatalog.description,
+      inputFormat: fromCatalog.inputFormat,
+      outputFormat: fromCatalog.outputFormat,
+      sampleTestCases: fromCatalog.sampleTestCases,
+      hiddenTestCases: fromCatalog.hiddenTestCases,
+      marks: fromCatalog.marks,
+      starterCode: fromCatalog.starterCode,
+    };
+  }
+
+  const description = `${row.title}\n\nSolve this problem as specified in your assessment instructions.`;
 
   return {
     title,
     description,
-    inputFormat: "One line: two integers A and B (template — replace when you wire a real problem).",
-    outputFormat: "One line: single integer (template).",
+    inputFormat: "",
+    outputFormat: "",
     ...TRIVIAL_TESTS,
     marks: 10,
     starterCode: blind75StarterCode(row.title, ""),

@@ -28,6 +28,31 @@ type BankRow = {
   sourcePack?: string;
 };
 
+function normalizeOwnedText(raw: string): string {
+  const text = String(raw || "");
+  return text
+    .split(/\r?\n/)
+    .filter((line) => {
+      const l = line.trim();
+      if (!l) return true;
+      if (/leetcode\.com/i.test(l)) return false;
+      if (/official problem/i.test(l)) return false;
+      if (/platform template/i.test(l)) return false;
+      if (/madalgos stores a short neutral summary/i.test(l)) return false;
+      if (/open the link for the full spec/i.test(l)) return false;
+      if (/^\*{2}.*\*{2}$/.test(l) && /difficulty|source/i.test(l)) return false;
+      if (/^[-*_]{3,}$/.test(l)) return false;
+      return true;
+    })
+    .join("\n")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/^\s*\[?\s*blind\s*75\s*\]?\s*/i, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function cloneMcq(m: MCQ): MCQ {
   return {
     questionText: m.questionText,
@@ -41,11 +66,13 @@ function cloneMcq(m: MCQ): MCQ {
 
 function cloneCoding(p: CodingProblem, leetcodeSlug?: string): CodingProblem {
   const slug = p.leetcodeSlug?.trim() || leetcodeSlug?.trim();
+  const cleanedTitle = normalizeOwnedText(p.title);
+  const cleanedDescription = normalizeOwnedText(p.description);
   return {
-    title: p.title,
-    description: p.description,
-    inputFormat: p.inputFormat || "",
-    outputFormat: p.outputFormat || "",
+    title: cleanedTitle || p.title,
+    description: cleanedDescription || p.description,
+    inputFormat: normalizeOwnedText(p.inputFormat || ""),
+    outputFormat: normalizeOwnedText(p.outputFormat || ""),
     sampleTestCases: (p.sampleTestCases || []).map((t) => ({ input: t.input, output: t.output })),
     hiddenTestCases: (p.hiddenTestCases || []).map((t) => ({ input: t.input, output: t.output })),
     marks: p.marks,
@@ -92,7 +119,7 @@ export function QuestionBankPicker({
   const [items, setItems] = useState<BankRow[]>([]);
 
   const tagPresets = useMemo(() => {
-    if (kind === "CODING") return ["dsa", "blind-75"];
+    if (kind === "CODING") return ["dsa"];
     return ["dsa", "complexity", "graphs"];
   }, [kind]);
 
@@ -143,8 +170,7 @@ export function QuestionBankPicker({
         <h4 className="text-sm font-semibold text-white">Question repository</h4>
       </div>
       <p className="text-[11px] text-slate-500 leading-relaxed">
-        Filter by <strong className="text-slate-400">section</strong> (e.g. DSA blind list, complexity theory) or search
-        by name. Blind 75 coding items link to LeetCode; replace sample/hidden tests before high-stakes use.
+        Filter by <strong className="text-slate-400">section</strong> or search by name.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Select value={section || "__all__"} onValueChange={(v) => setSection(v === "__all__" ? "" : v)}>
@@ -198,9 +224,6 @@ export function QuestionBankPicker({
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">{row.kind}</span>
                     {row.section ? (
                       <span className="text-[9px] px-1.5 py-0 rounded bg-white/10 text-slate-400">{row.section}</span>
-                    ) : null}
-                    {row.sourcePack === "blind75" ? (
-                      <span className="text-[9px] text-primary/90">Blind 75</span>
                     ) : null}
                   </div>
                   <span className="min-w-0 break-words">{preview(row)}</span>

@@ -6,4 +6,4 @@ export const QUESTION_BANK_SECTIONS = Array.from(
   new Set([...BLIND_75.map((r) => r.section), ...DSA_MCQ_LIBRARY.map((x) => x.section)])
 ).sort((a, b) => a.localeCompare(b));
 
-export const COMMON_TAGS = ["dsa", "blind-75", "complexity", "graphs", "trees", "dp", "sorting"];
+export const COMMON_TAGS = ["dsa", "complexity", "graphs", "trees", "dp", "sorting"];

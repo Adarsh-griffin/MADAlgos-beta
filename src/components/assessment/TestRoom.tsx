@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { Clock, ChevronLeft, ChevronRight, PanelLeft, PanelLeftClose } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -36,15 +37,26 @@ type ProblemState = { lang: string; codeByLang: Record<string, string> };
  */
 function stripQuestionSourceText(raw: string): string {
   if (!raw) return "";
-  const lines = raw.split(/\r?\n/);
+  const lines = raw
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .split(/\r?\n/);
   const filtered = lines.filter((line) => {
     const l = line.trim();
     if (/leetcode\.com/i.test(l)) return false;
+    if (/blind\s*75/i.test(l)) return false;
     if (/official problem/i.test(l)) return false;
+    if (/platform template/i.test(l)) return false;
+    if (/not\s+the\s+real\s+leetcode/i.test(l)) return false;
     if (/open the link for the full spec/i.test(l)) return false;
     return true;
   });
-  return filtered.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return filtered
+    .join("\n")
+    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 const GENERIC_RUN_ISSUE_MESSAGE =
@@ -465,7 +477,14 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       <header className="h-16 px-6 border-b border-white/10 bg-[#050505] flex items-center justify-between z-40 shrink-0">
         <div className="flex items-center gap-6 min-w-0">
           <div className="flex items-center gap-2 shrink-0">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-black font-bold">M</div>
+            <Image
+              src="https://madalgos.in/logo.png"
+              alt="MADAlgos"
+              width={32}
+              height={32}
+              className="h-8 w-auto max-w-[120px] object-contain"
+              priority
+            />
             <span className="font-bold tracking-tight text-lg hidden sm:inline-block">
               MADAlgos <span className="text-primary font-normal">TestPortal</span>
             </span>

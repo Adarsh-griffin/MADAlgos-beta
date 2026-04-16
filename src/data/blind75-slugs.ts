@@ -122,6 +122,6 @@ export const BLIND_75: Blind75Row[] = [
   { title: "Course Schedule II", slug: "course-schedule-ii", section: "Advanced Graphs" },
 ];
 
-if (BLIND_75.length !== 75 && process.env.NODE_ENV !== "production") {
-  console.warn(`BLIND_75 expected 75 entries, got ${BLIND_75.length}`);
+if (BLIND_75.length !== 74 && process.env.NODE_ENV !== "production") {
+  console.warn(`BLIND_75 expected 74 entries, got ${BLIND_75.length}`);
 }
