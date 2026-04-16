@@ -31,6 +31,29 @@ interface TestRoomProps {
 type ActivePanel = "mcq" | number;
 type ProblemState = { lang: string; codeByLang: Record<string, string> };
 
+/**
+ * Student-facing sanitizer: hide source references/URLs in test mode.
+ */
+function stripQuestionSourceText(raw: string): string {
+  if (!raw) return "";
+  const lines = raw.split(/\r?\n/);
+  const filtered = lines.filter((line) => {
+    const l = line.trim();
+    if (/leetcode\.com/i.test(l)) return false;
+    if (/official problem/i.test(l)) return false;
+    if (/open the link for the full spec/i.test(l)) return false;
+    return true;
+  });
+  return filtered.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+const GENERIC_RUN_ISSUE_MESSAGE =
+  "We have encountered an issue. If the problem persists, contact us at contact@madalgos.in.";
+
+function shouldHideRuntimeDetails(status: string): boolean {
+  return /(judge0|http\s*\d{3}|internal error|rate-?limit|unavailable|timeout|network|rapidapi)/i.test(status);
+}
+
 function getSecondsLeft(usedAt: string | Date | undefined, durationMinutes: number) {
   const startMs = new Date(usedAt ?? new Date()).getTime();
   const endMs = startMs + durationMinutes * 60 * 1000;
@@ -329,20 +352,28 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(data.message || "Run failed.");
+        setRunOutput(GENERIC_RUN_ISSUE_MESSAGE);
+        toast.error(GENERIC_RUN_ISSUE_MESSAGE);
         return;
       }
-      const lines = (
-        data.results as Array<{
-          passed: boolean;
-          status: string;
-          stdout?: string;
-          stderr?: string;
-          visibility?: "sample" | "hidden";
-          input?: string;
-          expected?: string;
-        }>
-      ).map(
+
+      const results = (data.results as Array<{
+        passed: boolean;
+        status: string;
+        stdout?: string;
+        stderr?: string;
+        visibility?: "sample" | "hidden";
+        input?: string;
+        expected?: string;
+      }>) ?? [];
+
+      if (results.some((r) => shouldHideRuntimeDetails(String(r.status || "")))) {
+        setRunOutput(GENERIC_RUN_ISSUE_MESSAGE);
+        toast.error(GENERIC_RUN_ISSUE_MESSAGE);
+        return;
+      }
+
+      const lines = results.map(
         (r, i) =>
           `${r.visibility === "hidden" ? "Hidden" : "Sample"} ${i + 1}: ${r.passed ? "PASS" : "FAIL"} (${r.status})` +
           (r.visibility === "sample" ? `\ninput:\n${r.input ?? ""}\nexpected:\n${r.expected ?? ""}` : "") +
@@ -350,7 +381,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       );
       setRunOutput(lines.join("\n\n---\n\n"));
     } catch {
-      toast.error("Network error while running code.");
+      setRunOutput(GENERIC_RUN_ISSUE_MESSAGE);
+      toast.error(GENERIC_RUN_ISSUE_MESSAGE);
     } finally {
       setIsRunning(false);
     }
@@ -418,6 +450,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     ? getDefaultStarterCode(currentState.lang, currentProblem)
     : "";
   const currentCode = currentState.codeByLang[currentState.lang] ?? defaultCodeForEditor;
+  const studentSafeDescription = stripQuestionSourceText(String(currentProblem?.description ?? ""));
 
   const goNextFromMcq = () => {
     if (hasCoding) setActivePanel(0);
@@ -705,7 +738,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                         </Button>
                       </div>
                       <h2 className="text-xl font-bold text-white">{currentProblem?.title}</h2>
-                      <AssessmentMarkdown>{String(currentProblem?.description ?? "")}</AssessmentMarkdown>
+                      <AssessmentMarkdown>{studentSafeDescription}</AssessmentMarkdown>
                       <div className="space-y-3 text-sm">
                         <h4 className="font-semibold text-white">Input</h4>
                         <div className="text-slate-400 italic">

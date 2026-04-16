@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
-import { CodeXml, Copy, RotateCcw, Maximize2, Minimize2, Play } from "lucide-react";
+import { CodeXml, Copy, RotateCcw, Maximize2, Minimize2, Play, Moon, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +61,21 @@ export default function AssessmentCodeEditor({
 }: AssessmentCodeEditorProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [editorTheme, setEditorTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("assessment-editor-theme");
+    if (stored === "light" || stored === "dark") setEditorTheme(stored);
+  }, []);
+
+  const toggleEditorTheme = () => {
+    const next = editorTheme === "dark" ? "light" : "dark";
+    setEditorTheme(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("assessment-editor-theme", next);
+    }
+  };
 
   const applyResetCode = () => {
     setSourceCode(defaultCode);
@@ -74,16 +89,31 @@ export default function AssessmentCodeEditor({
 
   const monacoLanguage = JUDGE0_LANGUAGES[language as LanguageKey]?.monaco || "javascript";
 
+  const isDark = editorTheme === "dark";
+  const monacoTheme = isDark ? "vs-dark" : "vs";
+
   return (
-    <div className={`flex flex-col flex-1 min-h-0 h-full bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden ${isFullScreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
+    <div
+      className={`flex flex-col flex-1 min-h-0 h-full border rounded-2xl overflow-hidden ${
+        isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-slate-300"
+      } ${isFullScreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
+    >
       {/* Editor Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-white/5">
+      <div
+        className={`flex items-center justify-between px-4 py-2 border-b ${
+          isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"
+        }`}
+      >
         <div className="flex items-center gap-3">
           <div className="p-1.5 bg-green-500/10 rounded-lg">
             <CodeXml className="h-4 w-4 text-green-500" />
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors outline-none">
+            <DropdownMenuTrigger
+              className={`flex items-center gap-2 text-sm font-medium transition-colors outline-none ${
+                isDark ? "text-slate-300 hover:text-white" : "text-slate-700 hover:text-slate-900"
+              }`}
+            >
               {language} <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="bg-[#0f0f0f] border-white/10">
@@ -108,7 +138,9 @@ export default function AssessmentCodeEditor({
                   variant="ghost"
                   onClick={onRunSamples}
                   disabled={isRunning}
-                  className="h-8 px-3 gap-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg"
+                  className={`h-8 px-3 gap-1.5 rounded-lg ${
+                    isDark ? "text-slate-300 hover:text-white hover:bg-white/10" : "text-slate-700 hover:text-slate-900 hover:bg-slate-200"
+                  }`}
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
                   {isRunning ? "Running…" : "Run sample tests"}
@@ -124,7 +156,9 @@ export default function AssessmentCodeEditor({
                   variant="ghost"
                   onClick={onRunAllTests}
                   disabled={isRunning}
-                  className="h-8 px-3 gap-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg"
+                  className={`h-8 px-3 gap-1.5 rounded-lg ${
+                    isDark ? "text-slate-300 hover:text-white hover:bg-white/10" : "text-slate-700 hover:text-slate-900 hover:bg-slate-200"
+                  }`}
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
                   {isRunning ? "Running…" : "Run all tests"}
@@ -140,7 +174,9 @@ export default function AssessmentCodeEditor({
                   variant="ghost"
                   onClick={onSaveProgress}
                   disabled={isSaving}
-                  className="h-8 px-3 gap-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg"
+                  className={`h-8 px-3 gap-1.5 rounded-lg ${
+                    isDark ? "text-slate-300 hover:text-white hover:bg-white/10" : "text-slate-700 hover:text-slate-900 hover:bg-slate-200"
+                  }`}
                 >
                   {isSaving ? "Saving…" : "Submit test (save)"}
                 </Button>
@@ -150,7 +186,12 @@ export default function AssessmentCodeEditor({
           )}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleCopyToClipboard} className="h-8 w-8 text-slate-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyToClipboard}
+                className={`h-8 w-8 ${isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"}`}
+              >
                 <Copy className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -163,7 +204,7 @@ export default function AssessmentCodeEditor({
                 variant="ghost"
                 size="icon"
                 onClick={() => setResetDialogOpen(true)}
-                className="h-8 w-8 text-slate-400 hover:text-red-400"
+                className={`h-8 w-8 ${isDark ? "text-slate-400 hover:text-red-400" : "text-slate-500 hover:text-red-600"}`}
               >
                 <RotateCcw className="h-4 w-4" />
               </Button>
@@ -192,7 +233,26 @@ export default function AssessmentCodeEditor({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={() => setIsFullScreen(!isFullScreen)} className="h-8 w-8 text-slate-400 hover:text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleEditorTheme}
+                className={`h-8 w-8 ${isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"}`}
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isDark ? "Switch to light editor" : "Switch to dark editor"}</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className={`h-8 w-8 ${isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"}`}
+              >
                 {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </Button>
             </TooltipTrigger>
@@ -203,12 +263,19 @@ export default function AssessmentCodeEditor({
 
       {/* Monaco Editor Instance */}
       <div className="flex-1 relative">
+        <div
+          className={`px-3 py-2 text-[11px] font-semibold tracking-wide ${
+            isDark ? "bg-primary/10 text-primary border-b border-primary/20" : "bg-emerald-100 text-emerald-800 border-b border-emerald-300"
+          }`}
+        >
+          START CODING IN THE MARKED SECTION: look for comments saying `START CODING HERE`.
+        </div>
         <Editor
           height="100%"
           language={monacoLanguage}
           value={sourceCode}
           onChange={(value) => setSourceCode(value ?? "")}
-          theme="vs-dark"
+          theme={monacoTheme}
           options={{
             fontSize: 14,
             minimap: { enabled: false },
