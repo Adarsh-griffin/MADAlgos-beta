@@ -152,9 +152,6 @@ export async function persistGradedAssessment(
     to: fresh.studentEmail,
     studentName: fresh.studentName,
     testTitle,
-    totalScore: mcqScore + codingScore,
-    maxScore,
-    status,
     submittedAt: result.submittedAt,
   }).catch((err) => console.error("[assessment-email] completion:", err));
 

@@ -25,24 +25,16 @@ export function buildAssessmentTemplateData(
 
 export type AssessmentTokenForEmail = { studentEmail: string; token: string };
 
-/** Dynamic template data for “assessment submitted / graded” mail (Handlebars in SendGrid designer). */
+/** Dynamic template data for test completion confirmation (no scores — confirmation only). */
 export function buildAssessmentCompletionTemplateData(input: {
   testTitle: string;
-  totalScore: number;
-  maxScore: number;
-  status: "COMPLETED" | "AUTO_SUBMITTED";
   submittedAtIso: string;
   submittedAtDisplay: string;
   baseUrl: string;
   studentName?: string;
 }) {
-  const statusLabel = input.status === "AUTO_SUBMITTED" ? "Auto-submitted (time up)" : "Submitted";
   return {
     testTitle: input.testTitle,
-    totalScore: input.totalScore,
-    maxScore: input.maxScore,
-    status: input.status,
-    statusLabel,
     submittedAtIso: input.submittedAtIso,
     submittedAtDisplay: input.submittedAtDisplay,
     baseUrl: input.baseUrl,
@@ -51,16 +43,13 @@ export function buildAssessmentCompletionTemplateData(input: {
 }
 
 /**
- * Sends a confirmation after an attempt is graded and saved (manual finish or auto-submit).
+ * Sends a simple test-completion confirmation (no scores in this email).
  * Set `SENDGRID_ASSESSMENT_COMPLETION_TEMPLATE_ID` to your Dynamic Template ID in SendGrid.
  */
 export async function sendAssessmentCompletionEmail(input: {
   to: string;
   studentName?: string;
   testTitle: string;
-  totalScore: number;
-  maxScore: number;
-  status: "COMPLETED" | "AUTO_SUBMITTED";
   submittedAt: Date;
 }): Promise<{ sent: boolean; skipped: boolean }> {
   const sendgridKey = getSendgridKey();
@@ -83,9 +72,6 @@ export async function sendAssessmentCompletionEmail(input: {
 
   const data = buildAssessmentCompletionTemplateData({
     testTitle: input.testTitle,
-    totalScore: input.totalScore,
-    maxScore: input.maxScore,
-    status: input.status,
     submittedAtIso,
     submittedAtDisplay,
     baseUrl,
@@ -107,17 +93,15 @@ export async function sendAssessmentCompletionEmail(input: {
     await sgMail.send({
       to: input.to,
       from,
-      subject: `Assessment received: ${input.testTitle} | MADAlgos`,
+      subject: `Test completed: ${input.testTitle} | MADAlgos`,
       html: `
         <div style="font-family: system-ui, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; background: #0a0a0a; color: #e2e8f0; border-radius: 16px; border: 1px solid #27272a;">
           <p style="margin: 0 0 12px; font-size: 14px; color: #94a3b8;">MADAlgos TestPortal</p>
-          <h1 style="margin: 0 0 8px; font-size: 20px; color: #fff;">We received your submission</h1>
-          <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.5;">Your responses for <strong>${safeTitle}</strong> have been saved${input.status === "AUTO_SUBMITTED" ? " (auto-submit)" : ""}.</p>
-          <table style="width: 100%; font-size: 14px; margin-bottom: 16px;">
-            <tr><td style="color: #94a3b8; padding: 4px 0;">Score</td><td style="text-align: right; font-weight: 600;">${input.totalScore} / ${input.maxScore}</td></tr>
-            <tr><td style="color: #94a3b8; padding: 4px 0;">When</td><td style="text-align: right;">${escapeHtml(submittedAtDisplay)}</td></tr>
-          </table>
-          <p style="margin: 0; font-size: 12px; color: #64748b;">If you did not take this test, contact support.</p>
+          <p style="margin: 0 0 10px; font-size: 36px; line-height: 1;" aria-hidden="true">✅</p>
+          <h1 style="margin: 0 0 8px; font-size: 20px; color: #fff;">Your test is complete</h1>
+          <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.5;">Thank you. We’ve recorded your submission for <strong>${safeTitle}</strong>.</p>
+          <p style="margin: 0; font-size: 13px; color: #94a3b8;">${escapeHtml(submittedAtDisplay)}</p>
+          <p style="margin: 16px 0 0; font-size: 12px; color: #64748b;">If you did not take this test, contact support.</p>
         </div>
       `,
     });
