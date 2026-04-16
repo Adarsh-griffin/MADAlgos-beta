@@ -1,6 +1,14 @@
 export const ASSESSMENT_LANG_KEYS = ["Javascript", "Python", "Java", "C++", "C"] as const;
 export type AssessmentLangKey = (typeof ASSESSMENT_LANG_KEYS)[number];
 
+const LANGUAGE_ALIASES: Record<AssessmentLangKey, string[]> = {
+  Javascript: ["javascript", "js", "node", "nodejs", "ecmascript"],
+  Python: ["python", "python3", "py"],
+  Java: ["java", "java8", "java11", "jdk"],
+  "C++": ["c++", "cpp", "cxx", "g++"],
+  C: ["c", "gcc"],
+};
+
 /**
  * Wide banner so students immediately see where to implement their solution.
  * (Intentionally does not mention LeetCode — those lines are stripped elsewhere when needed.)
@@ -101,6 +109,50 @@ export function stripLeetcodeMetaFromStarterCode(code: string): string {
   return s.trimStart();
 }
 
+function getProblemStarterByLanguage(
+  lang: string,
+  starterCode?: Record<string, string>
+): string | undefined {
+  if (!starterCode) return undefined;
+  const requested = (lang || "").trim();
+  const requestedLc = requested.toLowerCase();
+  const keys = Object.keys(starterCode);
+  if (!keys.length) return undefined;
+
+  const exact = starterCode[requested];
+  if (typeof exact === "string" && exact.trim()) return exact;
+
+  const exactCaseInsensitive = keys.find((k) => k.toLowerCase() === requestedLc);
+  if (exactCaseInsensitive) {
+    const v = starterCode[exactCaseInsensitive];
+    if (typeof v === "string" && v.trim()) return v;
+  }
+
+  const canonical = (ASSESSMENT_LANG_KEYS as readonly string[]).find(
+    (k) => k.toLowerCase() === requestedLc
+  ) as AssessmentLangKey | undefined;
+  if (canonical) {
+    const aliases = LANGUAGE_ALIASES[canonical];
+    const aliasHit = keys.find((k) => aliases.includes(k.toLowerCase()));
+    if (aliasHit) {
+      const v = starterCode[aliasHit];
+      if (typeof v === "string" && v.trim()) return v;
+    }
+  } else {
+    // If requested label isn't one of our canonical labels, still try alias table.
+    for (const canonicalKey of ASSESSMENT_LANG_KEYS) {
+      if (!LANGUAGE_ALIASES[canonicalKey].includes(requestedLc)) continue;
+      const aliasHit = keys.find((k) => LANGUAGE_ALIASES[canonicalKey].includes(k.toLowerCase()));
+      if (aliasHit) {
+        const v = starterCode[aliasHit];
+        if (typeof v === "string" && v.trim()) return v;
+      }
+    }
+  }
+
+  return undefined;
+}
+
 const SNIPPETS: Record<AssessmentLangKey, string> = {
   Javascript:
     STUDENT_CODE_ZONE_BANNER.Javascript +
@@ -125,7 +177,7 @@ const SNIPPETS: Record<AssessmentLangKey, string> = {
 
 export function getDefaultStarterCode(lang: string, problem?: { starterCode?: Record<string, string> }): string {
   const key = lang as AssessmentLangKey;
-  const fromProblem = problem?.starterCode?.[lang] ?? problem?.starterCode?.[key];
+  const fromProblem = getProblemStarterByLanguage(lang, problem?.starterCode);
   const raw =
     typeof fromProblem === "string" && fromProblem.trim() ? fromProblem : SNIPPETS[key] ?? SNIPPETS.Javascript;
   return stripLeetcodeMetaFromStarterCode(raw);
