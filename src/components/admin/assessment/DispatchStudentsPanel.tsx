@@ -8,30 +8,7 @@ import { toast } from "sonner";
 import { Loader2, MailPlus, Upload } from "lucide-react";
 import { partitionEmailList, type InvalidEmailEntry } from "@/lib/email-list-partition";
 import * as XLSX from "xlsx";
-
-function extractEmailsFromWorkbook(wb: XLSX.WorkBook): string[] {
-  const found: string[] = [];
-  const headerRe = /^(e-?mail|email address|student e-?mail|student email)$/i;
-
-  for (const sheetName of wb.SheetNames) {
-    const sheet = wb.Sheets[sheetName];
-    if (!sheet) continue;
-    const rows = XLSX.utils.sheet_to_json<(string | number | boolean | null | undefined)[]>(sheet, {
-      header: 1,
-      defval: "",
-    });
-    for (const row of rows) {
-      if (!Array.isArray(row)) continue;
-      for (const cell of row) {
-        const s = String(cell ?? "").trim();
-        if (!s) continue;
-        if (headerRe.test(s)) continue;
-        found.push(s);
-      }
-    }
-  }
-  return found;
-}
+import { extractEmailsFromWorkbook } from "@/lib/assessment-excel-emails";
 
 export function DispatchStudentsPanel({ testId }: { testId: string }) {
   const [raw, setRaw] = useState("");
@@ -43,7 +20,7 @@ export function DispatchStudentsPanel({ testId }: { testId: string }) {
   useEffect(() => {
     const k = `dispatch-feedback-${testId}`;
     const stored = sessionStorage.getItem(k);
-    if (!stored) return;
+    if (!stored || !stored.trim()) return;
     sessionStorage.removeItem(k);
     try {
       const o = JSON.parse(stored) as { invalid?: InvalidEmailEntry[]; ignored?: string[] };

@@ -1,3 +1,5 @@
+import { formatStudentStarterLayout } from "@/lib/assessment-starter-format";
+
 export const ASSESSMENT_LANG_KEYS = ["Javascript", "Python", "Java", "C++", "C"] as const;
 export type AssessmentLangKey = (typeof ASSESSMENT_LANG_KEYS)[number];
 
@@ -176,9 +178,12 @@ const SNIPPETS: Record<AssessmentLangKey, string> = {
 };
 
 export function getDefaultStarterCode(lang: string, problem?: { starterCode?: Record<string, string> }): string {
-  const key = lang as AssessmentLangKey;
+  const key = (ASSESSMENT_LANG_KEYS as readonly string[]).includes(lang)
+    ? (lang as AssessmentLangKey)
+    : "Javascript";
   const fromProblem = getProblemStarterByLanguage(lang, problem?.starterCode);
   const raw =
     typeof fromProblem === "string" && fromProblem.trim() ? fromProblem : SNIPPETS[key] ?? SNIPPETS.Javascript;
-  return stripLeetcodeMetaFromStarterCode(raw);
+  const stripped = stripLeetcodeMetaFromStarterCode(raw);
+  return formatStudentStarterLayout(stripped, key);
 }

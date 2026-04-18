@@ -10,6 +10,7 @@ import { getSessionFromRequestCookies } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { DispatchStudentsPanel } from "@/components/admin/assessment/DispatchStudentsPanel";
+import { AssessmentInviteActions } from "@/components/admin/assessment/AssessmentInviteActions";
 import { MonitorReuseBar } from "@/components/admin/assessment/MonitorReuseBar";
 import { AssessmentExportPanel } from "@/components/admin/assessment/AssessmentExportPanel";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -17,6 +18,7 @@ import {
   getAssessmentInviteMonitorStatus,
   type AssessmentInviteMonitorStatus,
 } from "@/lib/assessment-token-status";
+import { getAppBaseUrl } from "@/lib/app-base-url";
 
 const STATUS_LABEL: Record<AssessmentInviteMonitorStatus, string> = {
   Active: "Active",
@@ -50,6 +52,7 @@ export default async function AssessmentMonitorPage({ params }: PageProps) {
 
   const resultByTokenId = new Map(results.map((r) => [String(r.tokenId), r]));
   const now = new Date();
+  const inviteBaseUrl = getAppBaseUrl();
 
   return (
     <div className="space-y-8">
@@ -82,6 +85,7 @@ export default async function AssessmentMonitorPage({ params }: PageProps) {
                 <th className="p-4 font-medium">Submitted</th>
                 <th className="p-4 font-medium">Score</th>
                 <th className="p-4 font-medium text-right">Submission</th>
+                <th className="p-4 font-medium text-right w-[72px]">Invite</th>
               </tr>
             </thead>
             <tbody>
@@ -121,6 +125,21 @@ export default async function AssessmentMonitorPage({ params }: PageProps) {
                           {res ? "View answers" : "View invite"}
                         </Link>
                       </Button>
+                    </td>
+                    <td className="p-4 text-right align-middle">
+                      <div className="flex justify-end">
+                        <AssessmentInviteActions
+                          testId={String(test._id)}
+                          tokenId={String(t._id)}
+                          inviteToken={String(t.token)}
+                          inviteBaseUrl={inviteBaseUrl}
+                          studentEmail={String(t.studentEmail)}
+                          linkValidityHours={Number(test.linkValidity) || 48}
+                          currentExpiresIso={
+                            t.expiresAt ? new Date(t.expiresAt).toISOString() : new Date().toISOString()
+                          }
+                        />
+                      </div>
                     </td>
                   </tr>
                 );

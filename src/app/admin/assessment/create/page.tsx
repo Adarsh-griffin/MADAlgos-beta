@@ -45,18 +45,29 @@ function CreateAssessmentForm() {
     (async () => {
       setTemplateLoading(true);
       try {
-        const res = await fetch(`/api/assessment/test/${fromTest}`);
+        const res = await fetch(`/api/assessment/test/${encodeURIComponent(fromTest)}`);
+        const text = await res.text();
         if (!res.ok) {
           if (!cancelled) toast.error("Could not load assessment template.");
           return;
         }
-        const d = await res.json();
+        if (!text.trim()) {
+          if (!cancelled) toast.error("Empty response from server — try again.");
+          return;
+        }
+        let d: Record<string, unknown>;
+        try {
+          d = JSON.parse(text) as Record<string, unknown>;
+        } catch {
+          if (!cancelled) toast.error("Could not read assessment template (invalid JSON).");
+          return;
+        }
         if (cancelled) return;
         if (typeof d.title === "string" && d.title.trim()) setTitle(d.title.trim());
         if (typeof d.duration === "number" && !Number.isNaN(d.duration)) setDuration(d.duration);
         if (typeof d.linkValidity === "number" && !Number.isNaN(d.linkValidity)) setValidity(d.linkValidity);
-        if (Array.isArray(d.mcqs)) setMcqs(d.mcqs);
-        if (Array.isArray(d.codingProblems)) setProblems(d.codingProblems);
+        if (Array.isArray(d.mcqs)) setMcqs(d.mcqs as MCQ[]);
+        if (Array.isArray(d.codingProblems)) setProblems(d.codingProblems as CodingProblem[]);
         toast.info("Template loaded — adjust title or timing if needed, then dispatch.");
       } catch {
         if (!cancelled) toast.error("Could not load assessment template.");

@@ -268,7 +268,9 @@ export default function AssessmentCodeEditor({
             isDark ? "bg-primary/10 text-primary border-b border-primary/20" : "bg-emerald-100 text-emerald-800 border-b border-emerald-300"
           }`}
         >
-          START CODING IN THE MARKED SECTION: look for comments saying `START CODING HERE`.
+          Edit inside <code className="font-mono text-[10px]">solve</code> where you see{" "}
+          <code className="font-mono text-[10px]">START CODING HERE</code> (banner at top + markers in{" "}
+          <code className="font-mono text-[10px]">solve</code>).
         </div>
         <Editor
           height="100%"

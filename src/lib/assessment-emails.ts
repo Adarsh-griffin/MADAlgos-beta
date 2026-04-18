@@ -122,12 +122,18 @@ function escapeHtml(s: string): string {
 
 const SENDGRID_BATCH = 100;
 
+export type SendAssessmentInvitationOptions = {
+  /** Overrides hours shown in the template (e.g. when expiry is set from a calendar picker). */
+  validityHoursForEmail?: number;
+};
+
 /**
  * Sends invitation emails for the given tokens. Chunks requests to avoid oversized payloads / timeouts.
  */
 export async function sendAssessmentInvitationEmails(
   tokens: AssessmentTokenForEmail[],
-  test: { title: string; duration: number; linkValidity: number }
+  test: { title: string; duration: number; linkValidity: number },
+  options?: SendAssessmentInvitationOptions
 ): Promise<{ emailsDispatched: number; emailSkipped: boolean; emailError?: string }> {
   if (tokens.length === 0) {
     return { emailsDispatched: 0, emailSkipped: false };
@@ -148,9 +154,13 @@ export async function sendAssessmentInvitationEmails(
   sgMail.setApiKey(sendgridKey);
 
   const { title, duration, linkValidity } = test;
+  const effectiveValidity =
+    typeof options?.validityHoursForEmail === "number" && !Number.isNaN(options.validityHoursForEmail)
+      ? Math.max(1, Math.round(options.validityHoursForEmail))
+      : linkValidity;
 
   const messages = tokens.map((t) => {
-    const data = buildAssessmentTemplateData(title, duration, linkValidity, baseUrl, t.token);
+    const data = buildAssessmentTemplateData(title, duration, effectiveValidity, baseUrl, t.token);
 
     if (templateId) {
       return {
@@ -172,7 +182,7 @@ export async function sendAssessmentInvitationEmails(
               <p style="font-size: 16px; color: #555;">Hi there! You've been invited to take the <b>${title}</b> on MADAlgos.</p>
               <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 20px 0;">
                 <p style="margin: 5px 0;"><b>Duration:</b> ${duration} minutes</p>
-                <p style="margin: 5px 0;"><b>Validity:</b> Expires in ${linkValidity} hours</p>
+                <p style="margin: 5px 0;"><b>Validity:</b> Expires in ${effectiveValidity} hours</p>
               </div>
               <a href="${data.testLink}" style="background: #eab308; color: #000; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">Start Assessment</a>
               <p style="color: #999; font-size: 12px; margin-top: 30px;">This link is unique to you. Do not share it.</p>

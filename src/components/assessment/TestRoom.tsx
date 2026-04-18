@@ -478,11 +478,11 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         <div className="flex items-center gap-6 min-w-0">
           <div className="flex items-center gap-2 shrink-0">
             <Image
-              src="https://madalgos.in/logo.png"
+              src="/navbar_logo2_trans.png"
               alt="MADAlgos"
-              width={32}
+              width={120}
               height={32}
-              className="h-8 w-auto max-w-[120px] object-contain"
+              className="h-8 w-auto max-w-[120px] object-contain object-left"
               priority
             />
             <span className="font-bold tracking-tight text-lg hidden sm:inline-block">

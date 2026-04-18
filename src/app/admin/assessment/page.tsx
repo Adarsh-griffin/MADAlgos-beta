@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, Clock, Link as LinkIcon, ClipboardList } from "lucide-react";
-import { CloneAssessmentButton } from "@/components/admin/assessment/CloneAssessmentButton";
+import { ReuseAssessmentBatchButton } from "@/components/admin/assessment/ReuseAssessmentBatchDialog";
 
 export const metadata = {
   title: "Assessment Management | MADAlgos Admin",
@@ -117,9 +117,11 @@ export default async function AdminAssessmentPage() {
                 <Button variant="outline" size="sm" asChild className="rounded-full">
                   <Link href={`/admin/assessment/view/${t._id}`}>Monitor</Link>
                 </Button>
-                <CloneAssessmentButton testId={t._id.toString()} />
+                <ReuseAssessmentBatchButton sourceTestId={t._id.toString()} />
                 <Button variant="ghost" size="sm" asChild className="rounded-full text-slate-400 hover:text-white">
-                  <Link href={`/admin/assessment/create?fromTest=${t._id}`}>Customize…</Link>
+                  <Link href={`/admin/assessment/create?fromTest=${encodeURIComponent(String(t._id))}`}>
+                    Customize…
+                  </Link>
                 </Button>
               </div>,
             ];
