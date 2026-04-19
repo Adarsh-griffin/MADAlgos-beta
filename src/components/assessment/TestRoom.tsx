@@ -62,6 +62,9 @@ function stripQuestionSourceText(raw: string): string {
 const GENERIC_RUN_ISSUE_MESSAGE =
   "We have encountered an issue. If the problem persists, contact us at contact@madalgos.in.";
 
+/** Tab switches away trigger a warning; at this count the assessment auto-submits. */
+const MAX_TAB_LEAVES_BEFORE_AUTO_SUBMIT = 3;
+
 function shouldHideRuntimeDetails(status: string): boolean {
   return /(judge0|http\s*\d{3}|internal error|rate-?limit|unavailable|timeout|network|rapidapi)/i.test(status);
 }
@@ -112,6 +115,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const isSubmittingRef = useRef(false);
   const autoSubmitFiredRef = useRef(false);
   const tabAwayCountRef = useRef(0);
+  const tabLeaveAutoSubmitFiredRef = useRef(false);
+  const postSubmitOpenRef = useRef(false);
   const codingIdx = typeof activePanel === "number" ? activePanel : 0;
 
   useEffect(() => {
@@ -120,21 +125,12 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   });
 
   useEffect(() => {
-    if (activePanel === "mcq") setProblemPaneCollapsed(false);
-  }, [activePanel]);
+    postSubmitOpenRef.current = postSubmitOpen;
+  }, [postSubmitOpen]);
 
   useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState !== "hidden") return;
-      tabAwayCountRef.current += 1;
-      toast.warning(
-        `You left this tab (${tabAwayCountRef.current}). Stay in the assessment window until you submit.`,
-        { id: "assessment-tab-leave", duration: 7000 }
-      );
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, []);
+    if (activePanel === "mcq") setProblemPaneCollapsed(false);
+  }, [activePanel]);
 
   const getCodingSubmissionsPayload = useCallback((states: Record<number, ProblemState>) => {
     return Object.entries(states).map(([idx, state]) => {
@@ -148,7 +144,10 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   }, []);
 
   const submitAssessment = useCallback(
-    async (submitStatus: "COMPLETED" | "AUTO_SUBMITTED" = "COMPLETED") => {
+    async (
+      submitStatus: "COMPLETED" | "AUTO_SUBMITTED" = "COMPLETED",
+      options?: { reason?: "timer" | "tab-leave" }
+    ) => {
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
       setIsSubmitting(true);
@@ -175,9 +174,15 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         });
 
         if (res.ok) {
-          toast.success(
-            submitStatus === "AUTO_SUBMITTED" ? "Time is up — responses saved." : "Assessment submitted successfully!"
-          );
+          if (submitStatus === "AUTO_SUBMITTED" && options?.reason === "tab-leave") {
+            toast.success(
+              `You left the assessment window ${MAX_TAB_LEAVES_BEFORE_AUTO_SUBMIT} times. Your test is being auto-submitted.`
+            );
+          } else if (submitStatus === "AUTO_SUBMITTED") {
+            toast.success("Time is up — responses saved.");
+          } else {
+            toast.success("Assessment submitted successfully!");
+          }
           setPostSubmitOpen(true);
           return;
         } else {
@@ -208,6 +213,32 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   );
 
   useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (postSubmitOpenRef.current) return;
+      if (isSubmittingRef.current) return;
+      if (tabLeaveAutoSubmitFiredRef.current) return;
+
+      tabAwayCountRef.current += 1;
+      const n = tabAwayCountRef.current;
+
+      if (n >= MAX_TAB_LEAVES_BEFORE_AUTO_SUBMIT) {
+        tabLeaveAutoSubmitFiredRef.current = true;
+        autoSubmitFiredRef.current = true;
+        void submitAssessment("AUTO_SUBMITTED", { reason: "tab-leave" });
+        return;
+      }
+
+      toast.warning(
+        `You left this tab (${n}/${MAX_TAB_LEAVES_BEFORE_AUTO_SUBMIT}). Stay in the assessment window until you submit.`,
+        { id: "assessment-tab-leave", duration: 7000 }
+      );
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [submitAssessment]);
+
+  useEffect(() => {
     autoSubmitFiredRef.current = false;
     const startTime = new Date(tokenData.usedAt || new Date()).getTime();
     const durationMs = test.duration * 60 * 1000;
@@ -225,7 +256,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         }
         if (!autoSubmitFiredRef.current) {
           autoSubmitFiredRef.current = true;
-          void submitAssessment("AUTO_SUBMITTED");
+          void submitAssessment("AUTO_SUBMITTED", { reason: "timer" });
         }
       }
     };
@@ -684,8 +715,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                     Problem {codingIdx + 1} / {codingProblems.length}
                   </span>
                 </div>
-                <div className="flex-1 min-h-0 flex flex-col p-2 gap-2">
-                  <div className="flex-1 min-h-0">
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-2">
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                     <AssessmentCodeEditor
                       sourceCode={currentCode}
                       setSourceCode={handleUpdateCode}
@@ -794,8 +825,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                   </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle className="w-2 bg-white/10 hover:bg-primary/25" />
-                <ResizablePanel defaultSize={48} minSize={28} className="min-h-0 flex flex-col p-2 gap-2 bg-black">
-                  <div className="flex-1 min-h-0">
+                <ResizablePanel defaultSize={48} minSize={28} className="min-h-0 flex flex-col overflow-hidden bg-black p-2 gap-2">
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                     <AssessmentCodeEditor
                       sourceCode={currentCode}
                       setSourceCode={handleUpdateCode}

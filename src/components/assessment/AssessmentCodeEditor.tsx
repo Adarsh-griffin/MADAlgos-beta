@@ -94,13 +94,13 @@ export default function AssessmentCodeEditor({
 
   return (
     <div
-      className={`flex flex-col flex-1 min-h-0 h-full border rounded-2xl overflow-hidden ${
+      className={`flex flex-col flex-1 min-h-0 h-full max-h-full border rounded-2xl overflow-hidden ${
         isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-slate-300"
       } ${isFullScreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
     >
       {/* Editor Header */}
       <div
-        className={`flex items-center justify-between px-4 py-2 border-b ${
+        className={`shrink-0 flex items-center justify-between px-4 py-2 border-b ${
           isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"
         }`}
       >
@@ -261,10 +261,10 @@ export default function AssessmentCodeEditor({
         </div>
       </div>
 
-      {/* Monaco Editor Instance */}
-      <div className="flex-1 relative">
+      {/* Monaco: bounded flex child so only the editor scrolls, not the page */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
-          className={`px-3 py-2 text-[11px] font-semibold tracking-wide ${
+          className={`shrink-0 px-3 py-2 text-[11px] font-semibold tracking-wide ${
             isDark ? "bg-primary/10 text-primary border-b border-primary/20" : "bg-emerald-100 text-emerald-800 border-b border-emerald-300"
           }`}
         >
@@ -272,23 +272,31 @@ export default function AssessmentCodeEditor({
           <code className="font-mono text-[10px]">START CODING HERE</code> (banner at top + markers in{" "}
           <code className="font-mono text-[10px]">solve</code>).
         </div>
-        <Editor
-          height="100%"
-          language={monacoLanguage}
-          value={sourceCode}
-          onChange={(value) => setSourceCode(value ?? "")}
-          theme={monacoTheme}
-          options={{
-            fontSize: 14,
-            minimap: { enabled: false },
-            automaticLayout: true,
-            scrollBeyondLastLine: false,
-            lineNumbers: "on",
-            roundedSelection: true,
-            padding: { top: 16 },
-            fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
-          }}
-        />
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <Editor
+            height="100%"
+            language={monacoLanguage}
+            value={sourceCode}
+            onChange={(value) => setSourceCode(value ?? "")}
+            theme={monacoTheme}
+            options={{
+              fontSize: 14,
+              minimap: { enabled: false },
+              automaticLayout: true,
+              scrollBeyondLastLine: false,
+              lineNumbers: "on",
+              roundedSelection: true,
+              padding: { top: 16 },
+              fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
+              scrollbar: {
+                vertical: "visible",
+                horizontal: "auto",
+                verticalScrollbarSize: 12,
+                horizontalScrollbarSize: 12,
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   );

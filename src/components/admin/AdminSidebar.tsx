@@ -23,6 +23,7 @@ import {
     LogOut,
     GraduationCap,
     ShoppingBag,
+    BarChart2,
 } from "lucide-react";
 
 export function AdminSidebar() {
@@ -33,9 +34,29 @@ export function AdminSidebar() {
         window.location.href = "/auth";
     };
 
-    const navItems = [
+    const navItems: Array<{
+        name: string;
+        path: string;
+        icon: typeof ListChecks;
+        exact?: boolean;
+        isActive?: (pathname: string) => boolean;
+    }> = [
         { name: "Requests Dashboard", path: "/admin", icon: ListChecks, exact: true },
-        { name: "Assessments", path: "/admin/assessment", icon: ListChecks, exact: false },
+        {
+            name: "Assessments",
+            path: "/admin/assessment",
+            icon: ListChecks,
+            isActive: (p) =>
+                p === "/admin/assessment" ||
+                p.startsWith("/admin/assessment/create") ||
+                p.startsWith("/admin/assessment/view"),
+        },
+        {
+            name: "Assessment results",
+            path: "/admin/assessment/results",
+            icon: BarChart2,
+            isActive: (p) => p.startsWith("/admin/assessment/results"),
+        },
         { name: "Order history", path: "/admin/orders", icon: ShoppingBag, exact: false },
         { name: "Mentors", path: "/admin/mentors", icon: Users, exact: false },
         { name: "Blogs", path: "/admin/blogs", icon: BookOpen, exact: false },
@@ -60,9 +81,11 @@ export function AdminSidebar() {
             <SidebarContent className="px-2 py-2">
                 <SidebarMenu>
                     {navItems.map((item) => {
-                        const isActive = item.exact
-                            ? pathname === item.path
-                            : pathname.startsWith(item.path);
+                        const isActive = item.isActive
+                            ? item.isActive(pathname)
+                            : item.exact
+                              ? pathname === item.path
+                              : pathname.startsWith(item.path);
 
                         return (
                             <SidebarMenuItem key={item.path}>
