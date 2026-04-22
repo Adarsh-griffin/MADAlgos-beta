@@ -7,7 +7,6 @@ import {
   Gift,
   Layers,
   Play,
-  Sparkles,
 } from "lucide-react";
 import { JudgeYourSkillsHeroArt } from "@/components/sections/JudgeYourSkillsHeroArt";
 import { cn } from "@/lib/utils";
@@ -59,12 +58,23 @@ export function JudgeYourSkillsSection() {
             "p-8 sm:p-10 md:p-12 lg:p-14 xl:p-16"
           )}
         >
-          <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
-            <span className="pointer-events-none absolute -inset-1 rounded-full bg-red-500/30 blur-md animate-pulse" />
-            <span className="relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-red-300/60 bg-gradient-to-r from-red-600 via-rose-500 to-red-600 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-white shadow-[0_12px_34px_rgba(244,63,94,0.48)]">
-              <span className="pointer-events-none absolute inset-y-0 left-0 w-7 -skew-x-12 bg-white/25 blur-[2px] opacity-80" />
-              <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
-              Free
+          <div className="absolute right-2 top-2 z-20 md:right-4 md:top-4">
+            <span
+              className="pointer-events-none absolute -inset-2 bg-red-500/35 blur-xl opacity-85 animate-pulse"
+              style={{ clipPath: "polygon(8% 0%, 92% 0%, 100% 14%, 100% 78%, 50% 100%, 0% 78%, 0% 14%)" }}
+            />
+            <span
+              className="free-tag-swing relative block w-[98px] md:w-[112px] bg-gradient-to-b from-red-500 to-red-700 text-white shadow-[0_16px_34px_rgba(239,68,68,0.45)]"
+              style={{ clipPath: "polygon(8% 0%, 92% 0%, 100% 14%, 100% 78%, 50% 100%, 0% 78%, 0% 14%)" }}
+            >
+              <span
+                className="pointer-events-none absolute inset-[4px] border-2 border-white/90 opacity-95"
+                style={{ clipPath: "polygon(8% 0%, 92% 0%, 100% 14%, 100% 78%, 50% 100%, 0% 78%, 0% 14%)" }}
+              />
+              <span className="relative block px-3.5 pt-4 pb-7 md:pb-8 text-center leading-none">
+                <span className="block text-[24px] md:text-[28px] font-black tracking-[0.03em]">FREE</span>
+                <span className="block mt-1 text-[10px] md:text-[11px] font-bold tracking-[0.2em]">TEST</span>
+              </span>
             </span>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)] gap-12 lg:gap-14 xl:gap-16 items-start lg:items-center">

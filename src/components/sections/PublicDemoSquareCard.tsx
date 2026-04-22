@@ -31,24 +31,20 @@ export function PublicDemoSquareCard({ test, className }: Props) {
       <span className="sr-only">{test.title} — open details</span>
       <div className="absolute top-0 right-0 z-10 h-[3px] w-20 rounded-bl-lg bg-gradient-to-l from-primary via-primary/75 to-transparent" />
       <div className="absolute top-0 left-0 right-[4.5rem] h-[2px] bg-gradient-to-r from-primary/45 via-primary/12 to-transparent z-10" />
-      <div className="absolute right-3 top-3 z-20 sm:right-3.5 sm:top-3.5">
-        <span
-          className={cn(
-            "pointer-events-none absolute -inset-1 rounded-full blur-md animate-pulse",
-            isPro ? "bg-violet-500/35" : "bg-primary/35"
-          )}
-        />
-        <span
-          className={cn(
-            "relative inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white",
-            isPro
-              ? "border border-violet-200/70 bg-gradient-to-r from-violet-500 to-purple-500 shadow-[0_10px_26px_rgba(139,92,246,0.42)]"
-              : "border border-teal-200/65 bg-gradient-to-r from-teal-500 to-cyan-500 shadow-[0_10px_26px_rgba(20,184,166,0.42)]"
-          )}
-        >
-          <Sparkles className="h-2.5 w-2.5" aria-hidden />
-          {isPro ? "Pro" : "Free"}
-        </span>
+      <div className="absolute right-3 top-2 z-20 sm:right-3.5 sm:top-3">
+        {isPro ? (
+          <span className="relative inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white border border-violet-200/70 bg-gradient-to-r from-violet-500 to-purple-500 shadow-[0_10px_26px_rgba(139,92,246,0.42)]">
+            <Sparkles className="h-2.5 w-2.5" aria-hidden />
+            Pro
+          </span>
+        ) : (
+          <span className="free-tag-swing relative inline-flex items-center gap-1.5 rounded-md border border-red-200/75 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-3 py-1.5 text-[11px] font-bold tracking-[0.08em] text-white shadow-[0_12px_30px_rgba(239,68,68,0.45)]">
+            <span className="pointer-events-none absolute -top-4 left-2 h-4 w-[2px] rounded-full bg-white/65" />
+            <span className="pointer-events-none absolute -top-[6px] left-[3px] h-3.5 w-3.5 rounded-full border-2 border-white/75 bg-[#010818]" />
+            <Sparkles className="h-2.5 w-2.5" aria-hidden />
+            FREE
+          </span>
+        )}
       </div>
 
       <div className="relative flex flex-1 min-h-0 flex-col items-stretch">

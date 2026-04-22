@@ -148,6 +148,17 @@
 }
 
 @layer utilities {
+  @keyframes free-tag-swing {
+    0% { transform: rotate(-10deg); }
+    50% { transform: rotate(6deg); }
+    100% { transform: rotate(-10deg); }
+  }
+
+  .free-tag-swing {
+    transform-origin: 12% -18%;
+    animation: free-tag-swing 2.2s ease-in-out infinite;
+  }
+
   .section-padding {
     padding-top: clamp(6rem, 12vh, 10rem);
     padding-bottom: clamp(6rem, 12vh, 10rem);
