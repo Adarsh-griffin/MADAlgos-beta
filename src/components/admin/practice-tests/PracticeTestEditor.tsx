@@ -34,9 +34,12 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
   const [publicSlug, setPublicSlug] = useState("");
   const [demoCardSubtitle, setDemoCardSubtitle] = useState("");
   const [demoCardImageUrl, setDemoCardImageUrl] = useState("");
+  const [demoBannerImageUrl, setDemoBannerImageUrl] = useState("");
   const [demoBrandLogoUrl, setDemoBrandLogoUrl] = useState("");
   const [demoLogoDomain, setDemoLogoDomain] = useState("");
   const [demoSortOrder, setDemoSortOrder] = useState(0);
+  const [uploadingCardImage, setUploadingCardImage] = useState(false);
+  const [uploadingBannerImage, setUploadingBannerImage] = useState(false);
 
   const pickedMcqKeys = useMemo(() => mcqs.map(mcqPickKey), [mcqs]);
   const pickedCodingKeys = useMemo(() => problems.map(codingPickKey), [problems]);
@@ -67,6 +70,7 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
         if (typeof data.publicSlug === "string") setPublicSlug(data.publicSlug);
         if (typeof data.demoCardSubtitle === "string") setDemoCardSubtitle(data.demoCardSubtitle);
         if (typeof data.demoCardImageUrl === "string") setDemoCardImageUrl(data.demoCardImageUrl);
+        if (typeof data.demoBannerImageUrl === "string") setDemoBannerImageUrl(data.demoBannerImageUrl);
         if (typeof data.demoBrandLogoUrl === "string") setDemoBrandLogoUrl(data.demoBrandLogoUrl);
         if (typeof data.demoLogoDomain === "string") setDemoLogoDomain(data.demoLogoDomain);
         if (typeof data.demoSortOrder === "number") setDemoSortOrder(data.demoSortOrder);
@@ -90,6 +94,7 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
     publicSlug: publicSlug.trim(),
     demoCardSubtitle: demoCardSubtitle.trim(),
     demoCardImageUrl: demoCardImageUrl.trim(),
+    demoBannerImageUrl: demoBannerImageUrl.trim(),
     demoBrandLogoUrl: demoBrandLogoUrl.trim(),
     demoLogoDomain: demoLogoDomain.trim(),
     demoSortOrder,
@@ -147,6 +152,20 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const uploadPracticeImage = async (file: File): Promise<string> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    const res = await fetch("/api/uploads/practice-media", {
+      method: "POST",
+      body: fd,
+    });
+    const data = (await res.json().catch(() => ({}))) as { imageUrl?: string; error?: string };
+    if (!res.ok || !data.imageUrl) {
+      throw new Error(data.error || "Upload failed.");
+    }
+    return data.imageUrl;
   };
 
   if (loadInitial) {
@@ -229,6 +248,63 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
                   onChange={(e) => setDemoCardImageUrl(e.target.value)}
                   className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
                 />
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingCardImage}
+                    className="bg-white/5 border-white/10 text-white rounded-xl text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1 file:text-black file:font-semibold"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingCardImage(true);
+                      try {
+                        const url = await uploadPracticeImage(file);
+                        setDemoCardImageUrl(url);
+                        toast.success("Card image uploaded.");
+                      } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : "Upload failed.");
+                      } finally {
+                        setUploadingCardImage(false);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                  />
+                  {uploadingCardImage ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+                </div>
+                <p className="text-[11px] text-slate-500">Uses the same Azure upload pipeline style as blog images.</p>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-slate-400">Banner image URL (optional)</Label>
+                <Input
+                  value={demoBannerImageUrl}
+                  onChange={(e) => setDemoBannerImageUrl(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
+                />
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingBannerImage}
+                    className="bg-white/5 border-white/10 text-white rounded-xl text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1 file:text-black file:font-semibold"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingBannerImage(true);
+                      try {
+                        const url = await uploadPracticeImage(file);
+                        setDemoBannerImageUrl(url);
+                        toast.success("Banner image uploaded.");
+                      } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : "Upload failed.");
+                      } finally {
+                        setUploadingBannerImage(false);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                  />
+                  {uploadingBannerImage ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+                </div>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label className="text-slate-400">Brand logo URL (optional)</Label>

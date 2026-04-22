@@ -19,7 +19,10 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   await connectDB();
-  const test = await PracticeTestModel.findOne({ publicSlug: slug.trim().toLowerCase() })
+  const test = await PracticeTestModel.findOne({
+    publicSlug: slug.trim().toLowerCase(),
+    $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
+  })
     .select("title")
     .lean<{ title?: string } | null>()
     .exec();
@@ -31,15 +34,19 @@ export default async function AvailableTestDetailPage({ params }: PageProps) {
   const { slug: raw } = await params;
   const slug = decodeURIComponent(raw).trim().toLowerCase();
   await connectDB();
-  const test = await PracticeTestModel.findOne({ publicSlug: slug })
+  const test = await PracticeTestModel.findOne({
+    publicSlug: slug,
+    $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
+  })
     .select(
-      "title duration demoCardSubtitle demoCardImageUrl demoBrandLogoUrl demoLogoDomain mcqs codingProblems"
+      "title duration demoCardSubtitle demoCardImageUrl demoBannerImageUrl demoBrandLogoUrl demoLogoDomain mcqs codingProblems"
     )
     .lean<{
       title: string;
       duration: number;
       demoCardSubtitle?: string;
       demoCardImageUrl?: string;
+      demoBannerImageUrl?: string;
       demoBrandLogoUrl?: string;
       demoLogoDomain?: string;
       mcqs: unknown[];
@@ -58,6 +65,7 @@ export default async function AvailableTestDetailPage({ params }: PageProps) {
     demoCardImageUrl: test.demoCardImageUrl,
   });
   const imageUrl =
+    test.demoBannerImageUrl?.trim() ||
     test.demoCardImageUrl?.trim() ||
     "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=80&auto=format&fit=crop";
   const mcqCount = Array.isArray(test.mcqs) ? test.mcqs.length : 0;

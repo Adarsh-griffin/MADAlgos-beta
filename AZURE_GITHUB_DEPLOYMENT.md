@@ -1,5 +1,128 @@
 # Azure + GitHub Deployment for MADAlgos Next.js
 
+## 2026 Admin Runbook (Recommended Path)
+
+This runbook is the fastest, safest path for an admin who has the Azure DevOps repo and wants GitHub Actions + Azure App Service deployment.
+
+### A) Move code from Azure DevOps repo to GitHub
+
+1. Clone Azure DevOps repo locally:
+   - `git clone <azure-devops-repo-url>`
+2. Enter repo:
+   - `cd <repo-folder>`
+3. Create an empty GitHub repository (no README/license).
+4. Add GitHub as remote and push:
+   - `git remote add github https://github.com/<org>/<repo>.git`
+   - `git push github main`
+5. (Optional) Make GitHub the default remote:
+   - `git remote rename origin azure`
+   - `git remote rename github origin`
+
+### B) Add GitHub Actions workflow
+
+Use this repo file:
+- `.github/workflows/azure-appservice-deploy.yml`
+
+It does:
+1. `npm ci`
+2. `npm run build` (Next.js standalone)
+3. packages `deploy.zip`
+4. deploys to Azure App Service using publish profile secret.
+
+### C) Add GitHub Secrets (Actions)
+
+In GitHub repo:
+`Settings -> Secrets and variables -> Actions -> New repository secret`
+
+Minimum required for deployment:
+- `AZURE_WEBAPP_NAME`
+- `AZURE_WEBAPP_PUBLISH_PROFILE`
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_BROCHURE_URL`
+
+Recommended additional app secrets:
+- `RECAPTCHA_SECRET_KEY`
+- `SendGridDevKey`
+- `SENDGRID_API_KEY`
+- `SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID`
+- `SENDGRID_MENTOR_APPLY_TEMPLATE_ID`
+- `SENDGRID_MENTOR_ACCEPTED_TEMPLATE_ID`
+- `SENDGRID_MENTOR_PROFILE_SUBMITTED_TEMPLATE_ID`
+- `SENDGRID_MENTOR_PROFILE_LIVE_TEMPLATE_ID`
+- `SENDGRID_ASSESSMENT_DISPATCH_TEMPLATE_ID`
+- `SENDGRID_ASSESSMENT_COMPLETION_TEMPLATE_ID`
+- `SENDGRID_ASSESSMENT_SCORE_TEMPLATE_ID`
+- `MAIL_FROM`
+- `MENTOR_APPLY_NOTIFY_EMAIL`
+- `CONTACT_TEAM_EMAIL`
+- `MONGODB_DB_NAME`
+- `APP_BASE_URL`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `RAZORPAY_KEY_ID`
+- `RAZORPAY_KEY_SECRET`
+- `NEXT_PUBLIC_RAZORPAY_KEY_ID`
+- `NEXT_PUBLIC_AZURE_STORAGE_CONNECTION_STRING`
+- `BROCHURE_URL`
+- `JUDGE0_API_URL`
+- `JUDGE0_API_KEY`
+
+### D) Add Azure App Service Configuration (runtime env)
+
+In Azure Portal:
+`App Service -> Settings -> Environment variables` (or `Configuration`)
+
+Add the same runtime variables from `.env.example` that your app uses in production.
+At minimum, mirror all server-side secrets from GitHub list above.
+
+Important:
+- `NEXT_PUBLIC_*` variables are public-facing.
+- keep private keys only in server-side app settings / GitHub secrets.
+- after changes click **Save** and **Restart** App Service.
+
+### E) Get publish profile from Azure and save in GitHub
+
+1. Azure Portal -> App Service -> **Overview**
+2. Click **Get publish profile**
+3. Open downloaded file, copy full XML contents
+4. Save into GitHub secret:
+   - Name: `AZURE_WEBAPP_PUBLISH_PROFILE`
+   - Value: full XML string
+
+### F) Deploy
+
+1. Push to `main` branch.
+2. Open GitHub -> `Actions` tab.
+3. Run/check workflow: `Build and Deploy Next.js to Azure App Service`.
+4. Verify Azure site URL after green run.
+
+### G) Explainable troubleshooting checklist
+
+If workflow fails:
+1. **Build failed**:
+   - missing secrets used during `npm run build`
+   - check `MONGODB_URI`, `JWT_SECRET`, `NEXT_PUBLIC_*`
+2. **Deploy failed**:
+   - wrong `AZURE_WEBAPP_NAME`
+   - expired/wrong `AZURE_WEBAPP_PUBLISH_PROFILE`
+3. **App starts but API fails**:
+   - runtime env missing in Azure App Service settings
+   - restart app after adding env vars
+4. **Static works, auth/payments/email fail**:
+   - check service secrets: JWT, Razorpay, SendGrid, ReCAPTCHA
+
+---
+### Optional: keep Azure DevOps pipeline too
+
+If you still need Azure DevOps release path, keep `azure-pipelines.yml` as backup.
+Primary path should be GitHub Actions for simplicity and visibility.
+
+---
+### Legacy notes below
+
 This document explains how to deploy the project to Azure App Service using GitHub.
 It includes the required GitHub secrets, Azure App Service configuration, and the recommended flow for connecting the repo to Azure.
 

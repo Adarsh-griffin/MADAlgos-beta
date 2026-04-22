@@ -34,7 +34,10 @@ export async function POST(req: Request) {
     const slug = parsed.data.slug.trim().toLowerCase();
     await connectDB();
 
-    const practice = await PracticeTestModel.findOne({ publicSlug: slug })
+    const practice = await PracticeTestModel.findOne({
+      publicSlug: slug,
+      $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
+    })
       .select("_id linkValidity")
       .lean<{ _id: mongoose.Types.ObjectId; linkValidity: number } | null>();
 

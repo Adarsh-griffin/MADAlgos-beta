@@ -56,6 +56,7 @@ export async function POST(req: Request) {
       publicSlug: publicSlugRaw,
       demoCardSubtitle,
       demoCardImageUrl,
+      demoBannerImageUrl,
       demoBrandLogoUrl,
       demoLogoDomain,
       demoSortOrder,
@@ -115,6 +116,7 @@ export async function POST(req: Request) {
       publicSlug: slug,
       demoCardSubtitle: String(demoCardSubtitle ?? "").trim().slice(0, 400),
       demoCardImageUrl: String(demoCardImageUrl ?? "").trim().slice(0, 2000),
+      demoBannerImageUrl: String(demoBannerImageUrl ?? "").trim().slice(0, 2000),
       demoBrandLogoUrl: String(demoBrandLogoUrl ?? "").trim().slice(0, 2000),
       demoLogoDomain: String(demoLogoDomain ?? "")
         .trim()

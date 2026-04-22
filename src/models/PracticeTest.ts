@@ -12,6 +12,7 @@ export interface PracticeTestDocument extends Document {
   publicSlug: string;
   demoCardSubtitle?: string;
   demoCardImageUrl?: string;
+  demoBannerImageUrl?: string;
   demoBrandLogoUrl?: string;
   demoLogoDomain?: string;
   demoSortOrder?: number;
@@ -70,6 +71,7 @@ const PracticeTestSchema = new Schema<PracticeTestDocument>(
     },
     demoCardSubtitle: { type: String, default: "" },
     demoCardImageUrl: { type: String, default: "" },
+    demoBannerImageUrl: { type: String, default: "" },
     demoBrandLogoUrl: { type: String, default: "" },
     demoLogoDomain: { type: String, default: "" },
     demoSortOrder: { type: Number, default: 0 },
