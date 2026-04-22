@@ -1,9 +1,9 @@
 import { connectDB } from "@/lib/mongodb";
 import TestResultModel from "@/models/TestResult";
 import TestTokenModel from "@/models/TestToken";
-import TestModel from "@/models/Test";
+import { loadAssessmentForToken } from "@/lib/assessment-load";
 import { runJudge0Submission } from "@/lib/judge0";
-import { sendAssessmentCompletionEmail } from "@/lib/assessment-emails";
+import { sendAssessmentScoreEmail } from "@/lib/assessment-emails";
 import { getMcqCorrectIndices, normalizeMcqStudentSelection, selectionsEqual } from "@/lib/assessment-mcq";
 
 const LANGUAGE_MAP: Record<string, number> = {
@@ -129,9 +129,11 @@ export async function persistGradedAssessment(
   const maxScore =
     mcqsForMax.reduce((a, b) => a + b.marks, 0) + codingForMax.reduce((a, b) => a + b.marks, 0);
 
-  const result = await TestResultModel.create({
+  const resultPayload = {
     tokenId: fresh._id,
-    testId: test._id ?? fresh.testId,
+    ...(fresh.practiceTestId
+      ? { practiceTestId: fresh.practiceTestId }
+      : { testId: fresh.testId! }),
     studentEmail: fresh.studentEmail,
     studentName: fresh.studentName,
     mcqAnswers: gradedMcqs,
@@ -142,17 +144,22 @@ export async function persistGradedAssessment(
     maxScore,
     submittedAt: new Date(),
     status: status || "COMPLETED",
-  });
+  };
+
+  const result = await TestResultModel.create(resultPayload);
 
   fresh.submittedAt = new Date();
   await fresh.save();
 
   const testTitle = String((test as { title?: string }).title || "Assessment");
-  void sendAssessmentCompletionEmail({
+  void sendAssessmentScoreEmail({
     to: fresh.studentEmail,
     studentName: fresh.studentName,
     testTitle,
     submittedAt: result.submittedAt,
+    totalScore: result.totalScore,
+    maxScore: result.maxScore,
+    status: result.status,
   }).catch((err) => console.error("[assessment-email] completion:", err));
 
   return { skipped: false, resultId: String(result._id) };
@@ -175,7 +182,7 @@ export async function finalizeAssessmentIfTimeExpired(token: string): Promise<{
   const usedAt = testToken.usedAt ? new Date(testToken.usedAt).getTime() : NaN;
   if (!Number.isFinite(usedAt)) return { finalized: false, reason: "no_used_at" };
 
-  const test = await TestModel.findById(testToken.testId).lean<any>();
+  const test = await loadAssessmentForToken(testToken);
   if (!test) return { finalized: false, reason: "not_found" };
 
   const durationMin = Number(test.duration);
@@ -195,7 +202,8 @@ export async function finalizeAssessmentIfTimeExpired(token: string): Promise<{
     language: "Javascript",
   }));
 
-  const persist = await persistGradedAssessment(testToken, test, mcqAnswers, codingSubmissions, "AUTO_SUBMITTED");
+  const testForGrading = test as Parameters<typeof persistGradedAssessment>[1];
+  const persist = await persistGradedAssessment(testToken, testForGrading, mcqAnswers, codingSubmissions, "AUTO_SUBMITTED");
   if (persist.skipped) {
     const again = await TestTokenModel.findOne({ token });
     return again?.submittedAt ? { finalized: true } : { finalized: false };

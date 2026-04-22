@@ -1,54 +1,27 @@
 import mongoose, { Schema, model, models, Document } from "mongoose";
+import type { MCQQuestion, CodingProblem } from "@/models/Test";
 
-export interface MCQQuestion {
-  questionText: string;
-  options: string[];
-  /** single-select (default): one correct index */
-  correctOption?: number;
-  /** multi-select: all correct indices (at least 2) */
-  correctOptions?: number[];
-  selectionType?: "single" | "multiple";
-  marks: number;
-}
-
-export interface CodingProblem {
+/** Public practice packs—canonical data lives in `practice_test` collection. */
+export interface PracticeTestDocument extends Document {
   title: string;
-  description: string;
-  inputFormat: string;
-  outputFormat: string;
-  sampleTestCases: { input: string; output: string }[];
-  hiddenTestCases: { input: string; output: string }[];
-  marks: number;
-  /** Optional per-language starter (keys: Javascript, Python, …) */
-  starterCode?: Record<string, string>;
-  /** Optional — used for dedupe when imported from LeetCode bank */
-  leetcodeSlug?: string;
-}
-
-export interface TestDocument extends Document {
-  title: string;
-  duration: number; // in minutes
-  linkValidity: number; // in hours
+  duration: number;
+  linkValidity: number;
   mcqs: MCQQuestion[];
   codingProblems: CodingProblem[];
-  createdBy: mongoose.Types.ObjectId;
-  /** Shown on homepage / available-tests when set with publicSlug */
-  isPublicDemo?: boolean;
-  /** URL segment: /available-tests/[publicSlug] — unique when present */
-  publicSlug?: string;
+  createdBy?: mongoose.Types.ObjectId;
+  publicSlug: string;
   demoCardSubtitle?: string;
   demoCardImageUrl?: string;
-  /** Full URL to brand logo image (optional; else slug → logo.dev) */
   demoBrandLogoUrl?: string;
-  /** Domain for img.logo.dev, e.g. google.com (optional) */
   demoLogoDomain?: string;
-  /** Lower numbers appear first in listings */
   demoSortOrder?: number;
+  /** Featured cards on the homepage (`Judge your skills`); `/available-tests` lists all public slugs. */
+  showOnHomepage?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const TestSchema = new Schema<TestDocument>(
+const PracticeTestSchema = new Schema<PracticeTestDocument>(
   {
     title: { type: String, required: true },
     duration: { type: Number, required: true },
@@ -86,25 +59,27 @@ const TestSchema = new Schema<TestDocument>(
         leetcodeSlug: { type: String },
       },
     ],
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    isPublicDemo: { type: Boolean, default: false, index: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     publicSlug: {
       type: String,
       trim: true,
       lowercase: true,
-      sparse: true,
+      required: true,
       unique: true,
+      index: true,
     },
     demoCardSubtitle: { type: String, default: "" },
     demoCardImageUrl: { type: String, default: "" },
     demoBrandLogoUrl: { type: String, default: "" },
     demoLogoDomain: { type: String, default: "" },
     demoSortOrder: { type: Number, default: 0 },
+    showOnHomepage: { type: Boolean, default: true, index: true },
   },
-  { collection: "tests", timestamps: true }
+  { collection: "practice_test", timestamps: true }
 );
 
-const TestModel =
-  (models.Test as mongoose.Model<TestDocument>) || model<TestDocument>("Test", TestSchema);
+const PracticeTestModel =
+  (models.PracticeTest as mongoose.Model<PracticeTestDocument>) ||
+  model<PracticeTestDocument>("PracticeTest", PracticeTestSchema);
 
-export default TestModel;
+export default PracticeTestModel;

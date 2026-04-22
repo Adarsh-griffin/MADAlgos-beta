@@ -6,31 +6,9 @@ import { getSessionFromRequestCookies } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { partitionEmailList, sendAssessmentInvitationEmails } from "@/lib/assessment-emails";
 import { syncTestContentToQuestionBank } from "@/lib/question-bank";
-
-function normalizeMcqsForCreate(mcqs: unknown[]): { ok: true; mcqs: Record<string, unknown>[] } | { ok: false; message: string } {
-  const out: Record<string, unknown>[] = [];
-  for (const raw of mcqs as Record<string, unknown>[]) {
-    const n = (raw.options as unknown[] | undefined)?.length ?? 0;
-    const selectionType = raw.selectionType === "multiple" ? "multiple" : "single";
-    if (selectionType === "single") {
-      const c = raw.correctOption as number;
-      if (typeof c !== "number" || Number.isNaN(c) || c < 0 || c >= n) {
-        return { ok: false, message: "Each single-choice MCQ needs a valid correct option index." };
-      }
-      out.push({ ...raw, selectionType: "single", correctOption: c, correctOptions: [] });
-    } else {
-      const arr = Array.isArray(raw.correctOptions) ? (raw.correctOptions as number[]) : [];
-      const uniq = [...new Set(arr.filter((i) => typeof i === "number" && !Number.isNaN(i) && i >= 0 && i < n))].sort(
-        (a, b) => a - b
-      );
-      if (uniq.length < 2) {
-        return { ok: false, message: "Multi-select MCQs need at least two distinct correct options." };
-      }
-      out.push({ ...raw, selectionType: "multiple", correctOptions: uniq, correctOption: uniq[0] });
-    }
-  }
-  return { ok: true, mcqs: out };
-}
+import PracticeTestModel from "@/models/PracticeTest";
+import type { CodingProblem, MCQQuestion } from "@/models/Test";
+import { cleanCodingProblemsForCreate, normalizeMcqsForCreate } from "@/lib/assessment-payload-normalize";
 
 export async function POST(req: Request) {
   try {
@@ -39,7 +17,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, duration, linkValidity, mcqs, codingProblems, emails: emailsRaw } = await req.json();
+    const {
+      title,
+      duration,
+      linkValidity,
+      mcqs,
+      codingProblems,
+      emails: emailsRaw,
+      isPublicDemo: isPublicDemoRaw,
+      publicSlug: publicSlugRaw,
+      demoCardSubtitle,
+      demoCardImageUrl,
+      demoBrandLogoUrl,
+      demoLogoDomain,
+      demoSortOrder,
+    } = await req.json();
 
     const rawEmailBlock = Array.isArray(emailsRaw)
       ? emailsRaw.map((e: unknown) => String(e)).join("\n")
@@ -60,11 +52,49 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const cleanedCodingProblems = codingProblems.map((p: any) => ({
-      ...p,
-      sampleTestCases: p.sampleTestCases.filter((tc: any) => tc.input.trim() || tc.output.trim()),
-      hiddenTestCases: p.hiddenTestCases.filter((tc: any) => tc.input.trim() || tc.output.trim()),
-    }));
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    const isPublicDemo = Boolean(isPublicDemoRaw);
+    let demoPayload: Record<string, unknown> = { isPublicDemo: false };
+    if (isPublicDemo) {
+      const slug = String(publicSlugRaw ?? "")
+        .trim()
+        .toLowerCase();
+      if (!slug || !slugRegex.test(slug)) {
+        return NextResponse.json(
+          {
+            message:
+              "Public demo tests need a unique URL slug: lowercase letters, numbers, and hyphens only (e.g. tcs-hiring-practice).",
+          },
+          { status: 400 }
+        );
+      }
+      const [dupTest, dupPractice] = await Promise.all([
+        TestModel.findOne({ publicSlug: slug }).select("_id").lean(),
+        PracticeTestModel.findOne({ publicSlug: slug }).select("_id").lean(),
+      ]);
+      if (dupTest || dupPractice) {
+        return NextResponse.json(
+          { message: "That public slug is already used (platform test or practice catalog)." },
+          { status: 400 }
+        );
+      }
+      demoPayload = {
+        isPublicDemo: true,
+        publicSlug: slug,
+        demoCardSubtitle: String(demoCardSubtitle ?? "").trim().slice(0, 400),
+        demoCardImageUrl: String(demoCardImageUrl ?? "").trim().slice(0, 2000),
+        demoBrandLogoUrl: String(demoBrandLogoUrl ?? "").trim().slice(0, 2000),
+        demoLogoDomain: String(demoLogoDomain ?? "")
+          .trim()
+          .toLowerCase()
+          .replace(/^https?:\/\//, "")
+          .split("/")[0]
+          .slice(0, 120),
+        demoSortOrder: Number.isFinite(Number(demoSortOrder)) ? Number(demoSortOrder) : 0,
+      };
+    }
+
+    const cleanedCodingProblems = cleanCodingProblemsForCreate(codingProblems);
 
     const newTest = await TestModel.create({
       title,
@@ -73,9 +103,14 @@ export async function POST(req: Request) {
       mcqs: mcqNorm.mcqs,
       codingProblems: cleanedCodingProblems,
       createdBy: session.uid,
+      ...demoPayload,
     });
 
-    await syncTestContentToQuestionBank(mcqNorm.mcqs as never[], cleanedCodingProblems, session.uid).catch((err) =>
+    await syncTestContentToQuestionBank(
+      mcqNorm.mcqs as unknown as MCQQuestion[],
+      cleanedCodingProblems as unknown as CodingProblem[],
+      session.uid
+    ).catch((err) =>
       console.error("Question bank sync (non-fatal):", err)
     );
 

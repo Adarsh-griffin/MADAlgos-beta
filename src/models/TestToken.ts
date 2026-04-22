@@ -2,7 +2,10 @@ import mongoose, { Schema, model, models, Document } from "mongoose";
 
 export interface TestTokenDocument extends Document {
   token: string;
-  testId: mongoose.Types.ObjectId;
+  /** Platform assessment (`tests` collection). */
+  testId?: mongoose.Types.ObjectId | null;
+  /** Public practice pack (`practice_test` collection). */
+  practiceTestId?: mongoose.Types.ObjectId | null;
   studentEmail: string;
   studentName?: string;
   /** After student submits name/details before instructions */
@@ -26,7 +29,8 @@ export interface TestTokenDocument extends Document {
 const TestTokenSchema = new Schema<TestTokenDocument>(
   {
     token: { type: String, required: true, unique: true, index: true },
-    testId: { type: Schema.Types.ObjectId, ref: "Test", required: true },
+    testId: { type: Schema.Types.ObjectId, ref: "Test" },
+    practiceTestId: { type: Schema.Types.ObjectId, ref: "PracticeTest", index: true },
     studentEmail: { type: String, required: true },
     studentName: { type: String },
     profileSubmittedAt: { type: Date },
@@ -56,6 +60,14 @@ const TestTokenSchema = new Schema<TestTokenDocument>(
   },
   { collection: "test_tokens", timestamps: true }
 );
+
+TestTokenSchema.pre("validate", function (next) {
+  if (!this.testId && !this.practiceTestId) {
+    next(new Error("Either testId or practiceTestId is required"));
+  } else {
+    next();
+  }
+});
 
 const TestTokenModel =
   (models.TestToken as mongoose.Model<TestTokenDocument>) ||

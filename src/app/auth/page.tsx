@@ -260,6 +260,19 @@ type MeUser = {
   role: string;
 };
 
+/** Same-origin path only — avoids open redirects via ?next= */
+function safeRedirectPath(raw: string | null): string | null {
+  if (!raw) return null;
+  const t = raw.trim();
+  if (!t.startsWith("/") || t.startsWith("//")) return null;
+  return t;
+}
+
+function readNextFromUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  return safeRedirectPath(new URLSearchParams(window.location.search).get("next"));
+}
+
 async function setMentorPasswordLogin(email: string, password: string) {
   const res = await fetch("/api/auth/mentor/set-password-login", {
     method: "POST",
@@ -301,7 +314,7 @@ export default function AuthPage() {
         if (cancelled) return;
         const u = data?.user;
         if (u && u.role !== "MENTOR_PENDING") {
-          router.replace(getDashboardPathForRole(u.role));
+          router.replace(readNextFromUrl() ?? getDashboardPathForRole(u.role));
           return;
         }
         setSessionUser(u ?? null);
@@ -516,7 +529,8 @@ export default function AuthPage() {
                                 String(fd.get("email") ?? "").trim(),
                                 String(fd.get("password") ?? "")
                               );
-                              window.location.href = getDashboardPathForRole(data?.role);
+                              window.location.href =
+                                readNextFromUrl() ?? getDashboardPathForRole(data?.role);
                             } catch (err) {
                               setError(err instanceof Error ? err.message : "Login failed");
                             } finally {
@@ -607,7 +621,8 @@ export default function AuthPage() {
                               }
                               try {
                                 const data = await setMentorPasswordLogin(mentorEmail, mentorPassword1);
-                                window.location.href = getDashboardPathForRole(data?.role);
+                                window.location.href =
+                                  readNextFromUrl() ?? getDashboardPathForRole(data?.role);
                               } catch (err) {
                                 setError(err instanceof Error ? err.message : "Set password failed");
                               } finally {
@@ -688,7 +703,8 @@ export default function AuthPage() {
                               const password = String(fd.get("password") ?? "");
                               try {
                                 const data = await login(mentorEmail, password);
-                                window.location.href = getDashboardPathForRole(data?.role);
+                                window.location.href =
+                                  readNextFromUrl() ?? getDashboardPathForRole(data?.role);
                               } catch (err) {
                                 setError(err instanceof Error ? err.message : "Login failed");
                               } finally {
@@ -787,7 +803,7 @@ export default function AuthPage() {
                             }
                             try {
                               await registerStudent(email, pw, username || undefined);
-                              window.location.href = "/";
+                              window.location.href = readNextFromUrl() ?? "/";
                             } catch (err) {
                               setError(err instanceof Error ? err.message : "Registration failed");
                             } finally {
@@ -917,7 +933,8 @@ export default function AuthPage() {
                     const fd = new FormData(form);
                     try {
                       const data = await login(String(fd.get("email") ?? ""), String(fd.get("password") ?? ""));
-                      window.location.href = getDashboardPathForRole(data?.role);
+                      window.location.href =
+                        readNextFromUrl() ?? getDashboardPathForRole(data?.role);
                     } catch (err) {
                       setError(err instanceof Error ? err.message : "Login failed");
                     } finally {

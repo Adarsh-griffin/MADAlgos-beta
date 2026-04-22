@@ -25,6 +25,7 @@ import {
   getMentorDisplayName,
   getMentorHeadline,
 } from "@/lib/mentors";
+import { JudgeYourSkillsSection } from "@/components/sections/judge-your-skills";
 
 // Ensure the homepage always renders fresh DB data.
 export const dynamic = "force-dynamic";
@@ -63,6 +64,9 @@ export default async function Home() {
 
         {/* Section 2: Best of Both Worlds / Earth */}
         <Advantages />
+
+        {/* Practice tests — hero on home; full catalog on /available-tests */}
+        <JudgeYourSkillsSection />
 
         {/* Section 3: Past events / What we've done */}
         <PastEventsSection />

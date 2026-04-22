@@ -32,6 +32,13 @@ export async function GET(_req: Request, { params }: RouteParams) {
       linkValidity: test.linkValidity,
       mcqs: test.mcqs,
       codingProblems: test.codingProblems,
+      isPublicDemo: Boolean((test as { isPublicDemo?: boolean }).isPublicDemo),
+      publicSlug: (test as { publicSlug?: string }).publicSlug ?? "",
+      demoCardSubtitle: (test as { demoCardSubtitle?: string }).demoCardSubtitle ?? "",
+      demoCardImageUrl: (test as { demoCardImageUrl?: string }).demoCardImageUrl ?? "",
+      demoBrandLogoUrl: (test as { demoBrandLogoUrl?: string }).demoBrandLogoUrl ?? "",
+      demoLogoDomain: (test as { demoLogoDomain?: string }).demoLogoDomain ?? "",
+      demoSortOrder: (test as { demoSortOrder?: number }).demoSortOrder ?? 0,
     });
   } catch (e: unknown) {
     console.error("Assessment test GET:", e);

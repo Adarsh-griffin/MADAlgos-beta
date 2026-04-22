@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import TestModel from "@/models/Test";
+import { loadAssessmentForToken } from "@/lib/assessment-load";
 import TestTokenModel from "@/models/TestToken";
 import { runJudge0Submission } from "@/lib/judge0";
 
@@ -41,12 +41,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Assessment not started" }, { status: 403 });
     }
 
-    const test = await TestModel.findById(testToken.testId);
-    if (!test) {
+    const assessment = await loadAssessmentForToken(testToken);
+    if (!assessment) {
       return NextResponse.json({ message: "Test not found" }, { status: 404 });
     }
 
-    const problem = test.codingProblems[problemIndex];
+    const codingProblems = (assessment.codingProblems || []) as Array<{
+      sampleTestCases?: { input: string; output: string }[];
+      hiddenTestCases?: { input: string; output: string }[];
+    }>;
+    const problem = codingProblems[problemIndex];
     if (!problem) {
       return NextResponse.json({ message: "Invalid problem index" }, { status: 400 });
     }

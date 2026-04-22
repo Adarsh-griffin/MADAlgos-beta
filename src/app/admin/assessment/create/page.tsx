@@ -10,7 +10,8 @@ import { MCQBuilder, type MCQ } from "@/components/admin/assessment/MCQBuilder";
 import { CodingProblemBuilder, type CodingProblem } from "@/components/admin/assessment/CodingProblemBuilder";
 import { QuestionBankPicker } from "@/components/admin/assessment/QuestionBankPicker";
 import { toast } from "sonner";
-import { Send, Loader2, ListChecks, Code2, Users } from "lucide-react";
+import { Send, Loader2, ListChecks, Code2, Users, Sparkles } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { partitionEmailList } from "@/lib/email-list-partition";
@@ -33,6 +34,14 @@ function CreateAssessmentForm() {
   const [mcqs, setMcqs] = useState<MCQ[]>([]);
   const [problems, setProblems] = useState<CodingProblem[]>([]);
   const [emails, setEmails] = useState("");
+
+  const [isPublicDemo, setIsPublicDemo] = useState(false);
+  const [publicSlug, setPublicSlug] = useState("");
+  const [demoCardSubtitle, setDemoCardSubtitle] = useState("");
+  const [demoCardImageUrl, setDemoCardImageUrl] = useState("");
+  const [demoBrandLogoUrl, setDemoBrandLogoUrl] = useState("");
+  const [demoLogoDomain, setDemoLogoDomain] = useState("");
+  const [demoSortOrder, setDemoSortOrder] = useState(0);
 
   const emailPreview = useMemo(() => partitionEmailList(emails), [emails]);
 
@@ -63,11 +72,25 @@ function CreateAssessmentForm() {
           return;
         }
         if (cancelled) return;
+        setIsPublicDemo(false);
+        setPublicSlug("");
+        setDemoCardSubtitle("");
+        setDemoCardImageUrl("");
+        setDemoBrandLogoUrl("");
+        setDemoLogoDomain("");
+        setDemoSortOrder(0);
         if (typeof d.title === "string" && d.title.trim()) setTitle(d.title.trim());
         if (typeof d.duration === "number" && !Number.isNaN(d.duration)) setDuration(d.duration);
         if (typeof d.linkValidity === "number" && !Number.isNaN(d.linkValidity)) setValidity(d.linkValidity);
         if (Array.isArray(d.mcqs)) setMcqs(d.mcqs as MCQ[]);
         if (Array.isArray(d.codingProblems)) setProblems(d.codingProblems as CodingProblem[]);
+        if (typeof d.isPublicDemo === "boolean") setIsPublicDemo(d.isPublicDemo);
+        if (typeof d.publicSlug === "string") setPublicSlug(d.publicSlug);
+        if (typeof d.demoCardSubtitle === "string") setDemoCardSubtitle(d.demoCardSubtitle);
+        if (typeof d.demoCardImageUrl === "string") setDemoCardImageUrl(d.demoCardImageUrl);
+        if (typeof d.demoBrandLogoUrl === "string") setDemoBrandLogoUrl(d.demoBrandLogoUrl);
+        if (typeof d.demoLogoDomain === "string") setDemoLogoDomain(d.demoLogoDomain);
+        if (typeof d.demoSortOrder === "number" && !Number.isNaN(d.demoSortOrder)) setDemoSortOrder(d.demoSortOrder);
         toast.info("Template loaded — adjust title or timing if needed, then dispatch.");
       } catch {
         if (!cancelled) toast.error("Could not load assessment template.");
@@ -85,6 +108,10 @@ function CreateAssessmentForm() {
       toast.error("Please fill in all required fields and add at least one question.");
       return;
     }
+    if (isPublicDemo && !publicSlug.trim()) {
+      toast.error("Public demo tests need a URL slug (e.g. tcs-hiring-practice).");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -98,6 +125,13 @@ function CreateAssessmentForm() {
           mcqs,
           codingProblems: problems,
           emails,
+          isPublicDemo,
+          publicSlug: publicSlug.trim(),
+          demoCardSubtitle: demoCardSubtitle.trim(),
+          demoCardImageUrl: demoCardImageUrl.trim(),
+          demoBrandLogoUrl: demoBrandLogoUrl.trim(),
+          demoLogoDomain: demoLogoDomain.trim(),
+          demoSortOrder,
         }),
       });
 
@@ -190,6 +224,86 @@ function CreateAssessmentForm() {
                 />
               </div>
             </div>
+          </section>
+
+          <section className="p-8 rounded-3xl bg-[#050505]/80 border border-white/10 space-y-6">
+            <div className="flex items-center gap-2 text-primary">
+              <Sparkles className="h-5 w-5" />
+              <h3 className="text-xl font-semibold text-white">Homepage &amp; /available-tests</h3>
+            </div>
+            <p className="text-sm text-slate-500">
+              Show this assessment as a public practice card (Google / TCS style). Requires a unique URL slug. Students browse
+              at <span className="text-slate-300">/available-tests</span>.
+            </p>
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <div>
+                <Label className="text-white">List as public demo</Label>
+                <p className="text-xs text-slate-500 mt-1">Adds the test to the &quot;Judge your skills&quot; section when slug is set.</p>
+              </div>
+              <Switch checked={isPublicDemo} onCheckedChange={setIsPublicDemo} />
+            </div>
+            {isPublicDemo ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-slate-400">Public URL slug</Label>
+                  <Input
+                    placeholder="e.g. tcs-hiring-practice"
+                    value={publicSlug}
+                    onChange={(e) => setPublicSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                    className="bg-white/5 border-white/10 text-white rounded-xl font-mono"
+                  />
+                  <p className="text-[11px] text-slate-500">Lowercase, numbers, hyphens only. Must be unique.</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-slate-400">Card subtitle</Label>
+                  <Input
+                    placeholder="Short line under the title on cards"
+                    value={demoCardSubtitle}
+                    onChange={(e) => setDemoCardSubtitle(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-slate-400">Card image URL (optional)</Label>
+                  <Input
+                    placeholder="Hero / banner image — https://…"
+                    value={demoCardImageUrl}
+                    onChange={(e) => setDemoCardImageUrl(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-slate-400">Brand logo URL (optional)</Label>
+                  <Input
+                    placeholder="Override: direct logo image URL"
+                    value={demoBrandLogoUrl}
+                    onChange={(e) => setDemoBrandLogoUrl(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    If empty, we use img.logo.dev from the domain below or known slugs (same as Alumni marquee).
+                  </p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-slate-400">Logo domain (optional)</Label>
+                  <Input
+                    placeholder="e.g. google.com — for img.logo.dev"
+                    value={demoLogoDomain}
+                    onChange={(e) => setDemoLogoDomain(e.target.value.replace(/[^\w.-]/g, ""))}
+                    className="bg-white/5 border-white/10 text-white rounded-xl font-mono text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-400">Sort order</Label>
+                  <Input
+                    type="number"
+                    value={demoSortOrder}
+                    onChange={(e) => setDemoSortOrder(Number.parseInt(e.target.value, 10) || 0)}
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <Tabs defaultValue="mcqs" className="w-full">

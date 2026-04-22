@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import TestModel from "@/models/Test";
+import { loadAssessmentForToken } from "@/lib/assessment-load";
 import TestTokenModel from "@/models/TestToken";
 import { persistGradedAssessment } from "@/lib/assessment-finalize";
 
@@ -22,12 +22,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid token or already submitted" }, { status: 403 });
     }
 
-    const test = await TestModel.findById(testToken.testId);
+    const test = await loadAssessmentForToken(testToken);
     if (!test) return NextResponse.json({ message: "Test not found" }, { status: 404 });
 
     const persist = await persistGradedAssessment(
       testToken,
-      test.toObject() as any,
+      test as any,
       mcqAnswers,
       codingSubmissions,
       status || "COMPLETED"

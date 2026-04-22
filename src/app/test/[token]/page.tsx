@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import TestTokenModel from "@/models/TestToken";
-import TestModel from "@/models/Test";
+import { loadAssessmentForToken } from "@/lib/assessment-load";
 import { notFound } from "next/navigation";
 import { TestRoom } from "@/components/assessment/TestRoom";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export default async function TestLinkPage({ params }: TestPageProps) {
     return <AssessmentThankYou />;
   }
 
-  const test = await TestModel.findById(testToken.testId).lean<any>();
+  const test = await loadAssessmentForToken(testToken);
   if (!test) return notFound();
 
   if (testToken.isStarted && !testToken.submittedAt) {

@@ -20,6 +20,7 @@ import {
   Shield,
   Library,
   Layers,
+  NotebookPen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -61,6 +62,12 @@ const NAV_ITEMS: NavItem[] = [
         href: "/mentors",
         description: "Browse verified mentors",
         icon: <Users className="w-5 h-5" />,
+      },
+      {
+        name: "Judge your skills",
+        href: "/available-tests",
+        description: "Company-style practice assessments — MCQ & coding",
+        icon: <NotebookPen className="w-5 h-5" />,
       },
     ],
   },

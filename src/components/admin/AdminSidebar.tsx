@@ -24,10 +24,20 @@ import {
     GraduationCap,
     ShoppingBag,
     BarChart2,
+    NotebookPen,
+    Settings2,
 } from "lucide-react";
 
 export function AdminSidebar() {
     const pathname = usePathname();
+    const [meRole, setMeRole] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        fetch("/api/auth/me")
+            .then((r) => r.json())
+            .then((d) => setMeRole(d.user?.role ?? null))
+            .catch(() => setMeRole(null));
+    }, []);
 
     const logout = async () => {
         await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
@@ -40,29 +50,57 @@ export function AdminSidebar() {
         icon: typeof ListChecks;
         exact?: boolean;
         isActive?: (pathname: string) => boolean;
-    }> = [
-        { name: "Requests Dashboard", path: "/admin", icon: ListChecks, exact: true },
-        {
-            name: "Assessments",
-            path: "/admin/assessment",
-            icon: ListChecks,
-            isActive: (p) =>
-                p === "/admin/assessment" ||
-                p.startsWith("/admin/assessment/create") ||
-                p.startsWith("/admin/assessment/view"),
-        },
-        {
-            name: "Assessment results",
-            path: "/admin/assessment/results",
-            icon: BarChart2,
-            isActive: (p) => p.startsWith("/admin/assessment/results"),
-        },
-        { name: "Order history", path: "/admin/orders", icon: ShoppingBag, exact: false },
-        { name: "Mentors", path: "/admin/mentors", icon: Users, exact: false },
-        { name: "Blogs", path: "/admin/blogs", icon: BookOpen, exact: false },
-        { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote, exact: false },
-        { name: "Students", path: "/admin/students", icon: GraduationCap, exact: false },
-    ];
+    }> = React.useMemo(() => {
+        const base: Array<{
+            name: string;
+            path: string;
+            icon: typeof ListChecks;
+            exact?: boolean;
+            isActive?: (pathname: string) => boolean;
+        }> = [
+            { name: "Requests Dashboard", path: "/admin", icon: ListChecks, exact: true },
+            {
+                name: "Assessments",
+                path: "/admin/assessment",
+                icon: ListChecks,
+                isActive: (p) =>
+                    p === "/admin/assessment" ||
+                    p.startsWith("/admin/assessment/create") ||
+                    p.startsWith("/admin/assessment/view"),
+            },
+            {
+                name: "Assessment results",
+                path: "/admin/assessment/results",
+                icon: BarChart2,
+                isActive: (p) => p.startsWith("/admin/assessment/results"),
+            },
+            {
+                name: "Practice tests",
+                path: "/admin/practice-tests",
+                icon: NotebookPen,
+                isActive: (p) =>
+                    p === "/admin/practice-tests" ||
+                    p.startsWith("/admin/practice-tests/create") ||
+                    /^\/admin\/practice-tests\/[^/]+\/edit/.test(p),
+            },
+        ];
+        if (meRole === "SUPER_ADMIN") {
+            base.splice(4, 0, {
+                name: "Site & practice",
+                path: "/admin/super/site-settings",
+                icon: Settings2,
+                isActive: (p) => p.startsWith("/admin/super"),
+            });
+        }
+        base.push(
+            { name: "Order history", path: "/admin/orders", icon: ShoppingBag, exact: false },
+            { name: "Mentors", path: "/admin/mentors", icon: Users, exact: false },
+            { name: "Blogs", path: "/admin/blogs", icon: BookOpen, exact: false },
+            { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote, exact: false },
+            { name: "Students", path: "/admin/students", icon: GraduationCap, exact: false }
+        );
+        return base;
+    }, [meRole]);
 
     return (
         <Sidebar variant="inset" collapsible="offcanvas" className="border-white/10">
@@ -88,7 +126,7 @@ export function AdminSidebar() {
                               : pathname.startsWith(item.path);
 
                         return (
-                            <SidebarMenuItem key={item.path}>
+                            <SidebarMenuItem key={`${item.path}-${item.name}`}>
                                 <SidebarMenuButton asChild isActive={isActive}>
                                     <Link href={item.path}>
                                         <item.icon />
