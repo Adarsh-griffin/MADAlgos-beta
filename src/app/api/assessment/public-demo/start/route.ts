@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import mongoose from "mongoose";
@@ -63,12 +62,6 @@ export async function POST(req: Request) {
       user.username?.trim() || emailLower.split("@")[0] || "Student";
 
     const now = new Date();
-    const headerList = await headers();
-    const ip =
-      headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      headerList.get("x-real-ip") ||
-      "unknown";
-
     const existing = await TestTokenModel.findOne({
       practiceTestId: practice._id,
       studentEmail: emailLower,
@@ -84,11 +77,6 @@ export async function POST(req: Request) {
           existing.profileSubmittedAt = now;
           existing.studentName = displayName;
           existing.linkedUserId = new mongoose.Types.ObjectId(session.uid);
-        }
-        if (!existing.isStarted) {
-          existing.isStarted = true;
-          existing.usedAt = now;
-          existing.activatedIp = ip;
         }
         await existing.save();
         return NextResponse.json({
@@ -134,9 +122,8 @@ export async function POST(req: Request) {
       profileSubmittedAt: now,
       linkedUserId: new mongoose.Types.ObjectId(session.uid),
       expiresAt: expirationDate,
-      isStarted: true,
-      usedAt: now,
-      activatedIp: ip,
+      // Start is intentionally deferred to /api/assessment/start after instruction consent + countdown.
+      isStarted: false,
     });
 
     return NextResponse.json({

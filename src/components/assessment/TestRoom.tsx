@@ -288,6 +288,38 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     };
   }, [test.duration, tokenData.usedAt, submitAssessment]);
 
+  useEffect(() => {
+    // Keep user in active attempt; browser back shows warning instead of leaving.
+    const blockBackNavigation = () => {
+      if (postSubmitOpenRef.current) return;
+      history.pushState({ assessmentGuard: true }, "", window.location.href);
+      toast.warning("Submit test first before leaving this page.", {
+        id: "assessment-back-blocked",
+        duration: 3500,
+      });
+    };
+
+    history.pushState({ assessmentGuard: true }, "", window.location.href);
+    window.addEventListener("popstate", blockBackNavigation);
+    return () => {
+      window.removeEventListener("popstate", blockBackNavigation);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (postSubmitOpenRef.current) return;
+      e.preventDefault();
+      // Required for Chrome/Edge native confirmation prompt.
+      e.returnValue = "Submit test first before leaving this page.";
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+  }, []);
+
   const saveProgress = useCallback(async () => {
     setIsSavingDraft(true);
     try {
