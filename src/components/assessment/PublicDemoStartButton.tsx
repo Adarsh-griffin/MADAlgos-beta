@@ -14,6 +14,7 @@ export function PublicDemoStartButton({ slug, className }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const authRedirectUrl = `/auth?next=${encodeURIComponent(`/available-tests/${slug}`)}`;
 
   async function start() {
     setLoading(true);
@@ -27,8 +28,17 @@ export function PublicDemoStartButton({ slug, className }: Props) {
       const data = (await res.json().catch(() => ({}))) as {
         message?: string;
         url?: string;
+        code?: string;
       };
       if (!res.ok) {
+        if (
+          res.status === 401 ||
+          data.code === "AUTH_EMAIL_MISSING" ||
+          data.message?.toLowerCase().includes("user email missing")
+        ) {
+          router.push(authRedirectUrl);
+          return;
+        }
         setError(data.message || "Could not start the test.");
         return;
       }

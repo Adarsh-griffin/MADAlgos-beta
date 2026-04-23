@@ -49,7 +49,13 @@ export async function POST(req: Request) {
       .lean<{ email?: string; username?: string | null } | null>();
 
     if (!user?.email?.trim()) {
-      return NextResponse.json({ message: "User email missing." }, { status: 400 });
+      return NextResponse.json(
+        {
+          message: "Authentication required. Please sign in again.",
+          code: "AUTH_EMAIL_MISSING",
+        },
+        { status: 401 }
+      );
     }
 
     const emailLower = String(user.email).trim().toLowerCase();
