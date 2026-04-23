@@ -53,7 +53,6 @@ export async function getPublicDemoTests(): Promise<PublicDemoTestCard[]> {
   await connectDB();
   const docs = await PracticeTestModel.find({
     publicSlug: { $exists: true, $ne: "" },
-    $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
   })
     .select(
       "title publicSlug demoCardSubtitle demoCardImageUrl demoBrandLogoUrl demoLogoDomain demoSortOrder duration"

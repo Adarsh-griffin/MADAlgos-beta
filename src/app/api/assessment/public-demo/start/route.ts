@@ -36,7 +36,6 @@ export async function POST(req: Request) {
 
     const practice = await PracticeTestModel.findOne({
       publicSlug: slug,
-      $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
     })
       .select("_id linkValidity")
       .lean<{ _id: mongoose.Types.ObjectId; linkValidity: number } | null>();
