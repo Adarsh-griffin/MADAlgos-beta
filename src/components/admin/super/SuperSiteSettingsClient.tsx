@@ -66,7 +66,7 @@ export function SuperSiteSettingsClient({ initialFreeLimit, initialTests }: Prop
         toast.error(typeof data.message === "string" ? data.message : "Update failed.");
         return;
       }
-      toast.success(next ? "Shown on homepage." : "Hidden from homepage.");
+      toast.success(next ? "Now publicly visible." : "Hidden from public listings.");
     } catch {
       setTests(prev);
       toast.error("Network error.");
@@ -79,7 +79,7 @@ export function SuperSiteSettingsClient({ initialFreeLimit, initialTests }: Prop
     <div className="space-y-10 max-w-4xl">
       <PageHeader
         title="Site & practice"
-        description="Set how many free practice sessions students can start per UTC week (0 = unlimited). Choose which practice packs appear on the homepage; the full catalog always stays on /available-tests."
+        description="Set how many free practice sessions students can start per UTC week (0 = unlimited). Choose which practice packs are publicly visible on home and /available-tests."
         action={
           <Button asChild className="rounded-full">
             <Link href="/admin/practice-tests/create">
@@ -124,7 +124,7 @@ export function SuperSiteSettingsClient({ initialFreeLimit, initialTests }: Prop
         <div>
           <h2 className="text-lg font-semibold text-white">Homepage catalog</h2>
           <p className="text-sm text-slate-500 mt-1">
-            Toggle which packs appear in the &quot;Judge your skills&quot; section on the main site. Sort order uses each
+            Toggle which packs are publicly visible on the website (home + /available-tests). Sort order uses each
             test&apos;s <span className="text-slate-400">demo sort order</span> (edit in admin → Practice tests).
           </p>
         </div>
@@ -156,7 +156,7 @@ export function SuperSiteSettingsClient({ initialFreeLimit, initialTests }: Prop
                     </Button>
                   ) : null}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 whitespace-nowrap">On homepage</span>
+                    <span className="text-xs text-slate-500 whitespace-nowrap">Publicly visible</span>
                     <Switch
                       checked={t.showOnHomepage}
                       disabled={busyId === t.id}

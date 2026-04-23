@@ -21,6 +21,7 @@ export async function generateMetadata({ params }: PageProps) {
   await connectDB();
   const test = await PracticeTestModel.findOne({
     publicSlug: slug.trim().toLowerCase(),
+    $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
   })
     .select("title")
     .lean<{ title?: string } | null>()
@@ -35,6 +36,7 @@ export default async function AvailableTestDetailPage({ params }: PageProps) {
   await connectDB();
   const test = await PracticeTestModel.findOne({
     publicSlug: slug,
+    $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
   })
     .select(
       "title duration demoCardSubtitle demoCardImageUrl demoBannerImageUrl demoBrandLogoUrl demoLogoDomain mcqs codingProblems"

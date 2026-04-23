@@ -35,8 +35,7 @@ jobs:
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
           # Backward-compatible fallbacks while secrets are migrated
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          
 
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
