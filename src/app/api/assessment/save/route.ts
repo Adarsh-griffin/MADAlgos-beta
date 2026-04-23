@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import TestTokenModel from "@/models/TestToken";
+import { requirePracticeTokenAccess } from "@/lib/assessment-access";
 
 type McqAnswer = { questionIndex: number; selectedOption?: number; selectedOptions?: number[] };
 type CodingDraft = { problemIndex: number; sourceCode: string; language: string };
@@ -16,6 +17,8 @@ export async function GET(req: Request) {
     if (!testToken || testToken.submittedAt) {
       return NextResponse.json({ message: "Invalid token or already submitted" }, { status: 403 });
     }
+    const denied = await requirePracticeTokenAccess(testToken as any);
+    if (denied) return denied;
     if (!testToken.isStarted) {
       return NextResponse.json({ message: "Assessment not started" }, { status: 403 });
     }
@@ -47,6 +50,8 @@ export async function POST(req: Request) {
     if (!testToken || testToken.submittedAt) {
       return NextResponse.json({ message: "Invalid token or already submitted" }, { status: 403 });
     }
+    const denied = await requirePracticeTokenAccess(testToken as any);
+    if (denied) return denied;
     if (!testToken.isStarted) {
       return NextResponse.json({ message: "Assessment not started" }, { status: 403 });
     }

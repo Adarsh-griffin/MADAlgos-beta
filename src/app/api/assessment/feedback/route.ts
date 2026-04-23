@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connectDB } from "@/lib/mongodb";
 import TestTokenModel from "@/models/TestToken";
 import TestResultModel from "@/models/TestResult";
+import { requirePracticeTokenAccess } from "@/lib/assessment-access";
 
 const bodySchema = z.object({
   token: z.string().min(1),
@@ -24,6 +25,8 @@ export async function POST(req: Request) {
     if (!testToken || !testToken.submittedAt) {
       return NextResponse.json({ message: "Submit your test before sending feedback" }, { status: 403 });
     }
+    const denied = await requirePracticeTokenAccess(testToken as any);
+    if (denied) return denied;
 
     const result = await TestResultModel.findOne({ tokenId: testToken._id });
     if (!result) {

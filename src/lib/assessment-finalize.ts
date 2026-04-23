@@ -149,6 +149,7 @@ export async function persistGradedAssessment(
   const result = await TestResultModel.create(resultPayload);
 
   fresh.submittedAt = new Date();
+  fresh.draftSubmission = undefined;
   await fresh.save();
 
   const testTitle = String((test as { title?: string }).title || "Assessment");

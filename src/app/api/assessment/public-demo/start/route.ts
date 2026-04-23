@@ -98,24 +98,26 @@ export async function POST(req: Request) {
       }
     }
 
-    if (session.role !== "SUPER_ADMIN") {
-      const { freePracticeStartsPerWeek } = await getSiteSettings();
-      if (freePracticeStartsPerWeek > 0) {
-        const weekStart = getUtcMondayStart(now);
-        const uid = new mongoose.Types.ObjectId(session.uid);
-        const used = await TestTokenModel.countDocuments({
-          $or: [{ linkedUserId: uid }, { studentEmail: emailLower }],
-          practiceTestId: { $exists: true, $ne: null },
-          createdAt: { $gte: weekStart },
-        });
-        if (used >= freePracticeStartsPerWeek) {
-          return NextResponse.json(
-            {
-              message: `Free practice limit reached for this week (${freePracticeStartsPerWeek} new starts, UTC week). Try again next Monday or contact support.`,
-            },
-            { status: 403 }
-          );
-        }
+    const { freePracticeStartsPerWeek } = await getSiteSettings();
+    if (freePracticeStartsPerWeek > 0) {
+      const weekStart = getUtcMondayStart(now);
+      const uid = new mongoose.Types.ObjectId(session.uid);
+      const used = await TestTokenModel.countDocuments({
+        $or: [{ linkedUserId: uid }, { studentEmail: emailLower }],
+        practiceTestId: { $exists: true, $ne: null },
+        $or: [
+          { createdAt: { $gte: weekStart } },
+          { usedAt: { $gte: weekStart } },
+          { submittedAt: { $gte: weekStart } },
+        ],
+      });
+      if (used >= freePracticeStartsPerWeek) {
+        return NextResponse.json(
+          {
+            message: `Free practice limit reached for this week (${freePracticeStartsPerWeek} attempt${freePracticeStartsPerWeek === 1 ? "" : "s"}, UTC week). Try again next Monday or contact support.`,
+          },
+          { status: 403 }
+        );
       }
     }
 

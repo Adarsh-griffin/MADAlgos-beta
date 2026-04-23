@@ -288,55 +288,6 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     };
   }, [test.duration, tokenData.usedAt, submitAssessment]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadDraft = async () => {
-      try {
-        const res = await fetch(`/api/assessment/save?token=${encodeURIComponent(tokenData.token)}`);
-        if (!res.ok) return;
-        const data = await res.json().catch(() => ({}));
-        const draft = data?.draft;
-        if (!draft || cancelled) return;
-
-        if (Array.isArray(draft.mcqAnswers)) {
-          const nextMcq: Record<number, number[]> = {};
-          for (const a of draft.mcqAnswers as Array<{ questionIndex: number; selectedOption?: number; selectedOptions?: number[] }>) {
-            if (typeof a.questionIndex !== "number") continue;
-            if (Array.isArray(a.selectedOptions)) nextMcq[a.questionIndex] = a.selectedOptions;
-            else if (typeof a.selectedOption === "number") nextMcq[a.questionIndex] = [a.selectedOption];
-          }
-          setMcqSelections(nextMcq);
-        }
-
-        if (Array.isArray(draft.codingSubmissions)) {
-          setProblemStates((prev) => {
-            const next = { ...prev };
-            for (const row of draft.codingSubmissions as Array<{ problemIndex: number; sourceCode?: string; language?: string }>) {
-              if (typeof row.problemIndex !== "number") continue;
-              const lang = row.language || next[row.problemIndex]?.lang || "Javascript";
-              const existing = next[row.problemIndex] ?? { lang, codeByLang: {} };
-              next[row.problemIndex] = {
-                lang,
-                codeByLang: {
-                  ...existing.codeByLang,
-                  [lang]: typeof row.sourceCode === "string" ? row.sourceCode : existing.codeByLang[lang] ?? "",
-                },
-              };
-            }
-            return next;
-          });
-          toast.success("Recovered your previously saved draft.");
-        }
-      } catch {
-        // Best-effort load only.
-      }
-    };
-    void loadDraft();
-    return () => {
-      cancelled = true;
-    };
-  }, [tokenData.token]);
-
   const saveProgress = useCallback(async () => {
     setIsSavingDraft(true);
     try {

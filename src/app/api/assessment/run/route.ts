@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { loadAssessmentForToken } from "@/lib/assessment-load";
 import TestTokenModel from "@/models/TestToken";
 import { runJudge0Submission } from "@/lib/judge0";
+import { requirePracticeTokenAccess } from "@/lib/assessment-access";
 
 const LANGUAGE_MAP: Record<string, number> = {
   C: 50,
@@ -37,6 +38,8 @@ export async function POST(req: Request) {
     if (!testToken || testToken.submittedAt) {
       return NextResponse.json({ message: "Invalid token or already submitted" }, { status: 403 });
     }
+    const denied = await requirePracticeTokenAccess(testToken as any);
+    if (denied) return denied;
     if (!testToken.isStarted) {
       return NextResponse.json({ message: "Assessment not started" }, { status: 403 });
     }

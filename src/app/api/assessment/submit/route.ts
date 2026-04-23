@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { loadAssessmentForToken } from "@/lib/assessment-load";
 import TestTokenModel from "@/models/TestToken";
 import { persistGradedAssessment } from "@/lib/assessment-finalize";
+import { requirePracticeTokenAccess } from "@/lib/assessment-access";
 
 export async function POST(req: Request) {
   try {
@@ -21,6 +22,8 @@ export async function POST(req: Request) {
     if (!testToken || testToken.submittedAt) {
       return NextResponse.json({ message: "Invalid token or already submitted" }, { status: 403 });
     }
+    const denied = await requirePracticeTokenAccess(testToken as any);
+    if (denied) return denied;
 
     const test = await loadAssessmentForToken(testToken);
     if (!test) return NextResponse.json({ message: "Test not found" }, { status: 404 });

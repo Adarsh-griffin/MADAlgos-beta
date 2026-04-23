@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import TestTokenModel from "@/models/TestToken";
 import { loadAssessmentForToken } from "@/lib/assessment-load";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TestRoom } from "@/components/assessment/TestRoom";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
@@ -9,6 +9,8 @@ import Link from "next/link";
 import { TestProfileForm } from "@/components/assessment/TestProfileForm";
 import { TestAssessmentInstructions } from "@/components/assessment/TestAssessmentInstructions";
 import { finalizeAssessmentIfTimeExpired } from "@/lib/assessment-finalize";
+import { getSessionFromRequestCookies } from "@/lib/auth";
+import UserModel from "@/models/User";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,25 @@ export default async function TestLinkPage({ params }: TestPageProps) {
 
   const testToken = await TestTokenModel.findOne({ token }).lean<any>();
   if (!testToken) return notFound();
+
+  // Public practice tests are account-bound; invite links keep token-based access.
+  if (testToken.practiceTestId) {
+    const session = await getSessionFromRequestCookies();
+    if (!session) {
+      redirect(`/auth?next=${encodeURIComponent(`/test/${token}`)}`);
+    }
+    if (testToken.linkedUserId && String(testToken.linkedUserId) !== String(session.uid)) {
+      redirect("/available-tests");
+    }
+    if (!testToken.linkedUserId) {
+      const user = await UserModel.findById(session.uid).select("email").lean<{ email?: string } | null>();
+      const sessionEmail = String(user?.email || "").trim().toLowerCase();
+      const tokenEmail = String(testToken.studentEmail || "").trim().toLowerCase();
+      if (!sessionEmail || !tokenEmail || sessionEmail !== tokenEmail) {
+        redirect("/available-tests");
+      }
+    }
+  }
 
   const isExpired = new Date() > new Date(testToken.expiresAt);
   if (isExpired && !testToken.isStarted) {
