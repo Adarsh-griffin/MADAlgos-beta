@@ -80,7 +80,7 @@ export async function POST(req: Request) {
         }
         await existing.save();
         return NextResponse.json({
-          url: `/test/${existing.token}`,
+          url: `/test/${existing.token}?pre=1`,
           resumed: true,
         });
       }
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
-      url: `/test/${token}`,
+      url: `/test/${token}?pre=1`,
       resumed: false,
     });
   } catch (e: unknown) {

@@ -33,10 +33,13 @@ function AssessmentThankYou() {
 
 interface TestPageProps {
   params: Promise<{ token: string }>;
+  searchParams?: Promise<{ pre?: string | string[] }>;
 }
 
-export default async function TestLinkPage({ params }: TestPageProps) {
+export default async function TestLinkPage({ params, searchParams }: TestPageProps) {
   const { token } = await params;
+  const query = searchParams ? await searchParams : undefined;
+  const forcePreInstructions = query?.pre === "1" || (Array.isArray(query?.pre) && query?.pre.includes("1"));
   await connectDB();
 
   const testToken = await TestTokenModel.findOne({ token }).lean<any>();
@@ -96,6 +99,10 @@ export default async function TestLinkPage({ params }: TestPageProps) {
 
   const testJson = JSON.parse(JSON.stringify(test));
   const tokenJson = JSON.parse(JSON.stringify(testToken));
+
+  if (forcePreInstructions && !testToken.submittedAt) {
+    return <TestAssessmentInstructions token={token} test={testJson} />;
+  }
 
   if (!testToken.isStarted) {
     if (!testToken.profileSubmittedAt) {

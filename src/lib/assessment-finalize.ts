@@ -93,13 +93,24 @@ export async function persistGradedAssessment(
       continue;
     }
 
+    const submittedCode = String(sub.sourceCode ?? "");
+    if (!submittedCode.trim()) {
+      gradedCoding.push({
+        problemIndex: sub.problemIndex,
+        sourceCode: submittedCode,
+        status: "No submission",
+        score: 0,
+      });
+      continue;
+    }
+
     const langId = LANGUAGE_MAP[sub.language ?? "Javascript"] ?? 93;
     let problemStatus = "Accepted";
     let totalPassed = 0;
 
     const hidden = problem.hiddenTestCases || [];
     for (const tc of hidden) {
-      const result = await runJudge0Submission(sub.sourceCode ?? "", langId, tc.input, tc.output);
+      const result = await runJudge0Submission(submittedCode, langId, tc.input, tc.output);
       if (result.passed) {
         totalPassed++;
       } else {
@@ -118,7 +129,7 @@ export async function persistGradedAssessment(
     codingScore += problemScore;
     gradedCoding.push({
       problemIndex: sub.problemIndex,
-      sourceCode: sub.sourceCode ?? "",
+      sourceCode: submittedCode,
       status: problemStatus,
       score: problemScore,
     });

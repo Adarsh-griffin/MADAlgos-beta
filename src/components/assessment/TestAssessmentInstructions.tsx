@@ -24,14 +24,6 @@ export function TestAssessmentInstructions({ token, test }: TestAssessmentInstru
   const [countdown, setCountdown] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!agreed) {
-      setCountdown(null);
-      return;
-    }
-    setCountdown(10);
-  }, [agreed]);
-
-  useEffect(() => {
     if (countdown === null) return;
     if (countdown <= 0) {
       formRef.current?.requestSubmit();
@@ -49,7 +41,7 @@ export function TestAssessmentInstructions({ token, test }: TestAssessmentInstru
         <div
           className={[
             "p-10 md:p-12 rounded-[32px] bg-[#050505] border border-white/10 space-y-8 transition-all duration-300",
-            agreed ? "blur-sm pointer-events-none select-none" : "",
+            countdown !== null ? "blur-sm pointer-events-none select-none" : "",
           ].join(" ")}
         >
           <div className="space-y-1">
@@ -87,29 +79,34 @@ export function TestAssessmentInstructions({ token, test }: TestAssessmentInstru
           </ul>
 
           <p className="text-xs text-slate-500">
-            After you agree, launch starts automatically with a short countdown. Do not switch tabs during the test.
+            Tick the consent checkbox, then click the button below to begin a short countdown before launch.
           </p>
 
           <form ref={formRef} action="/api/assessment/start" method="POST" className="pt-1 space-y-4">
             <input type="hidden" name="token" value={token} />
             <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-              <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(Boolean(v))} />
+              <Checkbox
+                checked={agreed}
+                disabled={countdown !== null}
+                onCheckedChange={(v) => setAgreed(Boolean(v))}
+              />
               <span className="text-sm leading-relaxed text-slate-300">
                 I have read and agree to all assessment rules. I understand that rule violations can lead to warning,
                 auto-submit, or disqualification.
               </span>
             </label>
             <Button
-              type="submit"
-              disabled={!agreed}
+              type="button"
+              disabled={!agreed || countdown !== null}
+              onClick={() => setCountdown(10)}
               className="w-full h-14 rounded-full text-lg font-bold bg-primary hover:bg-primary/90 text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {agreed ? "Auto start armed" : "Accept rules to continue"}
+              {!agreed ? "Accept rules to continue" : "Start countdown"}
             </Button>
           </form>
         </div>
 
-        {agreed ? (
+        {countdown !== null ? (
           <div className="absolute inset-0 z-20 rounded-[32px] bg-black/55 backdrop-blur-[2px] border border-primary/20 flex items-center justify-center p-6">
             <div className="w-full max-w-md rounded-2xl bg-[#0b1020] border border-primary/30 px-6 py-7 text-center space-y-3 shadow-[0_0_80px_rgba(20,184,166,0.2)]">
               <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Rules Accepted</p>
