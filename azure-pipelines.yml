@@ -30,7 +30,11 @@ stages:
 
           - script: npm run build
             env:
+              DATABASE_URI: $(DATABASE_URI)
+              DATABASE_NAME: $(DATABASE_NAME)
+              # Backward-compatible fallbacks while pipeline variables are migrated
               MONGODB_URI: $(MONGODB_URI)
+              MONGODB_DB_NAME: $(MONGODB_DB_NAME)
               NEXT_PUBLIC_RECAPTCHA_SITE_KEY: $(NEXT_PUBLIC_RECAPTCHA_SITE_KEY)
               NEXT_PUBLIC_BROCHURE_URL: $(NEXT_PUBLIC_BROCHURE_URL)
             displayName: 'Build Next.js'
