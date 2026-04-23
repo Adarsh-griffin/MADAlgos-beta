@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"id":{"$numberInt":"1"}},"name":"id_1","background":true,"unique":true}],"uuid":"8cc3fe3d70794ae59019b60f576409fd","collectionName":"mock_interview_offerings","type":"collection"}

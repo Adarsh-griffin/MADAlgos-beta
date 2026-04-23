@@ -32,6 +32,9 @@ jobs:
       - name: Build Next.js
         run: npm run build
         env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          # Backward-compatible fallbacks while secrets are migrated
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
 
