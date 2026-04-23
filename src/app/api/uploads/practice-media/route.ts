@@ -41,7 +41,11 @@ export async function POST(req: Request) {
   try {
     const blobServiceClient = BlobServiceClient.fromConnectionString(blobConn);
     const containerClient = blobServiceClient.getContainerClient(containerName);
-    await containerClient.createIfNotExists();
+    await containerClient.createIfNotExists({ access: "blob" });
+    const acl = await containerClient.getAccessPolicy();
+    if (acl.blobPublicAccess !== "blob") {
+      await containerClient.setAccessPolicy("blob");
+    }
 
     const originalName = file.name ? String(file.name) : "image";
     const safeOriginal = originalName.replaceAll("/", "_").replaceAll("\\", "_");
