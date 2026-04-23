@@ -75,6 +75,12 @@ export function AdminSidebar() {
                 isActive: (p) => p.startsWith("/admin/assessment/results"),
             },
             {
+                name: "Feedback review",
+                path: "/admin/assessment/feedback",
+                icon: MessageSquareQuote,
+                isActive: (p) => p.startsWith("/admin/assessment/feedback"),
+            },
+            {
                 name: "Practice tests",
                 path: "/admin/practice-tests",
                 icon: NotebookPen,

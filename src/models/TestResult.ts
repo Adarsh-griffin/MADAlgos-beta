@@ -25,6 +25,8 @@ export interface TestResultDocument extends Document {
   feedbackRating?: number;
   feedbackComment?: string;
   feedbackSubmittedAt?: Date;
+  feedbackResolved?: boolean;
+  feedbackResolvedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,6 +63,8 @@ const TestResultSchema = new Schema<TestResultDocument>(
     feedbackRating: { type: Number, min: 1, max: 5 },
     feedbackComment: { type: String, maxlength: 2000 },
     feedbackSubmittedAt: { type: Date },
+    feedbackResolved: { type: Boolean, default: false, index: true },
+    feedbackResolvedAt: { type: Date },
   },
   { collection: "test_results", timestamps: true }
 );

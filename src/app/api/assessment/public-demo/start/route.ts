@@ -91,12 +91,16 @@ export async function POST(req: Request) {
       const weekStart = getUtcMondayStart(now);
       const uid = new mongoose.Types.ObjectId(session.uid);
       const used = await TestTokenModel.countDocuments({
-        $or: [{ linkedUserId: uid }, { studentEmail: emailLower }],
-        practiceTestId: { $exists: true, $ne: null },
-        $or: [
-          { createdAt: { $gte: weekStart } },
-          { usedAt: { $gte: weekStart } },
-          { submittedAt: { $gte: weekStart } },
+        $and: [
+          { $or: [{ linkedUserId: uid }, { studentEmail: emailLower }] },
+          { practiceTestId: { $exists: true, $ne: null } },
+          {
+            $or: [
+              { createdAt: { $gte: weekStart } },
+              { usedAt: { $gte: weekStart } },
+              { submittedAt: { $gte: weekStart } },
+            ],
+          },
         ],
       });
       if (used >= freePracticeStartsPerWeek) {

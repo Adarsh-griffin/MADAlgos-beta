@@ -2,14 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
-import { CodeXml, Copy, RotateCcw, Maximize2, Minimize2, Play, Moon, Sun } from "lucide-react";
+import { CodeXml, RotateCcw, Maximize2, Minimize2, Play, Moon, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
@@ -80,11 +79,6 @@ export default function AssessmentCodeEditor({
   const applyResetCode = () => {
     setSourceCode(defaultCode);
     setResetDialogOpen(false);
-  };
-
-  const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(sourceCode);
-    toast.success("Code copied to clipboard");
   };
 
   const monacoLanguage = JUDGE0_LANGUAGES[language as LanguageKey]?.monaco || "javascript";
@@ -184,20 +178,6 @@ export default function AssessmentCodeEditor({
               <TooltipContent>Save current answers/code to backend without finishing</TooltipContent>
             </Tooltip>
           )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleCopyToClipboard}
-                className={`h-8 w-8 ${isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"}`}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Copy Code</TooltipContent>
-          </Tooltip>
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
