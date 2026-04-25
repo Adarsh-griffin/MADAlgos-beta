@@ -168,7 +168,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
           status: submitStatus,
         };
 
-        const res = await fetch("/api/assessment/submit", {
+        const res = await fetch(`/api/assessment/submit?token=${encodeURIComponent(tokenData.token)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -359,7 +359,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     if (postSubmitOpen) setFullscreenRequiredOpen(false);
   }, [postSubmitOpen]);
 
-  const saveProgress = useCallback(async () => {
+  const saveDraft = useCallback(async (opts?: { silent?: boolean }) => {
+    const silent = Boolean(opts?.silent);
     setIsSavingDraft(true);
     try {
       const ms = mcqSelectionsRef.current;
@@ -381,16 +382,28 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(data.message || "Could not save draft.");
+        if (!silent) toast.error(data.message || "Could not save draft.");
         return;
       }
-      toast.success("Progress saved to backend.");
+      if (!silent) toast.success("Progress saved to backend.");
     } catch {
-      toast.error("Network error while saving.");
+      if (!silent) toast.error("Network error while saving.");
     } finally {
       setIsSavingDraft(false);
     }
   }, [mcqs, tokenData.token, getCodingSubmissionsPayload]);
+
+  const saveProgress = useCallback(async () => {
+    await saveDraft({ silent: false });
+  }, [saveDraft]);
+
+  useEffect(() => {
+    if (postSubmitOpen || isSubmitting) return;
+    const id = window.setInterval(() => {
+      void saveDraft({ silent: true });
+    }, 15000);
+    return () => window.clearInterval(id);
+  }, [postSubmitOpen, isSubmitting, saveDraft]);
 
   const handleRun = async (scope: "sample" | "all") => {
     if (!hasCoding) return;
