@@ -4,6 +4,8 @@ import crypto from "crypto";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const role = url.searchParams.get("role") === "mentor" ? "mentor" : "student";
+  const nextRaw = url.searchParams.get("next");
+  const next = nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : null;
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
@@ -21,7 +23,7 @@ export async function GET(req: Request) {
         scope: "openid email profile",
         prompt: "select_account",
         access_type: "offline",
-        state: JSON.stringify({ state, role }),
+        state: JSON.stringify({ state, role, next }),
       }).toString()
   );
 

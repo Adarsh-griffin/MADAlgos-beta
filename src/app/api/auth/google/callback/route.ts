@@ -6,6 +6,13 @@ import { createSessionToken, setSessionCookie } from "@/lib/auth";
 import { ensureSuperAdminExists } from "@/lib/bootstrap-superadmin";
 
 export async function GET(req: NextRequest) {
+  const safeNextPath = (raw: string | null | undefined): string | null => {
+    if (!raw) return null;
+    const t = raw.trim();
+    if (!t.startsWith("/") || t.startsWith("//")) return null;
+    return t;
+  };
+
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const stateRaw = url.searchParams.get("state");
@@ -15,15 +22,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/auth", req.url));
   }
 
-  let parsedState: { state: string; role: "student" | "mentor" } | null = null;
+  let parsedState: { state: string; role: "student" | "mentor"; next?: string | null } | null = null;
   try {
-    parsedState = JSON.parse(stateRaw) as { state: string; role: "student" | "mentor" };
+    parsedState = JSON.parse(stateRaw) as { state: string; role: "student" | "mentor"; next?: string | null };
   } catch {
     parsedState = null;
   }
   if (!parsedState || parsedState.state !== stateCookie) {
     return NextResponse.redirect(new URL("/auth", req.url));
   }
+  const nextPath = safeNextPath(parsedState.next);
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -120,7 +128,8 @@ export async function GET(req: NextRequest) {
   }
 
   const sessionToken = createSessionToken({ uid: String(user._id), role: user.role });
-  const res = NextResponse.redirect(new URL(user.role === "MENTOR" ? "/mentor" : "/", req.url));
+  const fallbackPath = user.role === "MENTOR" ? "/mentor" : "/";
+  const res = NextResponse.redirect(new URL(nextPath ?? fallbackPath, req.url));
   setSessionCookie(res, sessionToken);
   res.cookies.set("madalgos_google_oauth_state", "", { maxAge: 0, path: "/" });
   return res;

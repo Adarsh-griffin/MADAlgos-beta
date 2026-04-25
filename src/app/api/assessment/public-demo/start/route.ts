@@ -37,8 +37,8 @@ export async function POST(req: Request) {
       publicSlug: slug,
       $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
     })
-      .select("_id linkValidity")
-      .lean<{ _id: mongoose.Types.ObjectId; linkValidity: number } | null>();
+      .select("_id linkValidity duration")
+      .lean<{ _id: mongoose.Types.ObjectId; linkValidity: number; duration: number } | null>();
 
     if (!practice) {
       return NextResponse.json({ message: "Practice test not found." }, { status: 404 });
@@ -74,6 +74,22 @@ export async function POST(req: Request) {
     if (existing) {
       const exp = new Date(existing.expiresAt);
       if (now <= exp) {
+        // Reuse started tokens only when the actual test clock is still active.
+        // Otherwise, create a fresh token to avoid immediate "Thank you" on open.
+        if (existing.isStarted) {
+          const usedAtMs = existing.usedAt ? new Date(existing.usedAt).getTime() : NaN;
+          const activeUntilMs = Number.isFinite(usedAtMs)
+            ? usedAtMs + Number(practice.duration) * 60 * 1000
+            : NaN;
+          if (!Number.isFinite(activeUntilMs) || now.getTime() > activeUntilMs) {
+            // Skip reusing this stale started token; fall through to create new token.
+          } else {
+            return NextResponse.json({
+              url: `/test/${existing.token}?pre=1`,
+              resumed: true,
+            });
+          }
+        } else {
         if (!existing.profileSubmittedAt) {
           existing.profileSubmittedAt = now;
           existing.studentName = displayName;
@@ -84,6 +100,7 @@ export async function POST(req: Request) {
           url: `/test/${existing.token}?pre=1`,
           resumed: true,
         });
+        }
       }
     }
 

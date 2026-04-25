@@ -109,6 +109,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const [problemPaneCollapsed, setProblemPaneCollapsed] = useState(false);
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
   const [postSubmitOpen, setPostSubmitOpen] = useState(false);
+  const [fullscreenRequiredOpen, setFullscreenRequiredOpen] = useState(false);
 
   const mcqSelectionsRef = useRef(mcqSelections);
   const problemStatesRef = useRef<Record<number, ProblemState>>(problemStates);
@@ -319,6 +320,44 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
       window.removeEventListener("beforeunload", onBeforeUnload);
     };
   }, []);
+
+  const requestExamFullscreen = useCallback(async () => {
+    if (postSubmitOpenRef.current) return;
+    if (document.fullscreenElement) return;
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      // Fullscreen may require fresh user gesture in some browsers.
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => {
+      if (postSubmitOpenRef.current) return;
+      const inFullscreen = Boolean(document.fullscreenElement);
+      setFullscreenRequiredOpen(!inFullscreen);
+      if (!inFullscreen) {
+        toast.warning("Fullscreen is required during assessment. Return to fullscreen.", {
+          id: "assessment-fullscreen-required",
+          duration: 3500,
+        });
+      }
+    };
+
+    // Open lock modal if test loads outside fullscreen.
+    if (!document.fullscreenElement) {
+      setFullscreenRequiredOpen(true);
+    }
+
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+    };
+  }, [requestExamFullscreen]);
+
+  useEffect(() => {
+    if (postSubmitOpen) setFullscreenRequiredOpen(false);
+  }, [postSubmitOpen]);
 
   const saveProgress = useCallback(async () => {
     setIsSavingDraft(true);
@@ -856,6 +895,25 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
               }}
             >
               Yes, submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={fullscreenRequiredOpen}>
+        <AlertDialogContent className="bg-[#050505] border-white/10 text-white sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fullscreen required</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Enter full screen then only test will start.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="bg-primary text-black font-bold"
+              onClick={() => void requestExamFullscreen()}
+            >
+              Enter fullscreen
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

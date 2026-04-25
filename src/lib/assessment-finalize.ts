@@ -52,6 +52,18 @@ export async function persistGradedAssessment(
     return { skipped: true };
   }
 
+  // If a result already exists for this token, treat as already finalized and heal token state.
+  const existingResult = await TestResultModel.findOne({ tokenId: fresh._id }).select("_id submittedAt").lean<{
+    _id: unknown;
+    submittedAt?: Date;
+  } | null>();
+  if (existingResult) {
+    fresh.submittedAt = existingResult.submittedAt ?? fresh.submittedAt ?? new Date();
+    fresh.draftSubmission = undefined;
+    await fresh.save();
+    return { skipped: false, resultId: String(existingResult._id) };
+  }
+
   let mcqScore = 0;
   const gradedMcqs = mcqAnswers.map((answer) => {
     const question = test.mcqs[answer.questionIndex] as
@@ -157,7 +169,31 @@ export async function persistGradedAssessment(
     status: status || "COMPLETED",
   };
 
-  const result = await TestResultModel.create(resultPayload);
+  let result: { _id: unknown; submittedAt: Date; totalScore: number; maxScore: number; status: AssessmentSubmitStatus };
+  try {
+    result = await TestResultModel.create(resultPayload);
+  } catch (error: unknown) {
+    // Concurrent submit/auto-submit can race; unique tokenId index will reject second insert.
+    const maybeDup = error as { code?: number };
+    if (maybeDup?.code === 11000) {
+      const dup = await TestResultModel.findOne({ tokenId: fresh._id })
+        .select("_id submittedAt totalScore maxScore status")
+        .lean<{
+          _id: unknown;
+          submittedAt: Date;
+          totalScore: number;
+          maxScore: number;
+          status: AssessmentSubmitStatus;
+        } | null>();
+      if (dup) {
+        fresh.submittedAt = dup.submittedAt ?? new Date();
+        fresh.draftSubmission = undefined;
+        await fresh.save();
+        return { skipped: false, resultId: String(dup._id) };
+      }
+    }
+    throw error;
+  }
 
   fresh.submittedAt = new Date();
   fresh.draftSubmission = undefined;

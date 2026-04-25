@@ -40,6 +40,7 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
   const [demoSortOrder, setDemoSortOrder] = useState(0);
   const [uploadingCardImage, setUploadingCardImage] = useState(false);
   const [uploadingBannerImage, setUploadingBannerImage] = useState(false);
+  const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
 
   const pickedMcqKeys = useMemo(() => mcqs.map(mcqPickKey), [mcqs]);
   const pickedCodingKeys = useMemo(() => problems.map(codingPickKey), [problems]);
@@ -313,6 +314,30 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
                   onChange={(e) => setDemoBrandLogoUrl(e.target.value)}
                   className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
                 />
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingBrandLogo}
+                    className="bg-white/5 border-white/10 text-white rounded-xl text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1 file:text-black file:font-semibold"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingBrandLogo(true);
+                      try {
+                        const url = await uploadPracticeImage(file);
+                        setDemoBrandLogoUrl(url);
+                        toast.success("Brand logo uploaded.");
+                      } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : "Upload failed.");
+                      } finally {
+                        setUploadingBrandLogo(false);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                  />
+                  {uploadingBrandLogo ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+                </div>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label className="text-slate-400">Logo domain (optional)</Label>

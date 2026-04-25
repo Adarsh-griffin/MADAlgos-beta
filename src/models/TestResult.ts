@@ -49,7 +49,8 @@ const TestResultSchema = new Schema<TestResultDocument>(
     codingSubmissions: [
       {
         problemIndex: { type: Number, required: true },
-        sourceCode: { type: String, required: true },
+        // Empty source is valid for unanswered/auto-submitted coding questions.
+        sourceCode: { type: String, default: "" },
         status: { type: String },
         score: { type: Number, default: 0 },
       },

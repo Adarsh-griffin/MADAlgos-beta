@@ -42,6 +42,8 @@ function CreateAssessmentForm() {
   const [demoBrandLogoUrl, setDemoBrandLogoUrl] = useState("");
   const [demoLogoDomain, setDemoLogoDomain] = useState("");
   const [demoSortOrder, setDemoSortOrder] = useState(0);
+  const [uploadingCardImage, setUploadingCardImage] = useState(false);
+  const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
 
   const emailPreview = useMemo(() => partitionEmailList(emails), [emails]);
 
@@ -170,11 +172,25 @@ function CreateAssessmentForm() {
         const err = await res.json();
         toast.error(err.message || "Failed to create test.");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const uploadPracticeImage = async (file: File): Promise<string> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    const res = await fetch("/api/uploads/practice-media", {
+      method: "POST",
+      body: fd,
+    });
+    const data = (await res.json().catch(() => ({}))) as { imageUrl?: string; error?: string };
+    if (!res.ok || !data.imageUrl) {
+      throw new Error(data.error || "Upload failed.");
+    }
+    return data.imageUrl;
   };
 
   return (
@@ -271,6 +287,30 @@ function CreateAssessmentForm() {
                     onChange={(e) => setDemoCardImageUrl(e.target.value)}
                     className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
                   />
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingCardImage}
+                      className="bg-white/5 border-white/10 text-white rounded-xl text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1 file:text-black file:font-semibold"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingCardImage(true);
+                        try {
+                          const url = await uploadPracticeImage(file);
+                          setDemoCardImageUrl(url);
+                          toast.success("Card image uploaded.");
+                        } catch (err: unknown) {
+                          toast.error(err instanceof Error ? err.message : "Upload failed.");
+                        } finally {
+                          setUploadingCardImage(false);
+                          e.currentTarget.value = "";
+                        }
+                      }}
+                    />
+                    {uploadingCardImage ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+                  </div>
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label className="text-slate-400">Brand logo URL (optional)</Label>
@@ -280,6 +320,30 @@ function CreateAssessmentForm() {
                     onChange={(e) => setDemoBrandLogoUrl(e.target.value)}
                     className="bg-white/5 border-white/10 text-white rounded-xl text-sm"
                   />
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingBrandLogo}
+                      className="bg-white/5 border-white/10 text-white rounded-xl text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1 file:text-black file:font-semibold"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingBrandLogo(true);
+                        try {
+                          const url = await uploadPracticeImage(file);
+                          setDemoBrandLogoUrl(url);
+                          toast.success("Brand logo uploaded.");
+                        } catch (err: unknown) {
+                          toast.error(err instanceof Error ? err.message : "Upload failed.");
+                        } finally {
+                          setUploadingBrandLogo(false);
+                          e.currentTarget.value = "";
+                        }
+                      }}
+                    />
+                    {uploadingBrandLogo ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+                  </div>
                   <p className="text-[10px] text-slate-500">
                     If empty, we use img.logo.dev from the domain below or known slugs (same as Alumni marquee).
                   </p>

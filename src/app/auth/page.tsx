@@ -273,6 +273,13 @@ function readNextFromUrl(): string | null {
   return safeRedirectPath(new URLSearchParams(window.location.search).get("next"));
 }
 
+function resolvePostAuthPath(role: string | undefined, nextPath: string | null): string {
+  if (nextPath) return nextPath;
+  // Students should return to main site and open profile/dashboard from header.
+  if (role === "STUDENT") return "/";
+  return getDashboardPathForRole(role);
+}
+
 async function setMentorPasswordLogin(email: string, password: string) {
   const res = await fetch("/api/auth/mentor/set-password-login", {
     method: "POST",
@@ -314,7 +321,7 @@ export default function AuthPage() {
         if (cancelled) return;
         const u = data?.user;
         if (u && u.role !== "MENTOR_PENDING") {
-          router.replace(readNextFromUrl() ?? getDashboardPathForRole(u.role));
+          router.replace(resolvePostAuthPath(u.role, readNextFromUrl()));
           return;
         }
         setSessionUser(u ?? null);
@@ -355,7 +362,10 @@ export default function AuthPage() {
   }, []);
 
   const goGoogle = (role: "student" | "mentor") => {
-    window.location.href = `/api/auth/google/start?role=${encodeURIComponent(role)}`;
+    const next = readNextFromUrl();
+    const query = new URLSearchParams({ role });
+    if (next) query.set("next", next);
+    window.location.href = `/api/auth/google/start?${query.toString()}`;
   };
 
   if (authLoading) {
@@ -529,8 +539,7 @@ export default function AuthPage() {
                                 String(fd.get("email") ?? "").trim(),
                                 String(fd.get("password") ?? "")
                               );
-                              window.location.href =
-                                readNextFromUrl() ?? getDashboardPathForRole(data?.role);
+                              window.location.href = resolvePostAuthPath(data?.role, readNextFromUrl());
                             } catch (err) {
                               setError(err instanceof Error ? err.message : "Login failed");
                             } finally {
@@ -621,8 +630,7 @@ export default function AuthPage() {
                               }
                               try {
                                 const data = await setMentorPasswordLogin(mentorEmail, mentorPassword1);
-                                window.location.href =
-                                  readNextFromUrl() ?? getDashboardPathForRole(data?.role);
+                                window.location.href = resolvePostAuthPath(data?.role, readNextFromUrl());
                               } catch (err) {
                                 setError(err instanceof Error ? err.message : "Set password failed");
                               } finally {
@@ -703,8 +711,7 @@ export default function AuthPage() {
                               const password = String(fd.get("password") ?? "");
                               try {
                                 const data = await login(mentorEmail, password);
-                                window.location.href =
-                                  readNextFromUrl() ?? getDashboardPathForRole(data?.role);
+                                window.location.href = resolvePostAuthPath(data?.role, readNextFromUrl());
                               } catch (err) {
                                 setError(err instanceof Error ? err.message : "Login failed");
                               } finally {
@@ -933,8 +940,7 @@ export default function AuthPage() {
                     const fd = new FormData(form);
                     try {
                       const data = await login(String(fd.get("email") ?? ""), String(fd.get("password") ?? ""));
-                      window.location.href =
-                        readNextFromUrl() ?? getDashboardPathForRole(data?.role);
+                      window.location.href = resolvePostAuthPath(data?.role, readNextFromUrl());
                     } catch (err) {
                       setError(err instanceof Error ? err.message : "Login failed");
                     } finally {

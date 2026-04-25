@@ -23,6 +23,11 @@ export function TestAssessmentInstructions({ token, test }: TestAssessmentInstru
   const [agreed, setAgreed] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
+  async function startSecureCountdown() {
+    if (!agreed || countdown !== null) return;
+    setCountdown(10);
+  }
+
   useEffect(() => {
     if (countdown === null) return;
     if (countdown <= 0) {
@@ -98,7 +103,7 @@ export function TestAssessmentInstructions({ token, test }: TestAssessmentInstru
             <Button
               type="button"
               disabled={!agreed || countdown !== null}
-              onClick={() => setCountdown(10)}
+              onClick={startSecureCountdown}
               className="w-full h-14 rounded-full text-lg font-bold bg-primary hover:bg-primary/90 text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {!agreed ? "Accept rules to continue" : "Start countdown"}

@@ -11,6 +11,7 @@ import { connectDB } from "@/lib/mongodb";
 import { getSessionFromRequestCookies } from "@/lib/auth";
 import TestResultModel from "@/models/TestResult";
 import TestModel from "@/models/Test";
+import PracticeTestModel from "@/models/PracticeTest";
 import TestTokenModel from "@/models/TestToken";
 import UserModel from "@/models/User";
 
@@ -19,6 +20,14 @@ export const metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+function toObjectIdSafe(value: unknown): mongoose.Types.ObjectId | null {
+  if (!value) return null;
+  if (value instanceof mongoose.Types.ObjectId) return value;
+  const raw = String(value).trim();
+  if (!mongoose.Types.ObjectId.isValid(raw)) return null;
+  return new mongoose.Types.ObjectId(raw);
+}
 
 export default async function AdminAssessmentResultsPage() {
   const session = await getSessionFromRequestCookies();
@@ -34,20 +43,51 @@ export default async function AdminAssessmentResultsPage() {
     .lean<Array<Record<string, unknown> & { _id: mongoose.Types.ObjectId }>>()
     .exec();
 
-  const testIds = [...new Set(results.map((r) => String(r.testId)))];
-  const tests =
-    testIds.length > 0
-      ? await TestModel.find({
-          _id: { $in: testIds.map((id) => new mongoose.Types.ObjectId(id)) },
-        })
+  const platformTestIds = [
+    ...new Map(
+      results
+        .map((r) => toObjectIdSafe(r.testId))
+        .filter((id): id is mongoose.Types.ObjectId => Boolean(id))
+        .map((id) => [id.toString(), id])
+    ).values(),
+  ];
+  const practiceTestIds = [
+    ...new Map(
+      results
+        .map((r) => toObjectIdSafe(r.practiceTestId))
+        .filter((id): id is mongoose.Types.ObjectId => Boolean(id))
+        .map((id) => [id.toString(), id])
+    ).values(),
+  ];
+
+  const [tests, practiceTests] = await Promise.all([
+    platformTestIds.length > 0
+      ? TestModel.find({ _id: { $in: platformTestIds } })
           .select("title")
           .lean<Array<{ _id: mongoose.Types.ObjectId; title: string }>>()
           .exec()
-      : [];
+      : Promise.resolve([]),
+    practiceTestIds.length > 0
+      ? PracticeTestModel.find({ _id: { $in: practiceTestIds } })
+          .select("title")
+          .lean<Array<{ _id: mongoose.Types.ObjectId; title: string }>>()
+          .exec()
+      : Promise.resolve([]),
+  ]);
 
-  const testTitleMap = new Map(tests.map((t) => [t._id.toString(), t.title]));
+  const testTitleMap = new Map<string, string>([
+    ...tests.map((t) => [t._id.toString(), t.title]),
+    ...practiceTests.map((t) => [t._id.toString(), t.title]),
+  ]);
 
-  const tokenIds = results.map((r) => r.tokenId as mongoose.Types.ObjectId);
+  const tokenIds = [
+    ...new Map(
+      results
+        .map((r) => toObjectIdSafe(r.tokenId))
+        .filter((id): id is mongoose.Types.ObjectId => Boolean(id))
+        .map((id) => [id.toString(), id])
+    ).values(),
+  ];
   const tokens =
     tokenIds.length > 0
       ? await TestTokenModel.find({
@@ -85,7 +125,7 @@ export default async function AdminAssessmentResultsPage() {
   const userMobileMap = new Map(users.map((u) => [u._id.toString(), u.mobile ?? null]));
 
   const rows = results.map((r) => {
-    const tid = String(r.tokenId);
+    const tid = toObjectIdSafe(r.tokenId)?.toString() ?? "";
     const token = tokenMap.get(tid);
     const name =
       (typeof r.studentName === "string" && r.studentName.trim()) ||
@@ -96,7 +136,9 @@ export default async function AdminAssessmentResultsPage() {
       token?.linkedUserId != null
         ? userMobileMap.get(token.linkedUserId.toString()) ?? "—"
         : "—";
-    const testTitle = testTitleMap.get(String(r.testId)) ?? "—";
+    const resultTestId = toObjectIdSafe(r.testId)?.toString();
+    const resultPracticeId = toObjectIdSafe(r.practiceTestId)?.toString();
+    const testTitle = (resultTestId ? testTitleMap.get(resultTestId) : undefined) ?? (resultPracticeId ? testTitleMap.get(resultPracticeId) : undefined) ?? "—";
     const total = typeof r.totalScore === "number" ? r.totalScore : 0;
     const max = typeof r.maxScore === "number" ? r.maxScore : 0;
     const submitted =

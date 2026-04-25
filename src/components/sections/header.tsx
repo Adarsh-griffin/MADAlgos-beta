@@ -21,6 +21,7 @@ import {
   Library,
   Layers,
   NotebookPen,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -97,6 +98,18 @@ type MeUser = {
   role: string;
 };
 
+type ResumeNotice = {
+  hasResumableTest: boolean;
+  count: number;
+  freeTestsRemaining: number | null;
+  freeTestsWeeklyLimit: number | null;
+  items: Array<{
+    message: string;
+    url: string;
+    testTitle: string;
+  }>;
+};
+
 function userInitials(me: MeUser): string {
   const n = me.username?.trim();
   if (n) {
@@ -133,6 +146,10 @@ const Header = () => {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [me, setMe] = useState<MeUser | null>(null);
   const [meLoading, setMeLoading] = useState(true);
+  const [resumeNotice, setResumeNotice] = useState<ResumeNotice | null>(null);
+  const [resumeOpenDesktop, setResumeOpenDesktop] = useState(false);
+  const [resumeOpenMobile, setResumeOpenMobile] = useState(false);
+  const [profileOpenDesktop, setProfileOpenDesktop] = useState(false);
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -164,6 +181,54 @@ const Header = () => {
       cancelled = true;
     };
   }, []);
+
+  const refreshResumeNotice = React.useCallback(async () => {
+    if (!me || me.role !== "STUDENT") {
+      setResumeNotice(null);
+      setResumeOpenDesktop(false);
+      setResumeOpenMobile(false);
+      return;
+    }
+    try {
+      const res = await fetch("/api/assessment/public-demo/resume-status", { cache: "no-store" });
+      const data = (await res.json().catch(() => null)) as ResumeNotice | null;
+      if (data?.hasResumableTest) {
+        setResumeNotice(data);
+      } else {
+        setResumeNotice(null);
+        setResumeOpenDesktop(false);
+        setResumeOpenMobile(false);
+      }
+    } catch {
+      setResumeNotice(null);
+      setResumeOpenDesktop(false);
+      setResumeOpenMobile(false);
+    }
+  }, [me]);
+
+  useEffect(() => {
+    void refreshResumeNotice();
+    if (!me || me.role !== "STUDENT") return;
+
+    const onFocus = () => {
+      void refreshResumeNotice();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refreshResumeNotice();
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    const id = window.setInterval(() => {
+      void refreshResumeNotice();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.clearInterval(id);
+    };
+  }, [me, refreshResumeNotice]);
 
   const logout = async () => {
     try {
@@ -318,16 +383,134 @@ const Header = () => {
             <div className="hidden xl:flex items-center gap-3">
               {!meLoading && me ? (
                 <>
-                  <div className="flex items-center gap-2 shrink-0">
+                  {me.role === "STUDENT" ? (
+                    <div
+                      className="relative"
+                      onMouseEnter={() => setResumeOpenDesktop(true)}
+                      onMouseLeave={() => setResumeOpenDesktop(false)}
+                    >
+                      <button
+                        type="button"
+                        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-amber-300/35 bg-amber-400/10 text-amber-100 hover:bg-amber-400/20 transition-all"
+                        title="Resume notifications"
+                        aria-label="Resume notifications"
+                      >
+                        <Bell className="h-4 w-4" />
+                        <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-black text-black">
+                          {resumeNotice?.count ?? 0}
+                        </span>
+                      </button>
+                      {resumeOpenDesktop ? (
+                        <div className="absolute right-0 top-12 z-[120] w-[320px] rounded-2xl border border-white/15 bg-slate-950/95 p-3 shadow-[0_30px_70px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+                          <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-200/90">
+                            Resume tests ({resumeNotice?.count ?? 0})
+                          </p>
+                          <div className="max-h-72 space-y-2 overflow-auto pr-1">
+                            {resumeNotice?.count ? resumeNotice.items.map((item) => (
+                              <div key={`${item.url}-${item.testTitle}`} className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                                <p className="truncate text-xs font-semibold text-white" title={item.testTitle}>
+                                  {item.testTitle}
+                                </p>
+                                <p className="mt-1 line-clamp-2 text-[11px] text-slate-400">{item.message}</p>
+                                <Link
+                                  href={item.url}
+                                  className="mt-2 inline-flex items-center rounded-full border border-amber-300/40 bg-amber-400/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100 hover:bg-amber-400/20"
+                                  onClick={() => setResumeOpenDesktop(false)}
+                                >
+                                  Resume
+                                </Link>
+                              </div>
+                            )) : (
+                              <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                                <p className="text-xs font-semibold text-white">No test remaining in middle.</p>
+                                {resumeNotice?.freeTestsWeeklyLimit === 0 ? (
+                                  <p className="mt-1 text-[11px] text-slate-400">
+                                    Free tests available this week: Unlimited
+                                  </p>
+                                ) : typeof resumeNotice?.freeTestsRemaining === "number" ? (
+                                  <p className="mt-1 text-[11px] text-slate-400">
+                                    Free tests available this week: {resumeNotice.freeTestsRemaining}
+                                    {typeof resumeNotice.freeTestsWeeklyLimit === "number"
+                                      ? ` / ${resumeNotice.freeTestsWeeklyLimit}`
+                                      : ""}
+                                  </p>
+                                ) : null}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setProfileOpenDesktop(true)}
+                    onMouseLeave={() => setProfileOpenDesktop(false)}
+                  >
                     <Link
                       href={getDashboardPathForRole(me.role)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-primary/25 to-primary/40 text-[11px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:brightness-110 transition-all"
-                      title="Open your portal"
-                      aria-label="Open your portal"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] px-2.5 py-1.5 hover:bg-white/[0.08] transition-all min-w-0"
+                      title="Your profile"
+                      aria-label="Your profile"
                     >
-                      {userInitials(me)}
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-primary/25 to-primary/40 text-[11px] font-bold text-white">
+                        {userInitials(me)}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[12px] font-semibold text-white" title={me.email}>
+                          {me.username?.trim() || me.email}
+                        </span>
+                        <span
+                          className={cn(
+                            "block text-[10px] font-semibold",
+                            me.role === "MENTOR_PENDING" ? "text-amber-400" : "text-slate-400"
+                          )}
+                        >
+                          {roleBadgeText(me.role)}
+                        </span>
+                      </span>
                     </Link>
-                    {(me.role === "ADMIN" || me.role === "SUPER_ADMIN") && (
+                    {profileOpenDesktop ? (
+                      <div className="absolute right-0 top-12 z-[120] w-[250px] rounded-2xl border border-white/15 bg-slate-950/95 p-3 shadow-[0_30px_70px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+                        <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Your profile
+                        </p>
+                        <div className="grid gap-1.5">
+                          <Link
+                            href={getDashboardPathForRole(me.role)}
+                            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:border-primary/35 hover:text-primary"
+                          >
+                            Go to dashboard
+                          </Link>
+                          {me.role === "STUDENT" ? (
+                            <Link
+                              href="/student"
+                              className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:border-primary/35 hover:text-primary"
+                            >
+                              Your purchases
+                            </Link>
+                          ) : null}
+                          {(me.role === "ADMIN" || me.role === "SUPER_ADMIN") ? (
+                            <Link
+                              href="/admin/orders"
+                              className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:border-primary/35 hover:text-primary"
+                            >
+                              Order history
+                            </Link>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={logout}
+                            className="rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2 text-left text-xs font-semibold text-red-200 hover:bg-red-500/20"
+                          >
+                            Log out
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  {(me.role === "ADMIN" || me.role === "SUPER_ADMIN") && (
+                    <div className="relative group hidden sm:block">
                       <Link
                         href="/admin"
                         className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
@@ -336,57 +519,11 @@ const Header = () => {
                       >
                         <Shield className="h-4 w-4" />
                       </Link>
-                    )}
-                    {me.role === "STUDENT" && (
-                      <Link
-                        href="/student"
-                        className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                        title="Student portal"
-                        aria-label="Student portal"
-                      >
-                        <GraduationCap className="h-4 w-4" />
-                      </Link>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end max-w-[200px] min-w-0">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 truncate w-full text-right">
-                      Logged in
-                    </span>
-                    <span className="text-[11px] font-bold text-white truncate w-full text-right" title={me.email}>
-                      {me.username?.trim() || me.email}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-semibold uppercase tracking-wider mt-0.5",
-                        me.role === "MENTOR_PENDING" ? "text-amber-400" : "text-primary/90"
-                      )}
-                    >
-                      {roleBadgeText(me.role)}
-                    </span>
-                  </div>
-                  <Link
-                    href={getDashboardPathForRole(me.role)}
-                    className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full border border-white/15 bg-white/5 px-4 text-[10px] font-black tracking-[0.18em] uppercase text-white hover:bg-white/10 hover:border-white/30 transition-all active:scale-95"
-                  >
-                    <LayoutDashboard className="h-3.5 w-3.5 text-primary" />
-                    {me.role === "MENTOR_PENDING"
-                      ? "Status"
-                      : me.role === "STUDENT"
-                        ? "Student portal"
-                        : me.role === "ADMIN" || me.role === "SUPER_ADMIN"
-                          ? "Admin"
-                          : me.role === "MENTOR"
-                            ? "Mentor dashboard"
-                            : "Dashboard"}
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full border border-red-500/35 bg-red-500/10 px-4 text-[10px] font-black tracking-[0.18em] uppercase text-red-200 hover:bg-red-500/20 transition-all active:scale-95"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    Log out
-                  </button>
+                      <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 rounded-md border border-white/15 bg-slate-950/95 px-2 py-1 text-[10px] font-semibold text-slate-200 opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">
+                        Admin panel
+                      </span>
+                    </div>
+                  )}
                 </>
               ) : !meLoading ? (
                 <>
@@ -409,18 +546,23 @@ const Header = () => {
             </div>
 
             {/* Theme toggle - extreme right */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="hidden lg:inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white/40 transition-all active:scale-95 ml-1"
-              aria-label="Toggle light/dark mode"
-            >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4" />
-              ) : (
-                <Sun className="w-4 h-4" />
-              )}
-            </button>
+            <div className="relative group hidden lg:block">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white/40 transition-all active:scale-95 ml-1"
+                aria-label="Toggle light/dark mode"
+              >
+                {theme === "light" ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+              </button>
+              <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 rounded-md border border-white/15 bg-slate-950/95 px-2 py-1 text-[10px] font-semibold text-slate-200 opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">
+                {theme === "light" ? "Theme: Light" : "Theme: Dark"}
+              </span>
+            </div>
 
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -449,6 +591,57 @@ const Header = () => {
             <div className="grid grid-cols-1 gap-3">
               {!meLoading && me ? (
                 <>
+                  {me.role === "STUDENT" ? (
+                    <div className="rounded-2xl border border-amber-300/30 bg-amber-400/8 px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setResumeOpenMobile((v) => !v)}
+                        className="flex w-full items-center justify-between rounded-xl border border-amber-300/30 bg-amber-400/10 px-3 py-2 text-amber-100"
+                      >
+                        <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em]">
+                          <Bell className="h-4 w-4" />
+                          Resume tests
+                        </span>
+                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-black text-black">
+                          {resumeNotice?.count ?? 0}
+                        </span>
+                      </button>
+                      {resumeOpenMobile ? (
+                        <div className="mt-3 space-y-2">
+                          {resumeNotice?.count ? resumeNotice.items.map((item) => (
+                            <div key={`${item.url}-${item.testTitle}`} className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                              <p className="truncate text-xs font-semibold text-white" title={item.testTitle}>
+                                {item.testTitle}
+                              </p>
+                              <Link
+                                href={item.url}
+                                onClick={closeMobileMenu}
+                                className="mt-2 inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-amber-400/10 px-4 py-2 text-[10px] font-black tracking-[0.18em] uppercase text-amber-100"
+                              >
+                                Resume
+                              </Link>
+                            </div>
+                          )) : (
+                            <div className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                              <p className="text-xs font-semibold text-white">No test remaining in middle.</p>
+                              {resumeNotice?.freeTestsWeeklyLimit === 0 ? (
+                                <p className="mt-1 text-[11px] text-slate-400">
+                                  Free tests available this week: Unlimited
+                                </p>
+                              ) : typeof resumeNotice?.freeTestsRemaining === "number" ? (
+                                <p className="mt-1 text-[11px] text-slate-400">
+                                  Free tests available this week: {resumeNotice.freeTestsRemaining}
+                                  {typeof resumeNotice.freeTestsWeeklyLimit === "number"
+                                    ? ` / ${resumeNotice.freeTestsWeeklyLimit}`
+                                    : ""}
+                                </p>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div className="flex justify-center gap-3">
                     <Link
                       href={getDashboardPathForRole(me.role)}
@@ -468,16 +661,6 @@ const Header = () => {
                         <Shield className="h-5 w-5" />
                       </Link>
                     )}
-                    {me.role === "STUDENT" && (
-                      <Link
-                        href="/student"
-                        onClick={closeMobileMenu}
-                        className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/35 bg-primary/10 text-primary"
-                        aria-label="Student portal"
-                      >
-                        <GraduationCap className="h-5 w-5" />
-                      </Link>
-                    )}
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Logged in</p>
@@ -491,33 +674,50 @@ const Header = () => {
                       {roleBadgeText(me.role)}
                     </p>
                   </div>
-                  <Link
-                    href={getDashboardPathForRole(me.role)}
-                    onClick={closeMobileMenu}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10"
-                  >
-                    <LayoutDashboard className="h-4 w-4 text-primary" />
-                    {me.role === "MENTOR_PENDING"
-                      ? "Application status"
-                      : me.role === "STUDENT"
-                        ? "Student portal"
-                        : me.role === "ADMIN" || me.role === "SUPER_ADMIN"
-                          ? "Admin"
-                          : me.role === "MENTOR"
-                            ? "Mentor dashboard"
-                            : "Dashboard"}
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeMobileMenu();
-                      void logout();
-                    }}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-red-500/35 bg-red-500/10 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-red-200"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Log out
-                  </button>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3 space-y-2">
+                    <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Profile actions
+                    </p>
+                    <Link
+                      href={getDashboardPathForRole(me.role)}
+                      onClick={closeMobileMenu}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10"
+                    >
+                      <LayoutDashboard className="h-4 w-4 text-primary" />
+                      {me.role === "MENTOR_PENDING"
+                        ? "Application status"
+                        : me.role === "STUDENT"
+                          ? "Dashboard"
+                          : me.role === "ADMIN" || me.role === "SUPER_ADMIN"
+                            ? "Admin"
+                            : me.role === "MENTOR"
+                              ? "Mentor dashboard"
+                              : "Dashboard"}
+                    </Link>
+                    {me.role === "STUDENT" ? (
+                      <Link
+                        href="/student"
+                        onClick={closeMobileMenu}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-white hover:bg-white/10"
+                      >
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        Purchases
+                      </Link>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeMobileMenu();
+                        void logout();
+                      }}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-red-500/35 bg-red-500/10 px-6 py-3 text-[11px] font-black tracking-[0.22em] uppercase text-red-200"
+                      title="Log out"
+                      aria-label="Log out"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Log out
+                    </button>
+                  </div>
                 </>
               ) : !meLoading ? (
                 <>

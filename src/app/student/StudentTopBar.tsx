@@ -25,7 +25,7 @@ export default function StudentTopBar() {
           </Button>
           <div className="hidden items-center gap-2 text-primary sm:flex">
             <GraduationCap className="h-5 w-5 shrink-0" aria-hidden />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Student portal</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">My profile</span>
           </div>
         </div>
 
