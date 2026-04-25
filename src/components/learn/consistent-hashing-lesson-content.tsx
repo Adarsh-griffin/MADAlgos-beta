@@ -14,7 +14,7 @@ export function ConsistentHashingLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Consistent Hashing</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Minimal data movement during elastic scaling of distributed systems.
+          A scaling strategy that minimizes key remapping when nodes are added or removed.
         </p>
       </header>
 
@@ -29,12 +29,10 @@ export function ConsistentHashingLessonContent({
       <section id="ch-problem" className="scroll-mt-12 space-y-4">
         <h2 className="text-2xl font-bold tracking-tight text-white">The Problem It Solves</h2>
         <p className="leading-[1.8] text-gray-400">
-          Consistent hashing solves a specific problem with distributed caches and sharded databases. When you use simple
-          hash-based distribution ({" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white">hash(key) % N</code> to pick which
-          server stores the data), adding or removing a server changes N. That means{" "}
-          <strong className="text-white">almost every key maps to a different server</strong>, so you&apos;d have to
-          move most of your data around.
+          Consistent hashing addresses a major issue in distributed caches and sharded data stores. With basic modulo
+          partitioning (
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white">hash(key) % N</code>), any node count
+          change remaps most keys, forcing large data movement.
         </p>
         <p className="leading-[1.8] text-gray-400">
           With simple modulo hashing, adding one server to a 10-server cluster means moving roughly{" "}

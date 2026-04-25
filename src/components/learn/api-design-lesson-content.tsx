@@ -14,7 +14,7 @@ export function APIDesignLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">API Design</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Design clean, scalable interfaces for your distributed systems.
+          Design clear, scalable service interfaces for distributed systems.
         </p>
       </header>
 
@@ -30,16 +30,16 @@ export function APIDesignLessonContent({
       <section id="api-types" className="scroll-mt-12 space-y-5">
         <h2 className="text-2xl font-bold tracking-tight text-white">API Types</h2>
         <p className="leading-[1.8] text-gray-400">
-          There are three primary API types you should know for your system design interview:
+          For interviews, these are the three API styles you should confidently discuss:
         </p>
 
         {/* REST */}
         <div className="space-y-4 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <h3 className="text-xl font-bold text-white">1. REST (Representational State Transfer)</h3>
           <p className="text-sm leading-[1.8] text-gray-400">
-            REST uses standard HTTP methods (GET, POST, PUT, DELETE) to manipulate resources identified by URLs. For
-            standard CRUD operations in web and mobile applications, REST maps naturally to database operations and HTTP
-            semantics. This should be your <strong className="text-white">default choice</strong>.
+            REST models data as resources and uses HTTP verbs (GET, POST, PUT, DELETE) to operate on them. For common
+            CRUD-style product APIs, it maps cleanly to both HTTP semantics and backend persistence. Use this as your{" "}
+            <strong className="text-white">default interview choice</strong>.
           </p>
           <h4 className="text-base font-semibold text-white">Resource Modeling</h4>
           <pre className="overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs text-gray-300">
@@ -78,11 +78,9 @@ GET  /bookings/{id}       # Get a specific booking`}
         <div className="space-y-4 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <h3 className="text-xl font-bold text-white">2. GraphQL</h3>
           <p className="text-sm leading-[1.8] text-gray-400">
-            Unlike REST&apos;s fixed endpoints, GraphQL uses a single endpoint with a query language that lets clients
-            specify exactly what data they need. Think about a mobile app that needs only basic user information versus
-            a web dashboard that displays comprehensive analytics — with REST you&apos;d need multiple endpoints or force
-            clients to fetch more than they need. GraphQL lets each client request exactly what it needs in a single
-            query.
+            GraphQL differs from fixed REST endpoints by exposing one query endpoint where clients request precise fields.
+            This is useful when different clients need different payload shapes (for example, a lightweight mobile view
+            vs a heavy analytics dashboard) and you want to reduce over-fetching.
           </p>
           <aside className="rounded-lg border-l-4 border-sky-500 bg-sky-500/10 px-3 py-3 text-sm text-gray-400">
             <div className="flex gap-3">
@@ -121,11 +119,9 @@ type Query {
         <div className="space-y-4 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <h3 className="text-xl font-bold text-white">3. RPC (Remote Procedure Call)</h3>
           <p className="text-sm leading-[1.8] text-gray-400">
-            RPC protocols like gRPC use binary serialization and HTTP/2 for efficient communication between services.
-            While REST treats everything as resources, RPC lets you think in terms of actions and procedures. When your
-            user service needs to validate permissions with your auth service, an RPC call like{" "}
-            <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white">checkPermission(userId, resource)</code> is more natural
-            than modeling this as a REST resource.
+            RPC styles such as gRPC optimize internal calls with HTTP/2 plus binary payloads. Unlike REST&apos;s
+            resource-centric model, RPC is action-oriented, which can feel natural for service-to-service operations like{" "}
+            <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white">checkPermission(userId, resource)</code>.
           </p>
           <pre className="overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs text-gray-300">
 {`// Instead of GET /events/123

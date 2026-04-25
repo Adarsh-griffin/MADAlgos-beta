@@ -25,16 +25,15 @@ export function DeliveryFrameworkLessonContent({
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Delivery Framework</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          The best way to structure your system design interviews to focus on what actually matters, built by FAANG managers and staff engineers.
+          A practical interview structure that helps you spend time on the signals evaluators care about most.
         </p>
       </header>
 
       {/* Intro */}
       <section id="intro" className="scroll-mt-12 space-y-6">
         <p className="text-lg leading-relaxed text-muted-foreground/90">
-          The easiest way to sabotage your chances of getting an offer in your system design interview is to
-          fail to deliver a working system. This is the most common reason that mid-level candidates fail these
-          interviews and it often manifests as the opaque &ldquo;time management&rdquo;.
+          A common way candidates miss offers is by never reaching a coherent end-to-end design. This usually
+          shows up as vague &ldquo;time management&rdquo; feedback, but the root issue is interview sequencing.
         </p>
       </section>
 
@@ -43,9 +42,8 @@ export function DeliveryFrameworkLessonContent({
         <h2 className="text-3xl font-bold tracking-tight text-foreground">Overall Structure</h2>
 
         <p className="leading-relaxed text-muted-foreground">
-          Our delivery framework is a sequence of steps and timings we recommend for your interview. By
-          structuring your interview in this way, you&apos;ll stay focused on the bits that are most important
-          to your interviewer.
+          This framework gives you a repeatable sequence with clear time boxes. Following it keeps your answer
+          aligned with the priorities interviewers typically score.
         </p>
 
         <aside className="rounded-2xl border border-teal-500/20 bg-teal-500/[0.02] p-6">
@@ -76,8 +74,8 @@ export function DeliveryFrameworkLessonContent({
         <h2 className="text-2xl font-bold tracking-tight text-white">Requirements (~5 minutes)</h2>
 
         <p className="leading-[1.8] text-gray-400">
-          The goal of the requirements section is to get a clear understanding of the system that you are being
-          asked to design. To do this, we suggest you break your requirements into two sections.
+          The requirements phase is about clarifying exactly what system you need to design. Split this into two
+          buckets so you can prioritize quickly and avoid ambiguity.
         </p>
 
         {/* Functional Requirements */}
@@ -86,11 +84,9 @@ export function DeliveryFrameworkLessonContent({
         </h3>
 
         <p className="leading-[1.8] text-gray-400">
-          Functional requirements are your &ldquo;Users/Clients should be able to...&rdquo; statements. These
-          are the core features of your system and should be the first thing you discuss with your interviewer.
-          Oftentimes this is a back and forth with your interviewer. Ask targeted questions as if you were
-          talking to a client, customer, or product manager (&ldquo;does the system need to do X?&rdquo;,
-          &ldquo;what would happen if Y?&rdquo;) to arrive at a prioritized list of core features.
+          Functional requirements are the concrete capabilities users need (the &ldquo;Users should be able to...&rdquo;
+          list). Start with these first. Treat this as a short discovery conversation: ask product-style questions
+          (&ldquo;Do we need X?&rdquo;, &ldquo;How should Y behave?&rdquo;) and converge on a ranked set of must-have features.
         </p>
 
         <p className="leading-[1.8] text-gray-400">
@@ -150,9 +146,8 @@ export function DeliveryFrameworkLessonContent({
         </h3>
 
         <p className="leading-[1.8] text-gray-400">
-          Non-functional requirements are statements about the system qualities that are important to your
-          users. These can be phrased as &ldquo;The system should be able to...&rdquo; or &ldquo;The system
-          should be...&rdquo; statements.
+          Non-functional requirements describe system qualities such as reliability, latency, and scale expectations.
+          They are typically framed as quality targets rather than feature requests.
         </p>
 
         <p className="leading-[1.8] text-gray-400">
@@ -182,11 +177,9 @@ export function DeliveryFrameworkLessonContent({
         </ul>
 
         <p className="leading-[1.8] text-gray-400">
-          It&apos;s important that non-functional requirements are put in the context of the system and, where
-          possible, are quantified. For example, &ldquo;the system should be low latency&rdquo; is obvious and
-          not very meaningful &mdash; nearly all systems should be low latency. &ldquo;The system should have
-          low latency search, &lt;&nbsp;500ms,&rdquo; is much more useful as it identifies the part of the
-          system that most needs to be low latency and provides a target.
+          Keep non-functional requirements contextual and measurable. &ldquo;Low latency&rdquo; alone is vague; nearly every
+          system wants that. A target like &ldquo;search responses under 500ms&rdquo; is much stronger because it names the
+          path and sets a number you can design against.
         </p>
 
         <p className="leading-[1.8] text-gray-400">
@@ -201,14 +194,14 @@ export function DeliveryFrameworkLessonContent({
           <table className="w-full text-left text-sm">
             <tbody className="divide-y divide-white/[0.06]">
               {([
-                ["CAP Theorem", "Should your system prioritize consistency or availability? Note, partition tolerance is a given in distributed systems."],
-                ["Environment Constraints", "Are there any constraints on the environment in which your system will run? For example, are you running on a mobile device with limited battery life? Running on devices with limited memory or limited bandwidth (e.g. streaming video on 3G)?"],
-                ["Scalability", "All systems need to scale, but does this system have unique scaling requirements? For example, does it have bursty traffic at a specific time of day? Are there events, like holidays, that will cause a significant increase in traffic? Also consider the read vs write ratio here."],
-                ["Latency", "How quickly does the system need to respond to user requests? Specifically consider any requests that require meaningful computation. For example, low latency search when designing Yelp."],
-                ["Durability", "How important is it that the data in your system is not lost? For example, a social network might be able to tolerate some data loss, but a banking system cannot."],
-                ["Security", "How secure does the system need to be? Consider data protection, access control, and compliance with regulations."],
-                ["Fault Tolerance", "How well does the system need to handle failures? Consider redundancy, failover, and recovery mechanisms."],
-                ["Compliance", "Are there legal or regulatory requirements the system needs to meet? Consider industry standards, data protection laws, and other regulations."],
+                ["CAP Theorem", "During partitions, decide whether your design should favor consistency or availability. Partition tolerance is assumed in distributed systems."],
+                ["Environment Constraints", "Account for runtime limits such as mobile battery constraints, low-memory devices, or bandwidth-limited networks (for example, video on 3G)."],
+                ["Scalability", "Identify scale shape, not just size: burst traffic windows, seasonal spikes, and read/write skew can each change architecture choices."],
+                ["Latency", "Set response-time targets for critical paths, especially operations with heavy computation (for example, search ranking requests)."],
+                ["Durability", "Define acceptable data-loss tolerance. Social features may allow small loss; financial ledgers generally cannot."],
+                ["Security", "Clarify required controls: encryption boundaries, authorization model, and regulatory obligations."],
+                ["Fault Tolerance", "Specify behavior during failures, including redundancy, failover approach, and recovery objectives."],
+                ["Compliance", "Confirm legal or industry requirements (for example, data residency, retention, and privacy standards)."],
               ] as const).map(([title, desc]) => (
                 <tr key={title} className="transition-colors hover:bg-white/[0.03]">
                   <td className="whitespace-nowrap px-4 py-3 align-top font-semibold text-white">{title}</td>
@@ -225,12 +218,9 @@ export function DeliveryFrameworkLessonContent({
         </h3>
 
         <p className="leading-[1.8] text-gray-400">
-          Many guides you&apos;ve read will suggest doing back-of-the-envelope calculations at this stage. We
-          believe this is often unnecessary. Instead, perform calculations only if they will directly influence
-          your design. In most scenarios, you&apos;re dealing with a large, distributed system &mdash; and
-          it&apos;s reasonable to assume as much. Many candidates will calculate storage, DAU, and QPS, only to
-          conclude, &ldquo;ok, so it&apos;s a lot. Got it.&rdquo; As interviewers, we gain nothing from this
-          except that you can perform basic arithmetic.
+          Many guides push early back-of-the-envelope math, but that is not always useful. Do calculations when they
+          change an architecture decision. Otherwise, broad statements like DAU/QPS without design implications usually
+          add little signal for the interviewer.
         </p>
 
         <p className="leading-[1.8] text-gray-400">

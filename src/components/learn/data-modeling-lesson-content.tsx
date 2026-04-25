@@ -14,7 +14,7 @@ export function DataModelingLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Data Modeling</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Learn about data modeling for system design interviews.
+          Learn practical data modeling choices and tradeoffs for system design interviews.
         </p>
       </header>
 
@@ -22,8 +22,8 @@ export function DataModelingLessonContent({
       <section id="db-model-options" className="scroll-mt-12 space-y-5">
         <h2 className="text-2xl font-bold tracking-tight text-white">Database Model Options</h2>
         <p className="leading-[1.8] text-gray-400">
-          Choosing the right database type is one of the most consequential decisions in your system design. Here are
-          the five main database types you need to know:
+          Picking the right database model has major downstream impact on scale, latency, and complexity. Here are the
+          five core database types you should know.
         </p>
 
         <div className="space-y-4">
@@ -31,9 +31,9 @@ export function DataModelingLessonContent({
           <div className="space-y-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
             <h3 className="text-lg font-bold text-white">Relational Databases (SQL)</h3>
             <p className="text-sm leading-[1.8] text-gray-400">
-              Store data in tables with rows and columns, connected via foreign keys. They provide{" "}
-              <strong className="text-white">ACID guarantees</strong> (Atomicity, Consistency, Isolation, Durability)
-              making them the default choice for transactional data like user records, orders, and financial data.
+              Relational systems store data in normalized tables linked through keys. They offer{" "}
+              <strong className="text-white">ACID guarantees</strong> (Atomicity, Consistency, Isolation, Durability),
+              which is why they are the usual default for transactional domains such as accounts, orders, and payments.
             </p>
             <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Examples</p>
             <div className="flex flex-wrap gap-2">
@@ -53,8 +53,8 @@ export function DataModelingLessonContent({
           <div className="space-y-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
             <h3 className="text-lg font-bold text-white">Document Databases</h3>
             <p className="text-sm leading-[1.8] text-gray-400">
-              Store data as JSON-like documents. Flexible schema lets you embed related data in a single document,
-              avoiding joins. Good for content systems, catalogs, and user profiles.
+              Document stores keep JSON-like objects and support flexible schemas. They let you embed related data in
+              one record, which often reduces joins and works well for catalogs, profile data, and content-heavy systems.
             </p>
             <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-gray-300">
 {`{
@@ -127,8 +127,8 @@ export function DataModelingLessonContent({
         <div className="space-y-3">
           <h3 className="text-lg font-bold text-white">Start with Requirements</h3>
           <p className="text-sm leading-[1.8] text-gray-400">
-            Data modeling should start with your functional requirements and access patterns — not the other way around.
-            What data do you need to store? How will it be queried? The answers drive your schema.
+            Start data modeling from requirements and query patterns, not from tables first. Ask: what data must be
+            persisted, and what reads/writes happen most often? Those answers should shape the schema.
           </p>
         </div>
 

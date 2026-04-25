@@ -14,15 +14,15 @@ export function DatabaseIndexingLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Database Indexing</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Learn how database indexing works and how to optimize your queries for system design interviews.
+          Understand indexing mechanics and query-optimization decisions that matter in system design interviews.
         </p>
       </header>
 
       <section id="indexing-overview" className="scroll-mt-12 space-y-4">
         <p className="leading-[1.8] text-gray-400">
-          An index is a separate data structure that keeps a sorted copy of selected columns so the database can find
-          rows without scanning the entire table. Without indexes, every query is a full table scan — O(n). With the
-          right index, the same query becomes O(log n) or even O(1).
+          An index is an auxiliary structure that lets the database locate rows without scanning the entire table.
+          Without indexing, many reads degrade to full-table scans (O(n)); with the right index, lookups usually drop
+          to O(log n), and in some cases near O(1).
         </p>
         <aside className="rounded-lg border-l-4 border-teal-500 bg-teal-500/10 px-4 py-4 text-sm leading-[1.8] text-gray-400">
           <div className="flex gap-3">

@@ -15,7 +15,7 @@ export function CachingLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Caching</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Speed up your system by storing frequently accessed data in memory.
+          Reduce read latency by keeping frequently requested data in fast memory layers.
         </p>
       </header>
 
@@ -30,16 +30,13 @@ export function CachingLessonContent({
       {/* Intro */}
       <section id="caching-intro" className="scroll-mt-12 space-y-4">
         <p className="leading-[1.8] text-gray-400">
-          Caching is one of the most important concepts to understand for system design interviews. It&apos;s the primary
-          way we reduce latency and scale reads. In system design interviews, caching comes up almost every time you need
-          to handle high read traffic. Your database becomes the bottleneck, latency starts creeping up, and the
-          interviewer is waiting for you to say the word: <strong className="text-white">cache</strong>.
+          Caching is one of the highest-impact concepts in system design interviews. It is the default technique for
+          lowering read latency and offloading database pressure when traffic rises.
         </p>
         <p className="leading-[1.8] text-gray-400">
-          Reading a user profile from Postgres may take 50 milliseconds, but reading from an in-memory cache like Redis
-          takes just <strong className="text-white">1 millisecond</strong>. That&apos;s a 50x improvement in latency.
-          Databases store data on disk, and every query pays the cost of disk access. Memory sits much closer to the CPU
-          and avoids that entirely.
+          A profile lookup from Postgres might cost around 50ms, while an in-memory Redis hit is often near{" "}
+          <strong className="text-white">1ms</strong>. That order-of-magnitude gap exists because disk-backed reads are
+          far slower than memory access.
         </p>
       </section>
 
@@ -47,17 +44,16 @@ export function CachingLessonContent({
       <section id="where-to-cache" className="scroll-mt-12 space-y-5">
         <h2 className="text-2xl font-bold tracking-tight text-white">Where to Cache</h2>
         <p className="leading-[1.8] text-gray-400">
-          When most engineers hear &ldquo;caching,&rdquo; they immediately think of Redis or Memcached sitting between
-          the application and the database. This is the most common type of cache and the one interviewers care about
-          the most. However, caching occurs at multiple layers in a system.
+          Most people first picture Redis or Memcached between app and database, and that is indeed the most common
+          interview pattern. But production systems usually apply caching at multiple layers.
         </p>
 
         {/* External Caching */}
         <div className="space-y-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <h3 className="text-lg font-bold text-white">External Caching</h3>
           <p className="text-sm leading-[1.8] text-gray-400">
-            This is what most people mean by &ldquo;caching&rdquo; in an interview. You use separate, dedicated cache
-            stores like Redis or Memcached.
+            This is the default interpretation of caching in interviews: a dedicated external store such as Redis or
+            Memcached.
           </p>
           <ul className="space-y-2 text-sm text-gray-400">
             {[
@@ -179,10 +175,10 @@ export function CachingLessonContent({
             </thead>
             <tbody className="divide-y divide-white/[0.06]">
               {[
-                ["LRU", "Evicts least recently accessed items first", "General purpose — most common default"],
-                ["LFU", "Evicts items accessed least frequently", "Trending content like videos or playlists"],
-                ["FIFO", "Evicts oldest items by insertion time", "Simple queues — ignores usage patterns"],
-                ["TTL", "Sets expiration time per key", "Any data that must eventually refresh"],
+                ["LRU", "Removes keys that have not been used recently", "Strong default for mixed workloads"],
+                ["LFU", "Removes keys with the lowest access frequency", "Hot-content workloads (feeds, media, playlists)"],
+                ["FIFO", "Removes entries in insertion order", "Simple pipelines where recency is less important"],
+                ["TTL", "Expires keys after a configured duration", "Data that must refresh on a predictable cadence"],
               ].map(([policy, how, best]) => (
                 <tr key={policy} className="transition-colors hover:bg-white/[0.03]">
                   <td className="px-4 py-3 font-semibold text-white">{policy}</td>
@@ -212,8 +208,8 @@ export function CachingLessonContent({
             </p>
             <p className="text-xs text-gray-500 font-medium">Solutions:</p>
             <ul className="space-y-1 text-xs text-gray-400">
-              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Locking: only the first request fetches from DB, others wait.</li>
-              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Probabilistic early recomputation: refresh before the TTL expires.</li>
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Request coalescing/locking: one request rebuilds cache, concurrent requests wait.</li>
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Early refresh with jitter: repopulate entries before hard expiry.</li>
             </ul>
           </div>
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.05] p-4 space-y-2">
@@ -223,8 +219,8 @@ export function CachingLessonContent({
             </p>
             <p className="text-xs text-gray-500 font-medium">Solutions:</p>
             <ul className="space-y-1 text-xs text-gray-400">
-              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Replicate the hot key across multiple nodes.</li>
-              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Use a local in-process cache for extremely hot keys.</li>
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Distribute hot values via replication or key splitting.</li>
+              <li className="flex gap-1.5"><span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-teal-500" />Add a near-cache (in-process) for ultra-hot reads.</li>
             </ul>
           </div>
           <div className="rounded-xl border border-sky-500/30 bg-sky-500/[0.05] p-4 space-y-2">

@@ -16,10 +16,6 @@ import {
   Lock,
   Menu,
   X,
-  Twitter,
-  Linkedin,
-  Youtube,
-  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -243,6 +239,7 @@ export default function SystemDesignCourseClient() {
   });
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [readProgress, setReadProgress] = React.useState(0);
+  const [activeHeading, setActiveHeading] = React.useState<string>("");
 
   const mainRef = React.useRef<HTMLElement>(null);
 
@@ -273,8 +270,78 @@ export default function SystemDesignCourseClient() {
   const toc = LESSON_TOC[activeLesson];
   const lessonTitle = toc?.title ?? activeLesson.replace(/-/g, " ");
 
+  React.useEffect(() => {
+    if (!toc?.headings?.length) {
+      setActiveHeading("");
+      return;
+    }
+    setActiveHeading(toc.headings[0]?.id ?? "");
+  }, [activeLesson, toc]);
+
+  React.useEffect(() => {
+    if (!toc?.headings?.length) return;
+    const root = mainRef.current;
+    if (!root) return;
+
+    const targets = toc.headings
+      .map((h) => document.getElementById(h.id))
+      .filter((el): el is HTMLElement => Boolean(el));
+    if (!targets.length) return;
+
+    const visibleMap = new Map<string, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const id = (entry.target as HTMLElement).id;
+          if (entry.isIntersecting) {
+            visibleMap.set(id, entry.intersectionRatio);
+          } else {
+            visibleMap.delete(id);
+          }
+        }
+
+        let bestId = "";
+        let bestScore = -1;
+        for (const h of toc.headings) {
+          const score = visibleMap.get(h.id) ?? -1;
+          if (score > bestScore) {
+            bestScore = score;
+            bestId = h.id;
+          }
+        }
+        if (bestId) setActiveHeading(bestId);
+      },
+      {
+        root,
+        threshold: [0.25, 0.4, 0.6, 0.8],
+        rootMargin: "-10% 0px -55% 0px",
+      }
+    );
+
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [activeLesson, toc]);
+
+  const scrollToHeading = React.useCallback((id: string) => {
+    const root = mainRef.current;
+    const target = document.getElementById(id);
+    if (!root || !target) return;
+    const rootRect = root.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const top = root.scrollTop + (targetRect.top - rootRect.top) - 18;
+    root.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    setActiveHeading(id);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0b0c14]">
+    <div className="relative min-h-screen bg-[#0b0c14] text-white">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          background:
+            "radial-gradient(ellipse 62% 38% at 18% -8%, rgba(20,184,166,0.14), transparent 58%), radial-gradient(ellipse 55% 30% at 100% 100%, rgba(99,102,241,0.14), transparent 54%)",
+        }}
+      />
       {/* Mobile nav bar */}
       <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-white/[0.08] bg-[#0b0c14]/95 px-3 py-2 backdrop-blur-xl xl:hidden">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -334,10 +401,10 @@ export default function SystemDesignCourseClient() {
       ) : null}
 
       {/* 3-column grid */}
-      <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[280px_1fr_260px]">
+      <div className="relative grid min-h-screen grid-cols-1 xl:grid-cols-[280px_1fr_280px]">
 
         {/* LEFT SIDEBAR */}
-        <aside className="hidden xl:flex flex-col border-r border-white/[0.08] bg-[#0b0c14]">
+        <aside className="hidden xl:flex flex-col border-r border-white/[0.08] bg-[#0b0c14]/85 backdrop-blur-xl">
           <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
             <div className="border-b border-white/[0.08] px-4 py-3">
               <Link
@@ -365,7 +432,7 @@ export default function SystemDesignCourseClient() {
 
         {/* MAIN CONTENT */}
         <main ref={mainRef} className="h-screen overflow-y-auto">
-          <div className="mx-auto max-w-[720px] px-6 py-8 text-[15.5px] leading-[1.8] tracking-[0.01em] text-white">
+          <div className="mx-auto max-w-[760px] px-6 py-8 text-[15.5px] leading-[1.8] tracking-[0.01em] text-white">
             {activeLesson === "introduction" ? (
               <article className="max-w-none">
                 <IntroductionLessonContent
@@ -526,11 +593,12 @@ export default function SystemDesignCourseClient() {
         </main>
 
         {/* RIGHT SIDEBAR */}
-        <aside className="hidden xl:block border-l border-white/[0.08]">
+        <aside className="hidden xl:block border-l border-white/[0.08] bg-[#0b0c14]/78 backdrop-blur-xl">
           <div className="sticky top-0 flex h-screen flex-col gap-6 px-3 py-6">
 
             {/* Promo card */}
-            <div className="relative shrink-0 overflow-hidden rounded-xl border border-white/[0.06] bg-[#0f111a] p-4">
+            <div className="group relative shrink-0 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0f111a]/95 p-4 shadow-[0_22px_48px_rgba(0,0,0,0.45)]">
+              <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-teal-400/20 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
               <span className="absolute right-3 top-3 rounded-full bg-teal-500/20 px-2.5 py-0.5 text-[10px] font-bold text-teal-400">
                 Up to 20% off
               </span>
@@ -552,7 +620,7 @@ export default function SystemDesignCourseClient() {
               </ul>
               <Link
                 href="/book-mentorship"
-                className="mt-4 flex w-full items-center justify-center rounded-full bg-white py-2 text-sm font-semibold text-black transition hover:bg-gray-200"
+                className="mt-4 flex w-full items-center justify-center rounded-full bg-white py-2 text-sm font-semibold text-black transition hover:bg-gray-200 hover:shadow-[0_0_28px_rgba(255,255,255,0.2)]"
               >
                 Learn more
               </Link>
@@ -569,7 +637,7 @@ export default function SystemDesignCourseClient() {
               </div>
               <div className="h-[3px] overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-[3px] rounded-full bg-teal-500 transition-[width] duration-300"
+                  className="h-[3px] rounded-full bg-teal-500 shadow-[0_0_14px_rgba(20,184,166,0.45)] transition-[width] duration-300"
                   style={{ width: `${readProgress}%` }}
                 />
               </div>
@@ -579,18 +647,19 @@ export default function SystemDesignCourseClient() {
             {toc ? (
               <div className="flex-1 overflow-hidden">
                 <p className="mb-3 text-xs text-gray-400">On this page</p>
-                <ul className="space-y-2 border-l border-white/10 pl-3 text-[13px] text-gray-500">
+                <ul className="max-h-[48vh] space-y-2 overflow-auto border-l border-white/10 pl-3 text-[13px] text-gray-500 pr-1">
                   {toc.headings.map((h, i) => (
                     <li key={h.id} style={{ paddingLeft: h.depth * 10 }}>
-                      <a
-                        href={`#${h.id}`}
+                      <button
+                        type="button"
+                        onClick={() => scrollToHeading(h.id)}
                         className={cn(
-                          "block transition-colors hover:text-teal-400",
-                          i === 0 && "text-teal-400"
+                          "block w-full text-left transition-colors hover:text-teal-400",
+                          activeHeading === h.id || (!activeHeading && i === 0) ? "text-teal-400" : ""
                         )}
                       >
                         {h.label}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -677,36 +746,5 @@ function CourseSidebarNav({
 }
 
 function SidebarFooter() {
-  return (
-    <div className="shrink-0 border-t border-white/[0.08] px-3 py-3">
-      <Link
-        href="/auth"
-        className="flex items-center gap-2 text-xs font-medium text-gray-400 transition-colors hover:text-white"
-      >
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5">
-          <span className="text-[10px]">👤</span>
-        </span>
-        Sign in / Sign up
-      </Link>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {[
-          { href: "https://twitter.com", icon: Twitter, label: "Twitter" },
-          { href: "https://linkedin.com", icon: Linkedin, label: "LinkedIn" },
-          { href: "https://youtube.com", icon: Youtube, label: "YouTube" },
-          { href: "https://discord.com", icon: MessageCircle, label: "Discord" },
-        ].map(({ href, icon: Icon, label }) => (
-          <a
-            key={label}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-gray-500 transition-colors hover:border-white/20 hover:text-white"
-            aria-label={label}
-          >
-            <Icon className="h-3.5 w-3.5" />
-          </a>
-        ))}
-      </div>
-    </div>
-  );
+  return null;
 }

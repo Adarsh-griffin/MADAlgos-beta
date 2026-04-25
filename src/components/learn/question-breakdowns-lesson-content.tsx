@@ -43,8 +43,7 @@ export function QuestionBreakdownsLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Question Breakdowns</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Worked solutions to the most common system design interview questions. Study these after learning the
-          concepts.
+          Guided solutions for common system design interview prompts. Use them after practicing the fundamentals.
         </p>
       </header>
 
@@ -52,15 +51,15 @@ export function QuestionBreakdownsLessonContent({
         <h2 className="text-2xl font-bold tracking-tight text-white">How to Use Question Breakdowns</h2>
         <p className="leading-[1.8] text-gray-400">
           Question breakdowns are{" "}
-          <strong className="text-white">not a substitute for designing systems yourself</strong>. They are learning
-          tools. The right approach is:
+          <strong className="text-white">not a replacement for independent problem solving</strong>. Treat them as
+          learning aids. A strong workflow is:
         </p>
         <ol className="list-none space-y-3 pl-0">
           {[
-            "Choose a question from the list below.",
-            "Design the system yourself on paper or a whiteboard (set a timer for 45 minutes).",
-            "Only then read the breakdown to compare your approach.",
-            "Note what you missed and which concepts to revisit.",
+            "Pick one prompt from the list below.",
+            "Design it independently on paper or whiteboard (time-box to 45 minutes).",
+            "Review the breakdown only after your attempt.",
+            "Record gaps and map them to concepts for revision.",
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-500/20 text-xs font-bold text-teal-400">
@@ -75,8 +74,8 @@ export function QuestionBreakdownsLessonContent({
           <div className="flex gap-3">
             <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-teal-400" aria-hidden />
             <p>
-              A common failure mode is to read breakdowns passively without designing first. The interview simulates
-              actually designing a system — you need the reps of doing it yourself to build the right intuition.
+              A common mistake is passively reading solutions before attempting the design. Interview performance comes
+              from repeated independent reps, then targeted review.
             </p>
           </div>
         </aside>

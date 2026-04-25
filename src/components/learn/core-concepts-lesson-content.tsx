@@ -19,7 +19,7 @@ export function CoreConceptsLessonContent({
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Core Concepts</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Master the fundamental principles that form the foundation of every distributed system design.
+          Build strong fundamentals that power clear, scalable distributed system designs.
         </p>
       </header>
 
@@ -27,12 +27,12 @@ export function CoreConceptsLessonContent({
       <section id="cc-intro" className="scroll-mt-12 space-y-6">
         <div className="prose prose-invert max-w-none">
           <p className="text-lg leading-relaxed text-muted-foreground/90">
-            Core concepts are the fundamental principles and techniques that form the foundation of every system
-            design interview. Unlike specific technologies, these are technology-agnostic building blocks.
+            Core concepts are the reusable principles behind most system design interviews. Unlike product-specific
+            tools, these ideas stay relevant across stacks and companies.
           </p>
           <p className="leading-relaxed text-muted-foreground">
-            Think of core concepts as the vocabulary and grammar of system design. Before you can discuss how to
-            scale Instagram, you need to understand caching, sharding, and networking.
+            Treat core concepts as your language for architecture conversations. Before discussing how to scale a
+            product like Instagram, you need clear mental models for caching, sharding, and networking.
           </p>
         </div>
       </section>
@@ -41,8 +41,8 @@ export function CoreConceptsLessonContent({
       <section id="cc-structure" className="scroll-mt-12 space-y-6">
         <h2 className="text-3xl font-bold tracking-tight text-foreground">Overall Structure</h2>
         <p className="leading-relaxed text-muted-foreground">
-          This page provides a quick overview of each core concept. The map below shows how these concepts 
-          stack to form a complete system foundation.
+          This section is a concise walkthrough of each concept. The map below shows how they layer together into
+          a complete system-design foundation.
         </p>
         <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">
           <img 

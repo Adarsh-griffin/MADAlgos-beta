@@ -14,7 +14,7 @@ export function NetworkingEssentialsLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Networking Essentials</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Understand how systems communicate, from protocols to load balancing.
+          Learn how distributed systems communicate, from transport choices to traffic distribution.
         </p>
       </header>
 
@@ -29,14 +29,12 @@ export function NetworkingEssentialsLessonContent({
       {/* Intro */}
       <section id="net-intro" className="scroll-mt-12 space-y-4">
         <p className="leading-[1.8] text-gray-400">
-          Networking is a fundamental part of system design: you&apos;re nearly always going to be designing systems
-          comprised of independent devices that communicate over a network. But the field of networking is vast and
-          complex, and it&apos;s easy to get lost.
+          Networking is core to system design because most architectures involve independent services exchanging data
+          over unreliable links. The topic is broad, so this guide focuses on interview-relevant fundamentals.
         </p>
         <p className="leading-[1.8] text-gray-400">
-          In this guide we&apos;re going to cover the most important parts of networking that you&apos;ll need to know
-          for your system design interviews. For each concept, we&apos;ll cover its purpose, how it works, and when to
-          apply it in your system designs.
+          We cover the networking concepts that appear most often in interviews, including what each concept does, how
+          it behaves in practice, and when to apply it in your design.
         </p>
         <aside className="rounded-lg border-l-4 border-sky-500 bg-sky-500/10 px-4 py-4 text-sm leading-[1.8] text-gray-400">
           <div className="flex gap-3">
@@ -55,9 +53,8 @@ export function NetworkingEssentialsLessonContent({
         <h2 className="text-2xl font-bold tracking-tight text-white">Networking 101</h2>
         <h3 className="text-xl font-bold text-white">Networking Layers</h3>
         <p className="leading-[1.8] text-gray-400">
-          Networking models like the OSI and TCP/IP models provide a structured way to think about how data moves across
-          a network. We focus on a simplified model covering the three layers you&apos;ll most commonly encounter in
-          system design:
+          OSI and TCP/IP give you a framework for reasoning about packet flow. For interview purposes, a simplified
+          three-layer view is enough for most architectural discussions:
         </p>
         <ul className="space-y-3 text-gray-400">
           {[
@@ -76,7 +73,7 @@ export function NetworkingEssentialsLessonContent({
 
         <h3 className="text-xl font-bold text-white">Example: A Simple Web Request</h3>
         <p className="leading-[1.8] text-gray-400">
-          When you type a URL into your browser, several layers of networking protocols spring into action:
+          When you enter a URL in a browser, multiple protocols execute in sequence:
         </p>
         <ol className="list-none space-y-3 pl-0">
           {[
@@ -101,8 +98,8 @@ export function NetworkingEssentialsLessonContent({
           <div className="flex gap-3">
             <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-teal-400" aria-hidden />
             <p>
-              Thinking about the full round-trip of a request is important for latency calculations. A request involves
-              several network round-trips before the server even starts processing the request!
+              Always account for end-to-end round trips in latency math. Meaningful delay often accumulates before your
+              application logic even begins.
             </p>
           </div>
         </aside>
@@ -159,11 +156,11 @@ export function NetworkingEssentialsLessonContent({
             </thead>
             <tbody className="divide-y divide-white/[0.06]">
               {[
-                ["Connection", "Connectionless", "Connection-oriented"],
-                ["Reliability", "Unreliable", "Reliable"],
-                ["Order", "No guaranteed order", "Guaranteed order"],
-                ["Speed", "Fast", "Slower (overhead)"],
-                ["Header Size", "8 bytes", "20–60 bytes"],
+                ["Session Setup", "No connection setup", "Handshake required"],
+                ["Delivery Guarantees", "Best-effort delivery", "Reliable delivery with retransmit"],
+                ["Packet Ordering", "Order not guaranteed", "In-order delivery guaranteed"],
+                ["Latency Profile", "Lower protocol overhead", "Higher overhead due to reliability features"],
+                ["Header Footprint", "8 bytes", "20–60 bytes"],
               ].map(([feat, udp, tcp]) => (
                 <tr key={feat} className="transition-colors hover:bg-white/[0.03]">
                   <td className="px-4 py-3 font-semibold text-white">{feat}</td>

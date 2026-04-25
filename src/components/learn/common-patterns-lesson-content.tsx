@@ -9,22 +9,22 @@ const PATTERNS = [
     id: "fanout",
     name: "Fan-out",
     when: "Push-based feed delivery (Twitter, Instagram), notifications to many users",
-    desc: "When a user posts, their content is \"fanned out\" — written to all followers' feeds. Fast reads at the cost of slow/expensive writes. Use for celebrities with small follower counts; switch to pull (fan-in) for mega-influencers.",
-    tradeoff: "Write amplification — a user with 10M followers means 10M writes per post.",
+    desc: "On publish, new content is pre-written into follower feeds. This optimizes read latency but increases write cost. Use selectively for users with manageable follower counts.",
+    tradeoff: "Write amplification can be extreme at large fan-out sizes.",
   },
   {
     id: "event-sourcing",
     name: "Event Sourcing / CQRS",
     when: "Audit logs, financial ledgers, systems requiring full history replay",
-    desc: "Instead of storing the current state, store a sequence of events that led to the state. The current state is derived by replaying events. CQRS separates the read model (queries) from the write model (commands).",
-    tradeoff: "Increased complexity. Not suitable if you just need simple CRUD.",
+    desc: "Persist immutable domain events rather than only current state. Rebuild state by replaying events; CQRS separates write commands from read projections.",
+    tradeoff: "Higher modeling and operational complexity than straightforward CRUD.",
   },
   {
     id: "saga",
     name: "Saga Pattern",
     when: "Distributed transactions across microservices (e-commerce checkout, booking)",
-    desc: "A sequence of local transactions, each publishing events to trigger the next. If a step fails, compensating transactions undo the previous steps. Two flavors: choreography (event-driven) and orchestration (central coordinator).",
-    tradeoff: "Complexity of compensating transactions. Hard to debug.",
+    desc: "Model distributed workflows as local transactions linked by events. On failure, compensating actions roll back prior steps. Can be choreography- or orchestration-driven.",
+    tradeoff: "Compensation logic and failure debugging can become complex.",
   },
   {
     id: "rate-limiting",
@@ -73,15 +73,14 @@ export function CommonPatternsLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Common Patterns</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Recurring architectural patterns that solve specific problems in system design interviews.
+          Reusable architecture patterns for common system design interview problems.
         </p>
       </header>
 
       <section id="patterns-intro" className="scroll-mt-12 space-y-4">
         <p className="leading-[1.8] text-gray-400">
-          Patterns are higher-level solutions that combine core concepts and technologies to solve recurring problems.
-          Unlike technologies (which are specific tools), patterns are strategies — they can be implemented in many
-          ways.
+          Patterns are strategy-level solutions that combine concepts and tools to handle recurring challenges.
+          Technologies are concrete tools; patterns are the playbooks that can be implemented in multiple ways.
         </p>
         <aside className="rounded-lg border-l-4 border-teal-500 bg-teal-500/10 px-4 py-4 text-sm leading-[1.8] text-gray-400">
           <div className="flex gap-3">

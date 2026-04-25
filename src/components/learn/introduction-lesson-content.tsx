@@ -57,8 +57,8 @@ export function IntroductionLessonContent({
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Introduction</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Learn system design fast. All the essentials needed to pass a system design interview, built by FAANG hiring
-          managers and staff engineers.
+          Learn system design quickly with an interview-first curriculum covering the essentials hiring panels
+          evaluate at top product companies.
         </p>
       </header>
 
@@ -66,13 +66,12 @@ export function IntroductionLessonContent({
       <section id="intro-overview" className="scroll-mt-12 space-y-6">
         <div className="prose prose-invert max-w-none">
           <p className="text-lg leading-relaxed text-muted-foreground/90">
-            After conducting literally thousands of interviews at companies like <span className="font-semibold text-foreground">Meta</span> and <span className="font-semibold text-foreground">Amazon</span>, we&apos;ve collected the
-            most important things that candidates need to know to succeed in system design interviews. 
+            From years of interview loops at companies such as <span className="font-semibold text-foreground">Meta</span> and <span className="font-semibold text-foreground">Amazon</span>, we&apos;ve distilled the signals candidates most
+            often miss in system design rounds.
           </p>
           <p className="leading-relaxed text-muted-foreground">
-            We call our course &ldquo;System Design in a Hurry&rdquo; because we take a fundamentally different approach to teaching system design than 
-            you might find elsewhere: we <strong className="text-foreground border-b border-orange-500/50">work backwards</strong> from the actual signals 
-            you need to demonstrate to succeed.
+            We call this course &ldquo;System Design in a Hurry&rdquo; because we teach from outcome to theory: we{" "}
+            <strong className="text-foreground border-b border-orange-500/50">work backwards</strong> from the exact interview signals you need to show.
           </p>
         </div>
 
@@ -83,8 +82,8 @@ export function IntroductionLessonContent({
             </div>
             <h3 className="mb-2 font-bold text-foreground">Efficiency First</h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              If you don&apos;t have a lot of time between now and your interview, you&apos;re going to 
-              <span className="text-foreground"> learn the most impactful things</span> as quickly as possible.
+              If your prep window is short, focus on{" "}
+              <span className="text-foreground">the highest-impact interview skills</span> first.
             </p>
           </div>
           <div className="group relative rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-colors hover:bg-white/[0.04]">
@@ -93,15 +92,14 @@ export function IntroductionLessonContent({
             </div>
             <h3 className="mb-2 font-bold text-foreground">Real-world Context</h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Connect concepts to <span className="text-foreground">real systems and real problems</span> rather than 
-              just accumulating academic knowledge.
+              Anchor concepts to <span className="text-foreground">real production tradeoffs</span>, not just theory.
             </p>
           </div>
         </div>
 
         <p className="border-l-2 border-white/10 pl-6 italic text-muted-foreground">
-          Other system design materials are either ChatGPT spew or go to a level of depth that you&apos;ll never
-          possibly cover in an interview. We aimed to make this guide <strong className="text-foreground">dense, practical, and efficient</strong>.
+          Many resources are either too shallow to be useful or too academic for a 45-minute interview. This guide
+          is intentionally <strong className="text-foreground">focused, practical, and execution-oriented</strong>.
         </p>
       </section>
 
@@ -129,7 +127,7 @@ export function IntroductionLessonContent({
         <div className="space-y-2">
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Course Roadmap</h2>
           <p className="max-w-3xl text-muted-foreground">
-            The path below is bottom-up: start with fundamentals, layer on patterns, and finalize with the delivery framework you&apos;ll use in the room.
+            Follow this bottom-up sequence: fundamentals first, then patterns, then the delivery framework you will use in the interview.
           </p>
         </div>
         <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 md:p-8">

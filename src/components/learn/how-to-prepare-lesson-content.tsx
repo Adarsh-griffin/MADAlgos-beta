@@ -53,7 +53,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
           How to Prepare
         </h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Having helped thousands of candidates pass their FAANG interviews, we&apos;ve learned exactly what works.
+          This prep path is based on repeatable patterns that consistently help candidates perform better in top-tier interviews.
         </p>
       </header>
 
@@ -68,7 +68,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
             </span>
             <div className="leading-[1.8] text-gray-400">
               <strong className="text-white">Understand what a system design interview is:</strong>{" "}
-              Maybe you&apos;ve never done a system design interview before, you&apos;re not alone! Start by
+              If this is your first system design interview, that&apos;s completely normal. Start by
               reading our{" "}
               <button
                 type="button"
@@ -87,8 +87,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
             </span>
             <div className="leading-[1.8] text-gray-400">
               <strong className="text-white">Choose a delivery framework:</strong>{" "}
-              System design interviews move fast. It&apos;s important that you have a clear roadmap to help
-              you think linearly and avoid scope creep. We strongly recommend our{" "}
+              System design interviews move quickly, so you need a clear roadmap to avoid scope creep. We recommend our{" "}
               <button
                 type="button"
                 onClick={() => onNavigate("delivery-framework")}
@@ -96,7 +95,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
               >
                 Delivery Framework
               </button>
-              . This is the framework you&apos;ll follow to design your system come interview day.
+              . This becomes your default structure on interview day so your discussion stays focused and complete.
             </div>
           </li>
 
@@ -106,13 +105,12 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
             </span>
             <div className="leading-[1.8] text-gray-400">
               <strong className="text-white">Start with the basics:</strong>{" "}
-              If you&apos;re new to system design in particular, you&apos;ll want to start by learning the
-              basics and mapping out the scope of knowledge required. Start by reading about the{" "}
+              If system design is new, begin with foundational concepts and map the scope of knowledge required. Start with{" "}
               <span className="font-medium text-teal-400">Core Concepts</span>,{" "}
               <span className="font-medium text-teal-400">Key Technologies</span>, and{" "}
               <span className="font-medium text-teal-400">Common Patterns</span>{" "}
-              used in system design interviews. These write-ups are high-level, but they help you build the
-              mental model necessary to build upon.
+              used in system design interviews. These overviews are intentionally high-level and help you form the
+              mental model you&apos;ll later apply during live design discussions.
             </div>
           </li>
         </ol>
@@ -123,8 +121,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
         <h2 className="text-2xl font-bold tracking-tight text-white">Practice Practice Practice</h2>
 
         <p className="leading-[1.8] text-gray-400">
-          Once you have the foundation in place, it&apos;s time to practice. Passively consuming content is
-          good, but you&apos;ll retain{" "}
+          Once the foundation is set, move into active practice. Reading helps, but you&apos;ll retain{" "}
           <strong className="text-white">10x more information</strong> by actually doing.
         </p>
 
@@ -174,7 +171,7 @@ export function HowToPrepareLessonContent({ onNavigate }: { onNavigate: (lessonI
             </span>
             <div className="leading-[1.8] text-gray-400">
               <strong className="text-white">Read the answer key:</strong>{" "}
-              Only after you have tried to answer the question, read the answer key to see how your answer
+              Attempt the problem first, then read the answer key to compare how your answer
               compares.
             </div>
           </li>

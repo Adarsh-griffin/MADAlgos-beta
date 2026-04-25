@@ -14,17 +14,16 @@ export function CAPTheoremLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">CAP Theorem</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Master the fundamental tradeoffs between consistency and availability in distributed systems.
+          Understand core distributed-system tradeoffs between consistency and availability.
         </p>
       </header>
 
       <section id="what-is-cap" className="scroll-mt-12 space-y-5">
         <h2 className="text-2xl font-bold tracking-tight text-white">What is CAP Theorem?</h2>
         <p className="leading-[1.8] text-gray-400">
-          CAP theorem states that in a distributed system, you can only have{" "}
-          <strong className="text-white">two out of three</strong> properties: Consistency, Availability, and Partition
-          Tolerance. Since network partitions are unavoidable, you are really choosing between consistency and
-          availability.
+          CAP theorem says a distributed system can only optimize{" "}
+          <strong className="text-white">two of three</strong> guarantees at once: Consistency, Availability, and
+          Partition Tolerance. Because partitions are inevitable, the practical tradeoff is consistency vs availability.
         </p>
 
         <figure className="overflow-x-auto rounded-xl border border-white/10 bg-slate-950/50 p-5 md:p-8">

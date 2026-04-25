@@ -64,8 +64,7 @@ export function NumbersToKnowLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Numbers to Know</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          A quick reference for the latency numbers and scale estimates every engineer should have in their head during
-          a system design interview.
+          A fast-reference sheet of latency and scale numbers worth remembering during system design interviews.
         </p>
       </header>
 

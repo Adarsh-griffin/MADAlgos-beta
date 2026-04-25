@@ -14,7 +14,7 @@ export function ShardingLessonContent({
       <header className="space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">Sharding</h1>
         <p className="max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
-          Learn how to split your database across multiple servers to handle massive scale.
+          Learn when and how to partition data across multiple database servers at large scale.
         </p>
       </header>
 
@@ -28,9 +28,8 @@ export function ShardingLessonContent({
 
       <section id="sharding-intro" className="scroll-mt-12 space-y-4">
         <p className="leading-[1.8] text-gray-400">
-          Sharding comes up when you&apos;ve outgrown a single database and need to split your data across multiple
-          independent servers. This happens when you hit storage limits, write throughput limits, or read throughput
-          that even replicas can&apos;t handle.
+          Sharding becomes relevant once a single database node is no longer enough for storage, write throughput, or
+          sustained read load, even after tuning and replicas.
         </p>
         <aside className="rounded-lg border-l-4 border-amber-500 bg-amber-500/10 px-4 py-4 text-sm leading-[1.8] text-gray-400">
           <div className="flex gap-3">
