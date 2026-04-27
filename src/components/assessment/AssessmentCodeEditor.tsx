@@ -68,6 +68,19 @@ export default function AssessmentCodeEditor({
     if (stored === "light" || stored === "dark") setEditorTheme(stored);
   }, []);
 
+  useEffect(() => {
+    if (!isFullScreen) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setIsFullScreen(false);
+    };
+    // Capture phase ensures editor fullscreen exits first.
+    window.addEventListener("keydown", onEscape, true);
+    return () => window.removeEventListener("keydown", onEscape, true);
+  }, [isFullScreen]);
+
   const toggleEditorTheme = () => {
     const next = editorTheme === "dark" ? "light" : "dark";
     setEditorTheme(next);
@@ -90,8 +103,18 @@ export default function AssessmentCodeEditor({
     <div
       className={`flex flex-col flex-1 min-h-0 h-full max-h-full border rounded-2xl overflow-hidden ${
         isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-slate-300"
-      } ${isFullScreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
+      } ${isFullScreen ? "fixed inset-0 z-40 rounded-none" : ""}`}
     >
+      {isFullScreen ? (
+        <div
+          className={`shrink-0 px-3 py-1.5 text-[11px] border-b ${
+            isDark ? "bg-primary/15 text-primary border-primary/20" : "bg-emerald-100 text-emerald-800 border-emerald-300"
+          }`}
+        >
+          Press <span className="font-semibold">Esc</span> or click the minimize icon to return to the test view.
+        </div>
+      ) : null}
+
       {/* Editor Header */}
       <div
         className={`shrink-0 flex items-center justify-between px-4 py-2 border-b ${

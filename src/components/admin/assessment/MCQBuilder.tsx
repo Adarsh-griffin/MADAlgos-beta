@@ -47,37 +47,57 @@ export function MCQBuilder({ questions, onChange }: MCQBuilderProps) {
     onChange(updated);
   };
 
+  const updateQuestionWith = (index: number, updater: (q: MCQ) => MCQ) => {
+    const updated = [...questions];
+    const current = updated[index];
+    if (!current) return;
+    updated[index] = updater(current);
+    onChange(updated);
+  };
+
   const setSelectionType = (qIndex: number, st: "single" | "multiple") => {
-    const q = questions[qIndex];
-    const n = q.options.length;
-    if (st === "single") {
-      const first = typeof q.correctOption === "number" ? q.correctOption : (q.correctOptions?.[0] ?? 0);
-      const c = Math.min(Math.max(0, first), Math.max(0, n - 1));
-      updateQuestion(qIndex, "selectionType", "single");
-      updateQuestion(qIndex, "correctOption", c);
-      updateQuestion(qIndex, "correctOptions", []);
-    } else {
+    updateQuestionWith(qIndex, (q) => {
+      const n = q.options.length;
+      if (st === "single") {
+        const first = typeof q.correctOption === "number" ? q.correctOption : (q.correctOptions?.[0] ?? 0);
+        const c = Math.min(Math.max(0, first), Math.max(0, n - 1));
+        return {
+          ...q,
+          selectionType: "single",
+          correctOption: c,
+          correctOptions: [],
+        };
+      }
+
       const a = typeof q.correctOption === "number" ? q.correctOption : 0;
       const b = n > 1 ? (a === 0 ? 1 : 0) : a;
-      updateQuestion(qIndex, "selectionType", "multiple");
-      updateQuestion(qIndex, "correctOptions", [...new Set([a, b].filter((i) => i >= 0 && i < n))].sort((x, y) => x - y));
-      updateQuestion(qIndex, "correctOption", a);
-    }
+      const nextCorrectOptions = [...new Set([a, b].filter((i) => i >= 0 && i < n))].sort((x, y) => x - y);
+      return {
+        ...q,
+        selectionType: "multiple",
+        correctOptions: nextCorrectOptions,
+        correctOption: nextCorrectOptions[0] ?? 0,
+      };
+    });
   };
 
   const toggleCorrectMulti = (qIndex: number, oIdx: number) => {
-    const q = questions[qIndex];
-    const n = q.options.length;
-    const cur = new Set(q.correctOptions ?? [0, 1]);
-    if (cur.has(oIdx)) cur.delete(oIdx);
-    else cur.add(oIdx);
-    let next = [...cur].filter((i) => i >= 0 && i < n).sort((a, b) => a - b);
-    if (next.length < 2) {
-      next = [0, Math.min(1, n - 1)].filter((v, i, arr) => arr.indexOf(v) === i).sort((a, b) => a - b);
-      if (next.length < 2 && n >= 2) next = [0, 1];
-    }
-    updateQuestion(qIndex, "correctOptions", next);
-    updateQuestion(qIndex, "correctOption", next[0] ?? 0);
+    updateQuestionWith(qIndex, (q) => {
+      const n = q.options.length;
+      const cur = new Set(q.correctOptions ?? [0, 1]);
+      if (cur.has(oIdx)) cur.delete(oIdx);
+      else cur.add(oIdx);
+      let next = [...cur].filter((i) => i >= 0 && i < n).sort((a, b) => a - b);
+      if (next.length < 2) {
+        next = [0, Math.min(1, n - 1)].filter((v, i, arr) => arr.indexOf(v) === i).sort((a, b) => a - b);
+        if (next.length < 2 && n >= 2) next = [0, 1];
+      }
+      return {
+        ...q,
+        correctOptions: next,
+        correctOption: next[0] ?? 0,
+      };
+    });
   };
 
   const updateOption = (qIndex: number, oIndex: number, value: string) => {
@@ -126,7 +146,19 @@ export function MCQBuilder({ questions, onChange }: MCQBuilderProps) {
 
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-10 space-y-2">
-                    <Label className="text-slate-400">Question {qIndex + 1}</Label>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-slate-400">Question {qIndex + 1}</Label>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                          isMulti
+                            ? "border-primary/35 bg-primary/10 text-primary"
+                            : "border-slate-500/30 bg-slate-500/10 text-slate-300"
+                        }`}
+                        title={isMulti ? "Multiple-correct question" : "Single-correct question"}
+                      >
+                        {isMulti ? "Multiple" : "Single"}
+                      </span>
+                    </div>
                     <Input
                       placeholder="Enter question text..."
                       value={q.questionText}

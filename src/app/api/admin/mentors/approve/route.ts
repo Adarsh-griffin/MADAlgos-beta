@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
   const templateId = process.env.SENDGRID_MENTOR_ACCEPTED_TEMPLATE_ID?.trim();
   const base = getAppBaseUrl();
-  const supportEmail = process.env.MAIL_FROM || "team@madalgos.in";
+  const supportEmail = process.env.MAIL_FROM || "noreply@madalgos.in";
   const now = new Date();
   const acceptedDate = now.toLocaleDateString("en-IN", {
     day: "2-digit",

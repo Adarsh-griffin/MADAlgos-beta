@@ -44,7 +44,7 @@ export async function sendMentorApplicationConfirmationEmails(params: {
     timeZone: "Asia/Kolkata",
   })} IST`;
 
-  const supportEmail = process.env.MAIL_FROM || "team@madalgos.in";
+  const supportEmail = process.env.MAIL_FROM || "noreply@madalgos.in";
   const templatePayload = {
     user_name: username,
     name: username,

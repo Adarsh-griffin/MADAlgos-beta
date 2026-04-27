@@ -37,7 +37,7 @@ export async function sendEmail(opts: {
     return;
   }
   sgMail.setApiKey(key);
-  const from = process.env.MAIL_FROM || "team@madalgos.in";
+  const from = process.env.MAIL_FROM || "noreply@madalgos.in";
   await sgMail.send({
     to: opts.to,
     from,
@@ -61,7 +61,7 @@ export async function sendTemplateEmail(opts: {
     return { ok: false, reason: "no_api_key" };
   }
   sgMail.setApiKey(key);
-  const from = process.env.MAIL_FROM || "team@madalgos.in";
+  const from = process.env.MAIL_FROM || "noreply@madalgos.in";
   try {
     await sgMail.send({
       to: opts.to,

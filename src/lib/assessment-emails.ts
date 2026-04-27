@@ -1,6 +1,7 @@
 import sgMail from "@sendgrid/mail";
 import { getSendgridKey } from "@/lib/email";
 import { getAppBaseUrl } from "@/lib/app-base-url";
+import { formatDisplayDateTime, getDisplayTimeZone } from "@/lib/datetime-display";
 
 /** Keys passed to SendGrid dynamic_template_data (Handlebars: {{title}}, {{baseUrl}}, etc.). */
 export function buildAssessmentTemplateData(
@@ -33,11 +34,14 @@ export function buildAssessmentCompletionTemplateData(input: {
   baseUrl: string;
   studentName?: string;
 }) {
+  const cleanBase = (input.baseUrl || "").replace(/\/$/, "");
   return {
     testTitle: input.testTitle,
     submittedAtIso: input.submittedAtIso,
     submittedAtDisplay: input.submittedAtDisplay,
-    baseUrl: input.baseUrl,
+    baseUrl: cleanBase,
+    homeUrl: `${cleanBase}/`,
+    testsUrl: `${cleanBase}/tests`,
     studentName: input.studentName ?? "",
   };
 }
@@ -54,11 +58,14 @@ export function buildAssessmentScoreTemplateData(input: {
   percentage: number;
   status: "COMPLETED" | "AUTO_SUBMITTED";
 }) {
+  const cleanBase = (input.baseUrl || "").replace(/\/$/, "");
   return {
     testTitle: input.testTitle,
     submittedAtIso: input.submittedAtIso,
     submittedAtDisplay: input.submittedAtDisplay,
-    baseUrl: input.baseUrl,
+    baseUrl: cleanBase,
+    homeUrl: `${cleanBase}/`,
+    testsUrl: `${cleanBase}/tests`,
     studentName: input.studentName ?? "",
     totalScore: input.totalScore,
     maxScore: input.maxScore,
@@ -81,7 +88,7 @@ export async function sendAssessmentCompletionEmail(input: {
   const sendgridKey = getSendgridKey();
   const templateId = process.env.SENDGRID_ASSESSMENT_COMPLETION_TEMPLATE_ID?.trim();
   const baseUrl = getAppBaseUrl();
-  const from = process.env.MAIL_FROM || "support@madalgos.in";
+  const from = process.env.MAIL_FROM || "noreply@madalgos.in";
 
   if (!sendgridKey) {
     console.warn("[assessment-email] Completion email skipped: no SendGrid API key.");
@@ -91,10 +98,8 @@ export async function sendAssessmentCompletionEmail(input: {
   sgMail.setApiKey(sendgridKey);
 
   const submittedAtIso = input.submittedAt.toISOString();
-  const submittedAtDisplay = input.submittedAt.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const displayTz = getDisplayTimeZone();
+  const submittedAtDisplay = `${formatDisplayDateTime(input.submittedAt)} (${displayTz})`;
 
   const data = buildAssessmentCompletionTemplateData({
     testTitle: input.testTitle,
@@ -154,7 +159,7 @@ export async function sendAssessmentScoreEmail(input: {
   const sendgridKey = getSendgridKey();
   const templateId = process.env.SENDGRID_ASSESSMENT_SCORE_TEMPLATE_ID?.trim();
   const baseUrl = getAppBaseUrl();
-  const from = process.env.MAIL_FROM || "support@madalgos.in";
+  const from = process.env.MAIL_FROM || "noreply@madalgos.in";
 
   if (!sendgridKey) {
     console.warn("[assessment-email] Score email skipped: no SendGrid API key.");
@@ -164,10 +169,8 @@ export async function sendAssessmentScoreEmail(input: {
   sgMail.setApiKey(sendgridKey);
 
   const submittedAtIso = input.submittedAt.toISOString();
-  const submittedAtDisplay = input.submittedAt.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const displayTz = getDisplayTimeZone();
+  const submittedAtDisplay = `${formatDisplayDateTime(input.submittedAt)} (${displayTz})`;
   const safeMax = Math.max(0, Number(input.maxScore) || 0);
   const safeTotal = Math.min(safeMax, Math.max(0, Number(input.totalScore) || 0));
   const percentage = safeMax > 0 ? Math.round((safeTotal / safeMax) * 100) : 0;
@@ -253,7 +256,7 @@ export async function sendAssessmentInvitationEmails(
   const sendgridKey = getSendgridKey();
   const templateId = process.env.SENDGRID_ASSESSMENT_DISPATCH_TEMPLATE_ID?.trim();
   const baseUrl = getAppBaseUrl();
-  const from = process.env.MAIL_FROM || "support@madalgos.in";
+  const from = process.env.MAIL_FROM || "noreply@madalgos.in";
 
   if (!sendgridKey) {
     console.warn(
