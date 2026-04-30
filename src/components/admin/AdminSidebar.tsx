@@ -26,6 +26,7 @@ import {
     BarChart2,
     NotebookPen,
     Settings2,
+    LibraryBig,
 } from "lucide-react";
 
 export function AdminSidebar() {
@@ -88,6 +89,12 @@ export function AdminSidebar() {
                     p === "/admin/practice-tests" ||
                     p.startsWith("/admin/practice-tests/create") ||
                     /^\/admin\/practice-tests\/[^/]+\/edit/.test(p),
+            },
+            {
+                name: "System design CMS",
+                path: "/admin/system-design",
+                icon: LibraryBig,
+                isActive: (p) => p.startsWith("/admin/system-design"),
             },
         ];
         if (meRole === "SUPER_ADMIN") {

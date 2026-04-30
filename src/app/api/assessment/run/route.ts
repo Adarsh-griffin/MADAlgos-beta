@@ -9,7 +9,7 @@ const LANGUAGE_MAP: Record<string, number> = {
   C: 50,
   "C++": 54,
   Java: 62,
-  Javascript: 93,
+  Javascript: 63,
   Python: 71,
 };
 
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid problem index" }, { status: 400 });
     }
 
-    const langId = LANGUAGE_MAP[language] ?? 93;
+    const langId = LANGUAGE_MAP[language] ?? 63;
     const samples = problem.sampleTestCases || [];
     const hidden = problem.hiddenTestCases || [];
     const scope = runScope === "all" ? "all" : "sample";

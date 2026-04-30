@@ -1,0 +1,166 @@
+{
+  "info": {
+    "name": "Judge0 Connectivity and Execution Check",
+    "_postman_id": "d6cfbf6d-1f1d-4be6-bfb6-df74f64c90db",
+    "description": "Use this collection to verify Judge0 reachability and code execution response.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1) Judge0 Health - system_info",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-RapidAPI-Key",
+            "value": "{{judge0_api_key}}",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "X-RapidAPI-Host",
+            "value": "{{judge0_api_host}}",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "X-Judge0-Key",
+            "value": "{{judge0_api_key}}",
+            "type": "text",
+            "disabled": false
+          }
+        ],
+        "url": {
+          "raw": "{{judge0_api_url}}/system_info",
+          "host": [
+            "{{judge0_api_url}}"
+          ],
+          "path": [
+            "system_info"
+          ]
+        },
+        "description": "If this fails with timeout/fetch errors, the app will also fail to reach Judge0."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response is JSON object', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.be.an('object');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2) Judge0 Execute - simple JS",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "X-RapidAPI-Key",
+            "value": "{{judge0_api_key}}",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "X-RapidAPI-Host",
+            "value": "{{judge0_api_host}}",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "X-Judge0-Key",
+            "value": "{{judge0_api_key}}",
+            "type": "text",
+            "disabled": false
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_code\": \"const fs = require('fs'); const input = fs.readFileSync(0, 'utf8').trim().split(/\\\\s+/).map(Number); console.log((input[0] || 0) + (input[1] || 0));\",\n  \"language_id\": 93,\n  \"stdin\": \"2 3\",\n  \"expected_output\": \"5\"\n}"
+        },
+        "url": {
+          "raw": "{{judge0_api_url}}/submissions?base64_encoded=false&wait=true",
+          "host": [
+            "{{judge0_api_url}}"
+          ],
+          "path": [
+            "submissions"
+          ],
+          "query": [
+            {
+              "key": "base64_encoded",
+              "value": "false"
+            },
+            {
+              "key": "wait",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "Mimics your app call in src/lib/judge0.ts."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "",
+              "pm.test('Judge0 returned status object', function () {",
+              "  pm.expect(json.status).to.be.an('object');",
+              "  pm.expect(json.status.id).to.not.equal(undefined);",
+              "});",
+              "",
+              "pm.test('Execution accepted (status.id = 3)', function () {",
+              "  pm.expect(json.status.id).to.equal(3);",
+              "});",
+              "",
+              "pm.test('Output is 5 when accepted', function () {",
+              "  if (json.status && json.status.id === 3) {",
+              "    pm.expect(String(json.stdout || '').trim()).to.equal('5');",
+              "  }",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "judge0_api_url",
+      "value": "http://20.193.134.94:2358",
+      "type": "string"
+    },
+    {
+      "key": "judge0_api_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "judge0_api_host",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

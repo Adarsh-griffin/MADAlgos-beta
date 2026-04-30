@@ -1,5 +1,5 @@
 import React from "react";
-import SystemDesignCourseClient from "@/components/learn/SystemDesignCourseClient";
+import SystemDesignCourseCMSClient from "@/components/learn/SystemDesignCourseCMSClient";
 
 export const metadata = {
   title: "System design course | MADAlgos",
@@ -10,8 +10,8 @@ export const metadata = {
 /** Full-bleed learning shell — no site navbar/footer for a focused, premium reader layout. */
 export default function SystemDesignCoursePage() {
   return (
-    <div className="min-h-[100dvh] bg-[#0a0b14] text-foreground antialiased">
-      <SystemDesignCourseClient />
+    <div className="min-h-dvh bg-[#0a0b14] text-foreground antialiased">
+      <SystemDesignCourseCMSClient />
     </div>
   );
 }

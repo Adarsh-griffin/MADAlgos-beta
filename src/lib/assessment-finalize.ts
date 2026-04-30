@@ -10,7 +10,7 @@ const LANGUAGE_MAP: Record<string, number> = {
   C: 50,
   "C++": 54,
   Java: 62,
-  Javascript: 93,
+  Javascript: 63,
   Python: 71,
 };
 
@@ -116,7 +116,7 @@ export async function persistGradedAssessment(
       continue;
     }
 
-    const langId = LANGUAGE_MAP[sub.language ?? "Javascript"] ?? 93;
+    const langId = LANGUAGE_MAP[sub.language ?? "Javascript"] ?? 63;
     let problemStatus = "Accepted";
     let totalPassed = 0;
 

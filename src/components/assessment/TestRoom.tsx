@@ -31,6 +31,15 @@ interface TestRoomProps {
 
 type ActivePanel = "mcq" | number;
 type ProblemState = { lang: string; codeByLang: Record<string, string> };
+type RunCaseResult = {
+  passed: boolean;
+  status: string;
+  stdout?: string;
+  stderr?: string;
+  visibility?: "sample" | "hidden";
+  input?: string;
+  expected?: string;
+};
 
 /**
  * Student-facing sanitizer: hide source references/URLs in test mode.
@@ -108,6 +117,9 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [problemPaneCollapsed, setProblemPaneCollapsed] = useState(false);
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  const [runSummaryOpen, setRunSummaryOpen] = useState(false);
+  const [runResults, setRunResults] = useState<RunCaseResult[]>([]);
+  const [lastRunScope, setLastRunScope] = useState<"sample" | "all" | null>(null);
   const [postSubmitOpen, setPostSubmitOpen] = useState(false);
   const [fullscreenRequiredOpen, setFullscreenRequiredOpen] = useState(false);
 
@@ -409,6 +421,9 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
     if (!hasCoding) return;
     setIsRunning(true);
     setRunOutput(null);
+    setRunResults([]);
+    setRunSummaryOpen(false);
+    setLastRunScope(scope);
     try {
       const idx = codingIdx;
       const state = problemStatesRef.current[idx];
@@ -435,15 +450,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         return;
       }
 
-      const results = (data.results as Array<{
-        passed: boolean;
-        status: string;
-        stdout?: string;
-        stderr?: string;
-        visibility?: "sample" | "hidden";
-        input?: string;
-        expected?: string;
-      }>) ?? [];
+      const results = (data.results as RunCaseResult[]) ?? [];
 
       if (results.some((r) => shouldHideRuntimeDetails(String(r.status || "")))) {
         setRunOutput(GENERIC_RUN_ISSUE_MESSAGE);
@@ -457,6 +464,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
           (r.visibility === "sample" ? `\ninput:\n${r.input ?? ""}\nexpected:\n${r.expected ?? ""}` : "") +
           `\nstdout:\n${r.stdout ?? ""}\nstderr:\n${r.stderr ?? ""}`
       );
+      setRunResults(results);
+      setRunSummaryOpen(true);
       setRunOutput(lines.join("\n\n---\n\n"));
     } catch {
       setRunOutput(GENERIC_RUN_ISSUE_MESSAGE);
@@ -533,10 +542,20 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const goNextFromMcq = () => {
     if (hasCoding) setActivePanel(0);
   };
+  const goNextCodingQuestion = () => {
+    if (codingIdx < codingProblems.length - 1) {
+      setActivePanel(codingIdx + 1);
+      setRunSummaryOpen(false);
+    }
+  };
 
   const hintText =
     (ASSESSMENT_CODE_HINTS[currentState.lang as AssessmentLangKey] as string | undefined) ??
     ASSESSMENT_CODE_HINTS.Javascript;
+  const passedRunCount = runResults.filter((r) => r.passed).length;
+  const hasRunResults = runResults.length > 0;
+  const allRunResultsPassed = hasRunResults && passedRunCount === runResults.length;
+  const canGoToNextCoding = typeof activePanel === "number" && codingIdx < codingProblems.length - 1;
 
   return (
     <div className="h-screen w-screen flex flex-col bg-black text-white overflow-hidden">
@@ -770,6 +789,17 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                       {runOutput}
                     </div>
                   )}
+                  {allRunResultsPassed && canGoToNextCoding ? (
+                    <div className="shrink-0 flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={goNextCodingQuestion}
+                        className="rounded-full bg-primary text-black font-bold px-5"
+                      >
+                        Next Question <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ) : (
@@ -880,6 +910,17 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                       {runOutput}
                     </div>
                   )}
+                  {allRunResultsPassed && canGoToNextCoding ? (
+                    <div className="shrink-0 flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={goNextCodingQuestion}
+                        className="rounded-full bg-primary text-black font-bold px-5"
+                      >
+                        Next Question <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : null}
                 </ResizablePanel>
               </ResizablePanelGroup>
             )
@@ -928,6 +969,45 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
             >
               Enter fullscreen
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={runSummaryOpen} onOpenChange={setRunSummaryOpen}>
+        <AlertDialogContent className="bg-[#050505] border-white/10 text-white sm:max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Test Run Summary {lastRunScope === "all" ? "(Sample + Hidden)" : "(Sample)"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              {passedRunCount}/{runResults.length} test cases passed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="max-h-[55vh] overflow-auto space-y-2 pr-1">
+            {runResults.map((r, i) => (
+              <div key={`${r.visibility ?? "sample"}-${i}`} className="rounded-lg border border-white/10 bg-white/2 p-3">
+                <p className={`text-sm font-semibold ${r.passed ? "text-green-400" : "text-red-400"}`}>
+                  {(r.visibility === "hidden" ? "Hidden" : "Sample") + ` ${i + 1}: ` + (r.passed ? "PASS" : "FAIL")}{" "}
+                  <span className="text-slate-400 font-medium">({r.status})</span>
+                </p>
+                {r.visibility === "sample" ? (
+                  <p className="text-xs text-slate-400 mt-1">
+                    input: <span className="text-slate-300">{String(r.input ?? "").trim() || "—"}</span> | expected:{" "}
+                    <span className="text-slate-300">{String(r.expected ?? "").trim() || "—"}</span>
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/15 bg-transparent text-slate-300 hover:bg-white/10 hover:text-white">
+              Close
+            </AlertDialogCancel>
+            {allRunResultsPassed && canGoToNextCoding ? (
+              <AlertDialogAction className="bg-primary text-black font-bold" onClick={goNextCodingQuestion}>
+                Next Question
+              </AlertDialogAction>
+            ) : null}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

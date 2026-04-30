@@ -18,8 +18,6 @@ import {
   Users,
   GraduationCap,
   Shield,
-  Library,
-  Layers,
   NotebookPen,
   Bell,
 } from "lucide-react";
@@ -72,19 +70,19 @@ const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
-  {
-    name: "LEARN",
-    href: "/learn/system-design",
-    icon: <Library className="w-3.5 h-3.5" />,
-    dropdown: [
-      {
-        name: "System design",
-        href: "/learn/system-design",
-        description: "Course: patterns, core concepts & interviews",
-        icon: <Layers className="w-5 h-5" />,
-      },
-    ],
-  },
+  // {
+  //   name: "LEARN",
+  //   href: "/learn/system-design",
+  //   icon: <Library className="w-3.5 h-3.5" />,
+  //   dropdown: [
+  //     {
+  //       name: "System design",
+  //       href: "/learn/system-design",
+  //       description: "Course: patterns, core concepts & interviews",
+  //       icon: <Layers className="w-5 h-5" />,
+  //     },
+  //   ],
+  // },
   { name: "BLOGS", href: "/blogs", icon: <BookOpen className="w-3.5 h-3.5" /> },
   { name: "CONTACT US", href: "/contact", icon: <Mail className="w-3.5 h-3.5" /> },
 ];
