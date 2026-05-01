@@ -3,6 +3,7 @@ import mongoose, { Schema, model, models, Document } from "mongoose";
 export interface MCQQuestion {
   questionText: string;
   options: string[];
+  difficulty?: "easy" | "medium" | "hard";
   /** single-select (default): one correct index */
   correctOption?: number;
   /** multi-select: all correct indices (at least 2) */
@@ -13,6 +14,7 @@ export interface MCQQuestion {
 
 export interface CodingProblem {
   title: string;
+  difficulty?: "easy" | "medium" | "hard";
   description: string;
   inputFormat: string;
   outputFormat: string;
@@ -57,6 +59,7 @@ const TestSchema = new Schema<TestDocument>(
       {
         questionText: { type: String, required: true },
         options: [{ type: String, required: true }],
+        difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
         correctOption: { type: Number },
         correctOptions: [{ type: Number }],
         selectionType: { type: String, enum: ["single", "multiple"], default: "single" },
@@ -66,6 +69,7 @@ const TestSchema = new Schema<TestDocument>(
     codingProblems: [
       {
         title: { type: String, required: true },
+        difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
         description: { type: String, required: true },
         inputFormat: { type: String },
         outputFormat: { type: String },

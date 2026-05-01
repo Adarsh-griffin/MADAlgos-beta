@@ -84,6 +84,14 @@ function getSecondsLeft(usedAt: string | Date | undefined, durationMinutes: numb
   return Math.max(0, Math.floor((endMs - Date.now()) / 1000));
 }
 
+function formatDifficultyLabel(value: unknown): string {
+  const normalized = String(value || "all").trim().toLowerCase();
+  if (normalized === "easy") return "Easy";
+  if (normalized === "medium") return "Medium";
+  if (normalized === "hard") return "Hard";
+  return "All";
+}
+
 export function TestRoom({ test, tokenData }: TestRoomProps) {
   const mcqs = (test.mcqs || []) as any[];
   const codingProblems = (test.codingProblems || []) as any[];
@@ -556,6 +564,8 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const hasRunResults = runResults.length > 0;
   const allRunResultsPassed = hasRunResults && passedRunCount === runResults.length;
   const canGoToNextCoding = typeof activePanel === "number" && codingIdx < codingProblems.length - 1;
+  const activeMcqDifficulty = formatDifficultyLabel(tokenData?.difficultyPreference?.mcq);
+  const activeCodingDifficulty = formatDifficultyLabel(tokenData?.difficultyPreference?.coding);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-black text-white overflow-hidden">
@@ -575,7 +585,17 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
             </span>
           </div>
           <div className="h-4 w-px bg-white/10 hidden md:block shrink-0" />
-          <h1 className="text-slate-300 font-medium truncate max-w-[200px] md:max-w-md">{test.title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-slate-300 font-medium truncate max-w-[200px] md:max-w-md">{test.title}</h1>
+            <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider">
+              <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-slate-300">
+                MCQ: {activeMcqDifficulty}
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-slate-300">
+                Coding: {activeCodingDifficulty}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-4 shrink-0">

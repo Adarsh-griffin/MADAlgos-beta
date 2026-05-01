@@ -31,6 +31,7 @@ const PracticeTestSchema = new Schema<PracticeTestDocument>(
       {
         questionText: { type: String, required: true },
         options: [{ type: String, required: true }],
+        difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
         correctOption: { type: Number },
         correctOptions: [{ type: Number }],
         selectionType: { type: String, enum: ["single", "multiple"], default: "single" },
@@ -40,6 +41,7 @@ const PracticeTestSchema = new Schema<PracticeTestDocument>(
     codingProblems: [
       {
         title: { type: String, required: true },
+        difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
         description: { type: String, required: true },
         inputFormat: { type: String },
         outputFormat: { type: String },

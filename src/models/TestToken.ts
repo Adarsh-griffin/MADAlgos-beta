@@ -17,6 +17,10 @@ export interface TestTokenDocument extends Document {
   submittedAt?: Date; // When they finished
   activatedIp?: string;
   isStarted: boolean;
+  difficultyPreference?: {
+    mcq?: "all" | "easy" | "medium" | "hard";
+    coding?: "all" | "easy" | "medium" | "hard";
+  };
   draftSubmission?: {
     mcqAnswers: Array<{ questionIndex: number; selectedOption?: number; selectedOptions?: number[] }>;
     codingSubmissions: Array<{ problemIndex: number; sourceCode: string; language: string }>;
@@ -40,6 +44,10 @@ const TestTokenSchema = new Schema<TestTokenDocument>(
     submittedAt: { type: Date },
     activatedIp: { type: String },
     isStarted: { type: Boolean, default: false },
+    difficultyPreference: {
+      mcq: { type: String, enum: ["all", "easy", "medium", "hard"], default: "all" },
+      coding: { type: String, enum: ["all", "easy", "medium", "hard"], default: "all" },
+    },
     draftSubmission: {
       mcqAnswers: [
         {

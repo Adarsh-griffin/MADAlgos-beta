@@ -11,6 +11,8 @@ import { getSiteSettings, getUtcMondayStart } from "@/lib/site-settings";
 
 const BodySchema = z.object({
   slug: z.string().min(1).max(200),
+  mcqDifficulty: z.enum(["all", "easy", "medium", "hard"]).optional(),
+  codingDifficulty: z.enum(["all", "easy", "medium", "hard"]).optional(),
 });
 
 /**
@@ -31,6 +33,8 @@ export async function POST(req: Request) {
     }
 
     const slug = parsed.data.slug.trim().toLowerCase();
+    const mcqDifficulty = parsed.data.mcqDifficulty ?? "all";
+    const codingDifficulty = parsed.data.codingDifficulty ?? "all";
     await connectDB();
 
     const practice = await PracticeTestModel.findOne({
@@ -90,16 +94,20 @@ export async function POST(req: Request) {
             });
           }
         } else {
-        if (!existing.profileSubmittedAt) {
-          existing.profileSubmittedAt = now;
-          existing.studentName = displayName;
-          existing.linkedUserId = new mongoose.Types.ObjectId(session.uid);
-        }
-        await existing.save();
-        return NextResponse.json({
-          url: `/test/${existing.token}?pre=1`,
-          resumed: true,
-        });
+          if (!existing.profileSubmittedAt) {
+            existing.profileSubmittedAt = now;
+            existing.studentName = displayName;
+            existing.linkedUserId = new mongoose.Types.ObjectId(session.uid);
+          }
+          existing.difficultyPreference = {
+            mcq: mcqDifficulty,
+            coding: codingDifficulty,
+          };
+          await existing.save();
+          return NextResponse.json({
+            url: `/test/${existing.token}?pre=1`,
+            resumed: true,
+          });
         }
       }
     }
@@ -144,6 +152,10 @@ export async function POST(req: Request) {
       profileSubmittedAt: now,
       linkedUserId: new mongoose.Types.ObjectId(session.uid),
       expiresAt: expirationDate,
+      difficultyPreference: {
+        mcq: mcqDifficulty,
+        coding: codingDifficulty,
+      },
       // Start is intentionally deferred to /api/assessment/start after instruction consent + countdown.
       isStarted: false,
     });

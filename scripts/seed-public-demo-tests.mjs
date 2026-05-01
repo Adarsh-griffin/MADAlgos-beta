@@ -42,6 +42,20 @@ loadEnvFiles();
 
 const PRACTICE = "practice_test";
 const USERS = "users";
+const LOGO_DEV_TOKEN =
+  process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN ??
+  process.env.LOGO_DEV_TOKEN ??
+  "pk_J68nV3eLS8C3y2kWZfKEFw";
+
+function logoDevUrl(domain) {
+  const d = String(domain || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .split("/")[0];
+  if (!d) return "";
+  return `https://img.logo.dev/${d}?token=${LOGO_DEV_TOKEN}&retina=true`;
+}
 
 const pyReadIntList = `import sys
 
@@ -505,16 +519,286 @@ Example: gcd(48, 18) = 6.`,
       },
     ],
   },
+  {
+    publicSlug: "amazon-hiring-practice",
+    title: "Amazon — hiring practice",
+    duration: 50,
+    demoCardSubtitle:
+      "OA-style rounds: arrays/strings + implementation-focused coding with edge-case heavy hidden tests.",
+    demoLogoDomain: "amazon.com",
+    demoCardImageUrl:
+      "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=800&q=80&auto=format&fit=crop",
+    demoSortOrder: 5,
+    mcqs: [
+      { questionText: "Which data structure is ideal for BFS traversal?", options: ["Stack", "Queue", "Heap", "Trie"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Amortized time for push in dynamic array is typically:", options: ["O(n)", "O(log n)", "O(1)", "O(n log n)"], correctOption: 2, marks: 5, selectionType: "single" },
+      { questionText: "If a hash table load factor grows too much, preferred action is:", options: ["Reverse keys", "Rehash/resize", "Sort all keys", "Use recursion"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Two-pointer technique is most useful when:", options: ["Data is random graph", "Input often has ordering/monotonicity", "Only recursion allowed", "Memory is infinite"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Worst-case lookup in an unbalanced BST is:", options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], correctOption: 2, marks: 5, selectionType: "single" },
+    ],
+    codingProblems: [
+      {
+        title: "Balanced bracket string",
+        description: "Given a bracket string of (), [] characters, print YES if balanced, else NO.",
+        inputFormat: "One line string.",
+        outputFormat: "YES or NO with newline.",
+        sampleTestCases: [{ input: "([])\n", output: "YES\n" }],
+        hiddenTestCases: [{ input: "([)]\n", output: "NO\n" }, { input: "()[]\n", output: "YES\n" }],
+        marks: 20,
+        starterCode: starterBrackets,
+      },
+      {
+        title: "Reverse the string",
+        description: "Read one line and print the reversed string.",
+        inputFormat: "Single line string.",
+        outputFormat: "Reversed string with newline.",
+        sampleTestCases: [{ input: "amazon\n", output: "nozama\n" }],
+        hiddenTestCases: [{ input: "a\n", output: "a\n" }, { input: "madalgos\n", output: "sogladam\n" }],
+        marks: 20,
+        starterCode: starterReverse,
+      },
+    ],
+  },
+  {
+    publicSlug: "meta-hiring-practice",
+    title: "Meta — hiring practice",
+    duration: 48,
+    demoCardSubtitle:
+      "Product-company style MCQ + coding mix focusing on linear scans, hashing, and clean implementation.",
+    demoLogoDomain: "meta.com",
+    demoCardImageUrl:
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80&auto=format&fit=crop",
+    demoSortOrder: 6,
+    mcqs: [
+      { questionText: "Typical average lookup complexity in hash set:", options: ["O(1)", "O(log n)", "O(n)", "O(n²)"], correctOption: 0, marks: 5, selectionType: "single" },
+      { questionText: "A stable sort guarantees:", options: ["In-place only", "Equal keys keep relative order", "Always O(n)", "No recursion"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Prefix sums help answer range-sum queries in:", options: ["O(1) per query after preprocess", "O(n) per query", "O(log n) preprocess", "Impossible"], correctOption: 0, marks: 5, selectionType: "single" },
+      { questionText: "When using sliding window, window movement is usually:", options: ["Random", "Monotonic over indices", "Recursive tree-only", "Hash collision-based"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Time to traverse graph with V nodes and E edges using BFS:", options: ["O(V)", "O(E)", "O(V+E)", "O(VE)"], correctOption: 2, marks: 5, selectionType: "single" },
+    ],
+    codingProblems: [
+      {
+        title: "Maximum subarray sum (Kadane)",
+        description: "Given n integers, print maximum contiguous subarray sum.",
+        inputFormat: "Line 1: n. Line 2: n integers.",
+        outputFormat: "One integer with newline.",
+        sampleTestCases: [{ input: "5\n1 -3 2 1 -2\n", output: "3\n" }],
+        hiddenTestCases: [{ input: "4\n-1 -2 -3 -4\n", output: "-1\n" }, { input: "6\n3 -2 5 -1 3 -4\n", output: "8\n" }],
+        marks: 20,
+        starterCode: starterKadane,
+      },
+      {
+        title: "Is prime?",
+        description: "Given n, print 1 if n is prime else 0.",
+        inputFormat: "Single integer n.",
+        outputFormat: "1 or 0 with newline.",
+        sampleTestCases: [{ input: "7\n", output: "1\n" }],
+        hiddenTestCases: [{ input: "4\n", output: "0\n" }, { input: "2\n", output: "1\n" }],
+        marks: 20,
+        starterCode: starterPrime,
+      },
+    ],
+  },
+  {
+    publicSlug: "apple-hiring-practice",
+    title: "Apple — hiring practice",
+    duration: 45,
+    demoCardSubtitle:
+      "Core CS + implementation discipline: correctness-first questions with strict hidden validation.",
+    demoLogoDomain: "apple.com",
+    demoCardImageUrl:
+      "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&q=80&auto=format&fit=crop",
+    demoSortOrder: 7,
+    mcqs: [
+      { questionText: "Which sorting algorithm is NOT comparison-based?", options: ["Merge sort", "Heap sort", "Counting sort", "Quick sort"], correctOption: 2, marks: 5, selectionType: "single" },
+      { questionText: "Binary search requires input to be:", options: ["Unique only", "Sorted", "Prime-sized", "2D"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "A min-heap guarantees:", options: ["Sorted traversal", "Root is minimum", "Leaves are sorted", "O(1) delete all"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Recursion depth risk in practice is mainly:", options: ["Hash collisions", "Stack overflow", "DNS failure", "Cache line split"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Which is best for fast membership checks?", options: ["Array scan", "Hash set", "Linked list", "Plain string"], correctOption: 1, marks: 5, selectionType: "single" },
+    ],
+    codingProblems: [
+      {
+        title: "Sorted array search (exists?)",
+        description: "Given sorted integers and target, print 1 if target exists else 0.",
+        inputFormat: "Line 1: n target. Line 2: n sorted ints.",
+        outputFormat: "1 or 0 with newline.",
+        sampleTestCases: [{ input: "6 4\n1 3 4 5 7 9\n", output: "1\n" }],
+        hiddenTestCases: [{ input: "5 10\n1 2 3 4 5\n", output: "0\n" }, { input: "1 7\n7\n", output: "1\n" }],
+        marks: 20,
+        starterCode: starterBinarySearch,
+      },
+      {
+        title: "GCD (Euclidean)",
+        description: "Read a and b, print gcd(a,b).",
+        inputFormat: "One line: a b",
+        outputFormat: "One integer with newline.",
+        sampleTestCases: [{ input: "48 18\n", output: "6\n" }],
+        hiddenTestCases: [{ input: "7 13\n", output: "1\n" }, { input: "100 25\n", output: "25\n" }],
+        marks: 20,
+        starterCode: starterGcd,
+      },
+    ],
+  },
+  {
+    publicSlug: "netflix-hiring-practice",
+    title: "Netflix — hiring practice",
+    duration: 50,
+    demoCardSubtitle:
+      "Performance-minded coding set: arrays, search, and edge-case handling under timed pressure.",
+    demoLogoDomain: "netflix.com",
+    demoCardImageUrl:
+      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&q=80&auto=format&fit=crop",
+    demoSortOrder: 8,
+    mcqs: [
+      { questionText: "Asymptotically faster growth means:", options: ["Smaller input only", "Worse scalability for large n", "Always less memory", "No difference"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Which complexity is better at scale?", options: ["O(n²)", "O(n log n)", "O(2ⁿ)", "O(n!)"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Caching helps mainly by reducing:", options: ["Code readability", "Repeated expensive computation/latency", "Need for tests", "CPU clock speed"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Two-sum optimal common approach uses:", options: ["Nested loops only", "Hash map", "DFS tree", "Heap sort each step"], correctOption: 1, marks: 5, selectionType: "single" },
+      { questionText: "Space complexity of iterative binary search is:", options: ["O(n)", "O(log n)", "O(1)", "O(n log n)"], correctOption: 2, marks: 5, selectionType: "single" },
+    ],
+    codingProblems: [
+      {
+        title: "Reverse the string",
+        description: "Read one line and print it reversed.",
+        inputFormat: "Single line.",
+        outputFormat: "Reversed line with newline.",
+        sampleTestCases: [{ input: "stream\n", output: "maerts\n" }],
+        hiddenTestCases: [{ input: "a\n", output: "a\n" }, { input: "planet\n", output: "tenalp\n" }],
+        marks: 20,
+        starterCode: starterReverse,
+      },
+      {
+        title: "Sum of digits",
+        description: "Given non-negative integer n, print sum of its digits.",
+        inputFormat: "Single integer n.",
+        outputFormat: "Single integer with newline.",
+        sampleTestCases: [{ input: "904\n", output: "13\n" }],
+        hiddenTestCases: [{ input: "0\n", output: "0\n" }, { input: "999\n", output: "27\n" }],
+        marks: 20,
+        starterCode: starterSumDigits,
+      },
+    ],
+  },
+  {
+    publicSlug: "tech-mahindra-hiring-practice",
+    title: "Tech Mahindra — hiring practice",
+    duration: 35,
+    demoCardSubtitle:
+      "Services-style round: aptitude + CS fundamentals + two compact coding tasks for screening.",
+    demoLogoDomain: "techmahindra.com",
+    demoCardImageUrl:
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop",
+    demoSortOrder: 9,
+    mcqs: [
+      { questionText: "Simple interest on P at rate R for T years is:", options: ["P*R*T", "P*R*T/100", "P+R+T", "P*R/100T"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "In OOP, encapsulation means:", options: ["Only inheritance", "Bundling data with methods + controlled access", "Only polymorphism", "No classes"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "HTTP 500 indicates:", options: ["Client typo", "Server-side error", "Auth success", "Redirect permanent"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "Queue follows:", options: ["LIFO", "FIFO", "Random order", "Priority always"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "Best known complexity for checking primality up to sqrt(n) is:", options: ["O(n)", "O(log n)", "O(sqrt(n))", "O(n²)"], correctOption: 2, marks: 4, selectionType: "single" },
+    ],
+    codingProblems: [
+      {
+        title: "Is prime?",
+        description: "Given integer n (>=2), print 1 if prime else 0.",
+        inputFormat: "Single integer n.",
+        outputFormat: "1 or 0 with newline.",
+        sampleTestCases: [{ input: "7\n", output: "1\n" }],
+        hiddenTestCases: [{ input: "4\n", output: "0\n" }, { input: "2\n", output: "1\n" }],
+        marks: 16,
+        starterCode: starterPrime,
+      },
+      {
+        title: "Factorial",
+        description: "Compute n! for 0 <= n <= 12.",
+        inputFormat: "Single integer n.",
+        outputFormat: "Single integer with newline.",
+        sampleTestCases: [{ input: "5\n", output: "120\n" }],
+        hiddenTestCases: [{ input: "0\n", output: "1\n" }, { input: "7\n", output: "5040\n" }],
+        marks: 16,
+        starterCode: starterFactorial,
+      },
+    ],
+  },
+  {
+    publicSlug: "infosys-hiring-practice",
+    title: "Infosys — hiring practice",
+    duration: 38,
+    demoCardSubtitle:
+      "Campus screening style: quant/logical + programming basics with practical coding drills.",
+    demoLogoDomain: "infosys.com",
+    demoCardImageUrl:
+      "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80&auto=format&fit=crop",
+    demoSortOrder: 10,
+    mcqs: [
+      { questionText: "If x:y = 3:4 and y=20, x is:", options: ["10", "12", "15", "16"], correctOption: 2, marks: 4, selectionType: "single" },
+      { questionText: "Which SQL command removes rows but keeps table structure?", options: ["DROP", "DELETE", "REMOVE", "ERASE"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "Binary representation of decimal 10 is:", options: ["1001", "1010", "1100", "1110"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "A function calling itself is:", options: ["Iteration", "Recursion", "Encapsulation", "Compilation"], correctOption: 1, marks: 4, selectionType: "single" },
+      { questionText: "Time complexity of linear search is:", options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], correctOption: 2, marks: 4, selectionType: "single" },
+    ],
+    codingProblems: [
+      {
+        title: "Sum of digits",
+        description: "Given non-negative integer n, print sum of digits.",
+        inputFormat: "Single integer n.",
+        outputFormat: "One integer with newline.",
+        sampleTestCases: [{ input: "904\n", output: "13\n" }],
+        hiddenTestCases: [{ input: "0\n", output: "0\n" }, { input: "999\n", output: "27\n" }],
+        marks: 16,
+        starterCode: starterSumDigits,
+      },
+      {
+        title: "GCD (Euclidean)",
+        description: "Read a and b, print gcd(a,b).",
+        inputFormat: "One line: a b",
+        outputFormat: "One integer with newline.",
+        sampleTestCases: [{ input: "48 18\n", output: "6\n" }],
+        hiddenTestCases: [{ input: "7 13\n", output: "1\n" }, { input: "100 25\n", output: "25\n" }],
+        marks: 16,
+        starterCode: starterGcd,
+      },
+    ],
+  },
 ];
 
+function pickDifficultyByIndex(index, total) {
+  if (total <= 1) return "medium";
+  const ratio = index / (total - 1);
+  if (ratio < 0.34) return "easy";
+  if (ratio < 0.67) return "medium";
+  return "hard";
+}
+
+function withDifficultyTags(pack) {
+  const mcqs = Array.isArray(pack.mcqs)
+    ? pack.mcqs.map((q, idx, arr) => ({
+        ...q,
+        difficulty: String(q?.difficulty || pickDifficultyByIndex(idx, arr.length)).toLowerCase(),
+      }))
+    : [];
+
+  const codingProblems = Array.isArray(pack.codingProblems)
+    ? pack.codingProblems.map((q, idx, arr) => ({
+        ...q,
+        difficulty: String(q?.difficulty || pickDifficultyByIndex(idx, arr.length)).toLowerCase(),
+      }))
+    : [];
+
+  return {
+    ...pack,
+    mcqs,
+    codingProblems,
+  };
+}
+
 async function main() {
-  const uri = process.env.MONGODB_URI?.trim();
+  const uri = process.env.MONGODB_URI?.trim() || process.env.DATABASE_URI?.trim();
   if (!uri) {
-    console.error("MONGODB_URI is not set.");
+    console.error("MONGODB_URI / DATABASE_URI is not set.");
     process.exit(1);
   }
 
-  const dbName = process.env.MONGODB_DB_NAME?.trim();
+  const dbName = process.env.MONGODB_DB_NAME?.trim() || process.env.DATABASE_NAME?.trim();
   await mongoose.connect(uri, dbName ? { dbName } : {});
 
   const db = mongoose.connection.db;
@@ -532,7 +816,8 @@ async function main() {
   const practiceCol = db.collection(PRACTICE);
   const now = new Date();
 
-  for (const pack of PACKS) {
+  for (const rawPack of PACKS) {
+    const pack = withDifficultyTags(rawPack);
     const {
       publicSlug,
       title,
@@ -540,10 +825,13 @@ async function main() {
       demoCardSubtitle,
       demoCardImageUrl,
       demoLogoDomain,
+      demoBrandLogoUrl,
       demoSortOrder,
       mcqs,
       codingProblems,
     } = pack;
+
+    const resolvedLogoUrl = String(demoBrandLogoUrl || "").trim() || logoDevUrl(demoLogoDomain);
 
     await practiceCol.updateOne(
       { publicSlug },
@@ -558,7 +846,9 @@ async function main() {
           demoCardSubtitle,
           demoCardImageUrl,
           demoLogoDomain,
+          demoBrandLogoUrl: resolvedLogoUrl,
           demoSortOrder,
+          showOnHomepage: true,
           updatedAt: now,
         },
         $setOnInsert: {
