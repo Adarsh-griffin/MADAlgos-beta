@@ -18,6 +18,13 @@ export interface PracticeTestDocument extends Document {
   demoSortOrder?: number;
   /** Featured cards on the homepage (`Judge your skills`); `/available-tests` lists all public slugs. */
   showOnHomepage?: boolean;
+  assessmentDelivery?: {
+    mcqPerAttempt: number;
+    codingPerAttempt: number;
+    easyDurationMinutes: number;
+    mediumDurationMinutes: number;
+    hardDurationMinutes: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -78,6 +85,13 @@ const PracticeTestSchema = new Schema<PracticeTestDocument>(
     demoLogoDomain: { type: String, default: "" },
     demoSortOrder: { type: Number, default: 0 },
     showOnHomepage: { type: Boolean, default: true, index: true },
+    assessmentDelivery: {
+      mcqPerAttempt: { type: Number, default: 4 },
+      codingPerAttempt: { type: Number, default: 2 },
+      easyDurationMinutes: { type: Number, default: 35 },
+      mediumDurationMinutes: { type: Number, default: 45 },
+      hardDurationMinutes: { type: Number, default: 55 },
+    },
   },
   { collection: "practice_test", timestamps: true }
 );

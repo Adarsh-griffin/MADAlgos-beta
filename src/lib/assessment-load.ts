@@ -11,22 +11,62 @@ export type AssessmentLean = Record<string, unknown> & {
   codingProblems: unknown[];
 };
 
-type DifficultyValue = "all" | "easy" | "medium" | "hard";
+type DifficultyValue = "easy" | "medium" | "hard";
+type DeliveryConfig = {
+  mcqPerAttempt: number;
+  codingPerAttempt: number;
+  easyDurationMinutes: number;
+  mediumDurationMinutes: number;
+  hardDurationMinutes: number;
+};
 
 function normalizeDifficulty(input: unknown): DifficultyValue {
   const value = String(input || "").trim().toLowerCase();
   if (value === "easy" || value === "medium" || value === "hard") return value;
-  return "all";
+  return "medium";
 }
 
 function filterByDifficulty(items: unknown[], selected: DifficultyValue): unknown[] {
-  if (selected === "all") return items;
   const filtered = items.filter((item) => {
     const raw = (item as { difficulty?: unknown })?.difficulty;
     return String(raw || "").trim().toLowerCase() === selected;
   });
   // Backward compatibility for legacy tests without difficulty tagging.
   return filtered.length ? filtered : items;
+}
+
+function pickLimited(items: unknown[], count: number): unknown[] {
+  if (!Array.isArray(items)) return [];
+  return items.slice(0, Math.max(0, count));
+}
+
+function toPositiveInt(value: unknown, fallback: number, min = 1, max = 300): number {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  const intVal = Math.round(num);
+  return Math.min(max, Math.max(min, intVal));
+}
+
+function normalizeDeliveryConfig(raw: unknown): DeliveryConfig {
+  const cfg = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  return {
+    mcqPerAttempt: toPositiveInt(cfg.mcqPerAttempt, 4, 1, 50),
+    codingPerAttempt: toPositiveInt(cfg.codingPerAttempt, 2, 1, 20),
+    easyDurationMinutes: toPositiveInt(cfg.easyDurationMinutes, 35, 5, 180),
+    mediumDurationMinutes: toPositiveInt(cfg.mediumDurationMinutes, 45, 5, 180),
+    hardDurationMinutes: toPositiveInt(cfg.hardDurationMinutes, 55, 5, 180),
+  };
+}
+
+function adjustDurationByDifficulty(
+  selectedMcqDifficulty: DifficultyValue,
+  selectedCodingDifficulty: DifficultyValue,
+  deliveryConfig: DeliveryConfig
+): number {
+  const selected = [selectedMcqDifficulty, selectedCodingDifficulty];
+  if (selected.includes("hard")) return deliveryConfig.hardDurationMinutes;
+  if (selected.includes("medium")) return deliveryConfig.mediumDurationMinutes;
+  return deliveryConfig.easyDurationMinutes;
 }
 
 /**
@@ -41,12 +81,28 @@ export async function loadAssessmentForToken(tokenDoc: {
   const selectedCodingDifficulty = normalizeDifficulty(tokenDoc.difficultyPreference?.coding);
 
   const withDifficultyFilters = (assessment: AssessmentLean): AssessmentLean => ({
+    ...(assessment as Record<string, unknown>),
     ...assessment,
-    mcqs: filterByDifficulty(Array.isArray(assessment.mcqs) ? assessment.mcqs : [], selectedMcqDifficulty),
-    codingProblems: filterByDifficulty(
-      Array.isArray(assessment.codingProblems) ? assessment.codingProblems : [],
-      selectedCodingDifficulty
-    ),
+    ...(function () {
+      const deliveryConfig = normalizeDeliveryConfig(
+        (assessment as Record<string, unknown>).assessmentDelivery
+      );
+      return {
+        duration: adjustDurationByDifficulty(
+          selectedMcqDifficulty,
+          selectedCodingDifficulty,
+          deliveryConfig
+        ),
+        mcqs: pickLimited(
+          filterByDifficulty(Array.isArray(assessment.mcqs) ? assessment.mcqs : [], selectedMcqDifficulty),
+          deliveryConfig.mcqPerAttempt
+        ),
+        codingProblems: pickLimited(
+          filterByDifficulty(Array.isArray(assessment.codingProblems) ? assessment.codingProblems : [], selectedCodingDifficulty),
+          deliveryConfig.codingPerAttempt
+        ),
+      };
+    })(),
   });
 
   if (tokenDoc.practiceTestId) {

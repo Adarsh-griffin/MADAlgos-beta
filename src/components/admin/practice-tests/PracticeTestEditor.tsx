@@ -18,6 +18,11 @@ import { codingPickKey, mcqPickKey } from "@/lib/assessment-pick-keys";
 const DEFAULT_TITLE = "Practice pack";
 const DEFAULT_DURATION = 45;
 const DEFAULT_VALIDITY = 168;
+const DEFAULT_MCQ_PER_ATTEMPT = 4;
+const DEFAULT_CODING_PER_ATTEMPT = 2;
+const DEFAULT_EASY_DURATION = 35;
+const DEFAULT_MEDIUM_DURATION = 45;
+const DEFAULT_HARD_DURATION = 55;
 
 function PracticeTestEditorInner({ editId }: { editId?: string }) {
   const router = useRouter();
@@ -41,6 +46,11 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
   const [uploadingCardImage, setUploadingCardImage] = useState(false);
   const [uploadingBannerImage, setUploadingBannerImage] = useState(false);
   const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
+  const [mcqPerAttempt, setMcqPerAttempt] = useState(DEFAULT_MCQ_PER_ATTEMPT);
+  const [codingPerAttempt, setCodingPerAttempt] = useState(DEFAULT_CODING_PER_ATTEMPT);
+  const [easyDurationMinutes, setEasyDurationMinutes] = useState(DEFAULT_EASY_DURATION);
+  const [mediumDurationMinutes, setMediumDurationMinutes] = useState(DEFAULT_MEDIUM_DURATION);
+  const [hardDurationMinutes, setHardDurationMinutes] = useState(DEFAULT_HARD_DURATION);
 
   const pickedMcqKeys = useMemo(() => mcqs.map(mcqPickKey), [mcqs]);
   const pickedCodingKeys = useMemo(() => problems.map(codingPickKey), [problems]);
@@ -75,6 +85,14 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
         if (typeof data.demoBrandLogoUrl === "string") setDemoBrandLogoUrl(data.demoBrandLogoUrl);
         if (typeof data.demoLogoDomain === "string") setDemoLogoDomain(data.demoLogoDomain);
         if (typeof data.demoSortOrder === "number") setDemoSortOrder(data.demoSortOrder);
+        if (data.assessmentDelivery && typeof data.assessmentDelivery === "object") {
+          const d = data.assessmentDelivery as Record<string, unknown>;
+          if (typeof d.mcqPerAttempt === "number") setMcqPerAttempt(d.mcqPerAttempt);
+          if (typeof d.codingPerAttempt === "number") setCodingPerAttempt(d.codingPerAttempt);
+          if (typeof d.easyDurationMinutes === "number") setEasyDurationMinutes(d.easyDurationMinutes);
+          if (typeof d.mediumDurationMinutes === "number") setMediumDurationMinutes(d.mediumDurationMinutes);
+          if (typeof d.hardDurationMinutes === "number") setHardDurationMinutes(d.hardDurationMinutes);
+        }
       } catch {
         if (!cancelled) toast.error("Load failed.");
       } finally {
@@ -99,6 +117,13 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
     demoBrandLogoUrl: demoBrandLogoUrl.trim(),
     demoLogoDomain: demoLogoDomain.trim(),
     demoSortOrder,
+    assessmentDelivery: {
+      mcqPerAttempt,
+      codingPerAttempt,
+      easyDurationMinutes,
+      mediumDurationMinutes,
+      hardDurationMinutes,
+    },
   });
 
   const handleSave = async () => {
@@ -215,6 +240,67 @@ function PracticeTestEditorInner({ editId }: { editId?: string }) {
                   className="bg-white/5 border-white/10 text-white rounded-xl"
                 />
               </div>
+            </div>
+            <div className="pt-2 border-t border-white/10">
+              <h4 className="text-sm font-semibold text-white mb-4">Assessment delivery settings</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-slate-400">MCQ per assessment</Label>
+                  <Input
+                    type="number"
+                    value={mcqPerAttempt}
+                    onChange={(e) => setMcqPerAttempt(Number.parseInt(e.target.value, 10) || DEFAULT_MCQ_PER_ATTEMPT)}
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-400">Coding per assessment</Label>
+                  <Input
+                    type="number"
+                    value={codingPerAttempt}
+                    onChange={(e) =>
+                      setCodingPerAttempt(Number.parseInt(e.target.value, 10) || DEFAULT_CODING_PER_ATTEMPT)
+                    }
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-400">Easy duration (minutes)</Label>
+                  <Input
+                    type="number"
+                    value={easyDurationMinutes}
+                    onChange={(e) =>
+                      setEasyDurationMinutes(Number.parseInt(e.target.value, 10) || DEFAULT_EASY_DURATION)
+                    }
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-400">Medium duration (minutes)</Label>
+                  <Input
+                    type="number"
+                    value={mediumDurationMinutes}
+                    onChange={(e) =>
+                      setMediumDurationMinutes(Number.parseInt(e.target.value, 10) || DEFAULT_MEDIUM_DURATION)
+                    }
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-400">Hard duration (minutes)</Label>
+                  <Input
+                    type="number"
+                    value={hardDurationMinutes}
+                    onChange={(e) =>
+                      setHardDurationMinutes(Number.parseInt(e.target.value, 10) || DEFAULT_HARD_DURATION)
+                    }
+                    className="bg-white/5 border-white/10 text-white rounded-xl"
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-3">
+                Students will see only Easy/Medium/Hard options. Delivery uses these counts and durations.
+              </p>
             </div>
           </section>
 

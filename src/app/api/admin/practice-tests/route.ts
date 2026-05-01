@@ -15,6 +15,13 @@ function requireAdmin() {
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+function toPositiveInt(value: unknown, fallback: number, min = 1, max = 300): number {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  const intVal = Math.round(num);
+  return Math.min(max, Math.max(min, intVal));
+}
+
 /** GET — list all practice tests (admin). */
 export async function GET() {
   const session = await requireAdmin();
@@ -61,6 +68,7 @@ export async function POST(req: Request) {
       demoLogoDomain,
       demoSortOrder,
       showOnHomepage: showOnHomepageRaw,
+      assessmentDelivery,
     } = body as Record<string, unknown>;
 
     if (!title || typeof title !== "string" || !String(title).trim()) {
@@ -106,6 +114,15 @@ export async function POST(req: Request) {
     const showOnHomepage =
       session.role === "SUPER_ADMIN" && typeof showOnHomepageRaw === "boolean" ? showOnHomepageRaw : true;
 
+    const deliveryRaw = (assessmentDelivery ?? {}) as Record<string, unknown>;
+    const deliveryConfig = {
+      mcqPerAttempt: toPositiveInt(deliveryRaw.mcqPerAttempt, 4, 1, 50),
+      codingPerAttempt: toPositiveInt(deliveryRaw.codingPerAttempt, 2, 1, 20),
+      easyDurationMinutes: toPositiveInt(deliveryRaw.easyDurationMinutes, 35, 5, 180),
+      mediumDurationMinutes: toPositiveInt(deliveryRaw.mediumDurationMinutes, 45, 5, 180),
+      hardDurationMinutes: toPositiveInt(deliveryRaw.hardDurationMinutes, 55, 5, 180),
+    };
+
     const doc = await PracticeTestModel.create({
       title: String(title).trim(),
       duration: Number.isFinite(Number(duration)) ? Number(duration) : 60,
@@ -126,6 +143,7 @@ export async function POST(req: Request) {
         .slice(0, 120),
       demoSortOrder: Number.isFinite(Number(demoSortOrder)) ? Number(demoSortOrder) : 0,
       showOnHomepage,
+      assessmentDelivery: deliveryConfig,
     });
 
     await syncTestContentToQuestionBank(mcqNorm.mcqs as never[], cleanedCoding as never[], session.uid).catch((err) =>

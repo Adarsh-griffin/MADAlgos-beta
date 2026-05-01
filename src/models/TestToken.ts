@@ -18,8 +18,8 @@ export interface TestTokenDocument extends Document {
   activatedIp?: string;
   isStarted: boolean;
   difficultyPreference?: {
-    mcq?: "all" | "easy" | "medium" | "hard";
-    coding?: "all" | "easy" | "medium" | "hard";
+    mcq?: "easy" | "medium" | "hard";
+    coding?: "easy" | "medium" | "hard";
   };
   draftSubmission?: {
     mcqAnswers: Array<{ questionIndex: number; selectedOption?: number; selectedOptions?: number[] }>;
@@ -45,8 +45,8 @@ const TestTokenSchema = new Schema<TestTokenDocument>(
     activatedIp: { type: String },
     isStarted: { type: Boolean, default: false },
     difficultyPreference: {
-      mcq: { type: String, enum: ["all", "easy", "medium", "hard"], default: "all" },
-      coding: { type: String, enum: ["all", "easy", "medium", "hard"], default: "all" },
+      mcq: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
+      coding: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
     },
     draftSubmission: {
       mcqAnswers: [

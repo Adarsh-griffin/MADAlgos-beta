@@ -11,8 +11,8 @@ import { getSiteSettings, getUtcMondayStart } from "@/lib/site-settings";
 
 const BodySchema = z.object({
   slug: z.string().min(1).max(200),
-  mcqDifficulty: z.enum(["all", "easy", "medium", "hard"]).optional(),
-  codingDifficulty: z.enum(["all", "easy", "medium", "hard"]).optional(),
+  mcqDifficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  codingDifficulty: z.enum(["easy", "medium", "hard"]).optional(),
 });
 
 /**
@@ -33,8 +33,8 @@ export async function POST(req: Request) {
     }
 
     const slug = parsed.data.slug.trim().toLowerCase();
-    const mcqDifficulty = parsed.data.mcqDifficulty ?? "all";
-    const codingDifficulty = parsed.data.codingDifficulty ?? "all";
+    const mcqDifficulty = parsed.data.mcqDifficulty ?? "medium";
+    const codingDifficulty = parsed.data.codingDifficulty ?? "medium";
     await connectDB();
 
     const practice = await PracticeTestModel.findOne({

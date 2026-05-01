@@ -15,6 +15,13 @@ async function requireAdmin() {
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+function toPositiveInt(value: unknown, fallback: number, min = 1, max = 300): number {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  const intVal = Math.round(num);
+  return Math.min(max, Math.max(min, intVal));
+}
+
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, ctx: Ctx) {
@@ -54,6 +61,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
       demoLogoDomain,
       demoSortOrder,
       showOnHomepage: showOnHomepageRaw,
+      assessmentDelivery,
     } = body as Record<string, unknown>;
 
     if (!title || typeof title !== "string" || !String(title).trim()) {
@@ -114,6 +122,35 @@ export async function PATCH(req: Request, ctx: Ctx) {
         .split("/")[0]
         .slice(0, 120),
       demoSortOrder: Number.isFinite(Number(demoSortOrder)) ? Number(demoSortOrder) : 0,
+    };
+    const existingDelivery = (existing.get("assessmentDelivery") as Record<string, unknown> | undefined) ?? {};
+    const deliveryRaw = (assessmentDelivery ?? {}) as Record<string, unknown>;
+    patch.assessmentDelivery = {
+      mcqPerAttempt: toPositiveInt(deliveryRaw.mcqPerAttempt, Number(existingDelivery.mcqPerAttempt) || 4, 1, 50),
+      codingPerAttempt: toPositiveInt(
+        deliveryRaw.codingPerAttempt,
+        Number(existingDelivery.codingPerAttempt) || 2,
+        1,
+        20
+      ),
+      easyDurationMinutes: toPositiveInt(
+        deliveryRaw.easyDurationMinutes,
+        Number(existingDelivery.easyDurationMinutes) || 35,
+        5,
+        180
+      ),
+      mediumDurationMinutes: toPositiveInt(
+        deliveryRaw.mediumDurationMinutes,
+        Number(existingDelivery.mediumDurationMinutes) || 45,
+        5,
+        180
+      ),
+      hardDurationMinutes: toPositiveInt(
+        deliveryRaw.hardDurationMinutes,
+        Number(existingDelivery.hardDurationMinutes) || 55,
+        5,
+        180
+      ),
     };
     if (session.role === "SUPER_ADMIN" && typeof showOnHomepageRaw === "boolean") {
       patch.showOnHomepage = showOnHomepageRaw;
