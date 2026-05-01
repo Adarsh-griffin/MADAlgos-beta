@@ -14,8 +14,7 @@ export function PublicDemoStartButton({ slug, className }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mcqDifficulty, setMcqDifficulty] = useState<"easy" | "medium" | "hard">("medium");
-  const [codingDifficulty, setCodingDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const authRedirectUrl = `/auth?next=${encodeURIComponent(`/available-tests/${slug}`)}`;
 
   async function start() {
@@ -27,8 +26,7 @@ export function PublicDemoStartButton({ slug, className }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           slug,
-          mcqDifficulty,
-          codingDifficulty,
+          difficulty,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -62,30 +60,15 @@ export function PublicDemoStartButton({ slug, className }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:max-w-sm gap-3">
         <label className="space-y-1">
           <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-            MCQ difficulty
+            Assessment difficulty
           </span>
           <select
             className="w-full rounded-lg border border-white/15 bg-[#0b1326] px-3 py-2.5 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary/40"
-            value={mcqDifficulty}
-            onChange={(e) => setMcqDifficulty(e.target.value as "easy" | "medium" | "hard")}
-            disabled={loading}
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </label>
-        <label className="space-y-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-            Coding difficulty
-          </span>
-          <select
-            className="w-full rounded-lg border border-white/15 bg-[#0b1326] px-3 py-2.5 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary/40"
-            value={codingDifficulty}
-            onChange={(e) => setCodingDifficulty(e.target.value as "easy" | "medium" | "hard")}
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
             disabled={loading}
           >
             <option value="easy">Easy</option>

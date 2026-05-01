@@ -85,11 +85,11 @@ function getSecondsLeft(usedAt: string | Date | undefined, durationMinutes: numb
 }
 
 function formatDifficultyLabel(value: unknown): string {
-  const normalized = String(value || "all").trim().toLowerCase();
+  const normalized = String(value || "medium").trim().toLowerCase();
   if (normalized === "easy") return "Easy";
   if (normalized === "medium") return "Medium";
   if (normalized === "hard") return "Hard";
-  return "All";
+  return "Medium";
 }
 
 export function TestRoom({ test, tokenData }: TestRoomProps) {
@@ -564,8 +564,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
   const hasRunResults = runResults.length > 0;
   const allRunResultsPassed = hasRunResults && passedRunCount === runResults.length;
   const canGoToNextCoding = typeof activePanel === "number" && codingIdx < codingProblems.length - 1;
-  const activeMcqDifficulty = formatDifficultyLabel(tokenData?.difficultyPreference?.mcq);
-  const activeCodingDifficulty = formatDifficultyLabel(tokenData?.difficultyPreference?.coding);
+  const activeDifficulty = formatDifficultyLabel(tokenData?.difficultyPreference?.mcq);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-black text-white overflow-hidden">
@@ -589,10 +588,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
             <h1 className="text-slate-300 font-medium truncate max-w-[200px] md:max-w-md">{test.title}</h1>
             <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-wider">
               <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-slate-300">
-                MCQ: {activeMcqDifficulty}
-              </span>
-              <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-slate-300">
-                Coding: {activeCodingDifficulty}
+                Difficulty: {activeDifficulty}
               </span>
             </div>
           </div>

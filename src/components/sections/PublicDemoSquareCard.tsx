@@ -40,7 +40,6 @@ function buildAutoTheme(seed: string) {
  */
 export function PublicDemoSquareCard({ test, className }: Props) {
   const href = `/available-tests/${encodeURIComponent(test.publicSlug)}`;
-  const isPro = /capgemini/i.test(test.title);
   const theme = buildAutoTheme(`${test.publicSlug}|${test.title}|${test.logoUrl}`);
   const cssVars = {
     "--card-title-glow": theme.titleGlow,
@@ -73,17 +72,11 @@ export function PublicDemoSquareCard({ test, className }: Props) {
       <div className="absolute top-0 right-0 z-10 h-[3px] w-20 rounded-bl-lg" style={{ backgroundImage: theme.edge }} />
       <div className="absolute top-0 left-0 right-[4.5rem] h-[2px] z-10" style={{ backgroundImage: theme.edge }} />
       <div className="absolute right-3 top-2 z-20 sm:right-3.5 sm:top-3">
-        {isPro ? (
-          <span className="relative inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold text-white border border-violet-200/70 bg-gradient-to-r from-violet-500 to-purple-500 shadow-[0_10px_26px_rgba(139,92,246,0.42)]">
-            Pro
-          </span>
-        ) : (
-          <span className="free-tag-swing relative inline-flex items-center rounded-md border border-red-200/75 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-3 py-1.5 text-[11px] font-bold tracking-[0.08em] text-white shadow-[0_12px_30px_rgba(239,68,68,0.45)]">
-            <span className="pointer-events-none absolute -top-4 left-2 h-4 w-[2px] rounded-full bg-white/65" />
-            <span className="pointer-events-none absolute -top-[6px] left-[3px] h-3.5 w-3.5 rounded-full border-2 border-white/75 bg-[#010818]" />
-            FREE
-          </span>
-        )}
+        <span className="free-tag-swing relative inline-flex items-center rounded-md border border-red-200/75 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-3 py-1.5 text-[11px] font-bold tracking-[0.08em] text-white shadow-[0_12px_30px_rgba(239,68,68,0.45)]">
+          <span className="pointer-events-none absolute -top-4 left-2 h-4 w-[2px] rounded-full bg-white/65" />
+          <span className="pointer-events-none absolute -top-[6px] left-[3px] h-3.5 w-3.5 rounded-full border-2 border-white/75 bg-[#010818]" />
+          FREE
+        </span>
       </div>
 
       <div className="relative flex flex-1 min-h-0 flex-col items-stretch">
