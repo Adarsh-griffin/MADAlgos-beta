@@ -22,7 +22,7 @@ export async function GET() {
         count: 0,
         items: [],
         freeTestsRemaining: null,
-        freeTestsWeeklyLimit: freePracticeStartsPerWeek,
+        freeTestsWeeklyLimit: null,
       });
     }
 

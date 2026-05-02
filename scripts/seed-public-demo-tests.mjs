@@ -97,108 +97,13 @@ function logoDevUrl(domain) {
   return `https://img.logo.dev/${d}?token=${LOGO_DEV_TOKEN}&retina=true`;
 }
 
-const pyReadIntList = `import sys
-
-def ints():
-    return list(map(int, sys.stdin.read().split()))
-`;
-
-const starterKadane = {
-  Python: `${pyReadIntList}
-def main():
-    data = ints()
-    n = data[0]
-    arr = data[1 : 1 + n]
-    # TODO: maximum contiguous subarray sum (Kadane)
-    print(0)
-
-main()
-`,
-};
-
-const starterBrackets = {
-  Python: `import sys
-
-def main():
-    s = sys.stdin.readline().strip()
-    # TODO: return YES if parentheses (), [] are balanced, else NO
-    print("NO")
-
-main()
-`,
-};
-
-const starterBinarySearch = {
-  Python: `${pyReadIntList}
-def main():
-    data = ints()
-    n, target = data[0], data[1]
-    arr = data[2 : 2 + n]
-    # TODO: print 1 if target is in sorted arr, else 0
-    print(0)
-
-main()
-`,
-};
-
-const starterReverse = {
-  Python: `import sys
-
-def main():
-    s = sys.stdin.readline().strip()
-    # TODO: print reversed string
-    print("")
-
-main()
-`,
-};
-
-const starterSumDigits = {
-  Python: `import sys
-
-def main():
-    n = int(sys.stdin.readline())
-    # TODO: sum of decimal digits of n (n >= 0)
-    print(0)
-
-main()
-`,
-};
-
-const starterPrime = {
-  Python: `import sys
-
-def main():
-    n = int(sys.stdin.readline())
-    # TODO: print 1 if n is prime, else 0 (assume n >= 2)
-    print(0)
-
-main()
-`,
-};
-
-const starterFactorial = {
-  Python: `import sys
-
-def main():
-    n = int(sys.stdin.readline())
-    # TODO: print n! for 0 <= n <= 12
-    print(1)
-
-main()
-`,
-};
-
-const starterGcd = {
-  Python: `import sys
-
-def main():
-    a, b = map(int, sys.stdin.readline().split())
-    # TODO: print gcd(a, b)
-    print(0)
-
-main()
-`,
+/** Used only when a pack omits `assessmentDelivery` (all current packs define it). */
+const DEFAULT_ASSESSMENT_DELIVERY = {
+  mcqPerAttempt: 4,
+  codingPerAttempt: 6,
+  easyDurationMinutes: 35,
+  mediumDurationMinutes: 45,
+  hardDurationMinutes: 55,
 };
 
 /** @type {Array<Record<string, unknown>>} */
@@ -211,7 +116,7 @@ const PACKS = [
       "OA-style mix: MCQs plus six stdin coding tasks (two-sum → trapping rain water). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "google.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 1,
     assessmentDelivery: googleHiringAssessmentDelivery,
     mcqs: [
@@ -264,7 +169,7 @@ const PACKS = [
       "Windows/Azure CS fundamentals plus six stdin coding tasks (OneDrive → pipeline backpressure). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "microsoft.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 2,
     assessmentDelivery: microsoftHiringAssessmentDelivery,
     mcqs: [
@@ -329,7 +234,7 @@ const PACKS = [
       "IT services pattern: aptitude MCQs plus six stdin tasks (payroll → data-centre cooling). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "tcs.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 3,
     assessmentDelivery: tcsHiringAssessmentDelivery,
     mcqs: [
@@ -379,7 +284,7 @@ const PACKS = [
       "Consulting-tech blend: SQL/agile MCQs plus six stdin tasks (sprint budget → transformation bottlenecks). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "capgemini.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 4,
     assessmentDelivery: capgeminiHiringAssessmentDelivery,
     mcqs: [
@@ -439,7 +344,7 @@ const PACKS = [
       "OA-style MCQs plus six stdin tasks (delivery truck match → S3 tier overflow). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "amazon.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 5,
     assessmentDelivery: amazonHiringAssessmentDelivery,
     mcqs: [
@@ -459,7 +364,7 @@ const PACKS = [
       "Product-style MCQs plus six stdin tasks (ads spend → Stories engagement trap). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "meta.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 6,
     assessmentDelivery: metaHiringAssessmentDelivery,
     mcqs: [
@@ -479,7 +384,7 @@ const PACKS = [
       "Core CS MCQs plus six stdin tasks (Music offline quota → camera lens flare trap). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "apple.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517336714731-489689fd4908?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 7,
     assessmentDelivery: appleHiringAssessmentDelivery,
     mcqs: [
@@ -499,7 +404,7 @@ const PACKS = [
       "Streaming/CDN-style MCQs plus six stdin tasks (licensing slots → encoding buffer trap). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "netflix.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 8,
     assessmentDelivery: netflixHiringAssessmentDelivery,
     mcqs: [
@@ -519,7 +424,7 @@ const PACKS = [
       "Telecom / services MCQs plus six stdin tasks (plan budget → tower shadow). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "techmahindra.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 9,
     assessmentDelivery: techMahindraHiringAssessmentDelivery,
     mcqs: [
@@ -539,7 +444,7 @@ const PACKS = [
       "Campus / InfyTQ style: quant MCQs plus six stdin tasks (training calendar → campus rainwater). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "infosys.com",
     demoCardImageUrl:
-      "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad4ab?auto=format&fit=crop&w=1920&q=90",
     demoSortOrder: 10,
     assessmentDelivery: infosysHiringAssessmentDelivery,
     mcqs: [
@@ -569,155 +474,6 @@ const MCQ_DISTRIBUTION = [
 
 const CODING_DISTRIBUTION = ["easy", "easy", "medium", "medium", "hard", "hard"];
 
-const CURATED_CODING_SET = [
-  {
-    title: "Two Sum",
-    description: `You are given an array of integers and a target value. Return the indices of the two numbers such that they add up to the target.
-
-Constraints:
-- Exactly one valid pair exists.
-- You cannot use the same element twice.
-- Aim for an O(n) solution using hashing.
-
-Example:
-- nums = [2, 7, 11, 15], target = 9
-- Output: 0 1`,
-    inputFormat: "Line 1: n target\nLine 2: n space-separated integers",
-    outputFormat: "Print two indices i j in increasing order.",
-    sampleTestCases: [{ input: "4 9\n2 7 11 15\n", output: "0 1\n" }],
-    hiddenTestCases: [{ input: "3 6\n3 2 4\n", output: "1 2\n" }, { input: "2 6\n3 3\n", output: "0 1\n" }],
-    marks: 20,
-    starterCode: {
-      Python: `${pyReadIntList}
-def main():
-    data = ints()
-    n, target = data[0], data[1]
-    nums = data[2:2+n]
-    # TODO: print indices of the two numbers summing to target
-    print("0 1")
-
-main()
-`,
-    },
-  },
-  {
-    title: "Valid Parentheses",
-    description: `Given a string containing only the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
-
-A string is valid if:
-- Open brackets are closed by the same type of brackets.
-- Open brackets are closed in the correct order.
-- Every close bracket has a corresponding open bracket.
-
-Use a stack-based approach.`,
-    inputFormat: "Single line string s.",
-    outputFormat: "Print YES if valid, else NO.",
-    sampleTestCases: [{ input: "()[]{}\n", output: "YES\n" }],
-    hiddenTestCases: [{ input: "(]\n", output: "NO\n" }, { input: "([{}])\n", output: "YES\n" }],
-    marks: 20,
-    starterCode: starterBrackets,
-  },
-  {
-    title: "Longest Substring Without Repeating Characters",
-    description: `Given a string s, find the length of the longest substring without repeating characters.
-
-Expected approach:
-- Sliding window with two pointers.
-- Hash map / set for tracking seen characters.
-- Time complexity target: O(n).`,
-    inputFormat: "Single line string s.",
-    outputFormat: "Single integer: maximum length.",
-    sampleTestCases: [{ input: "abcabcbb\n", output: "3\n" }],
-    hiddenTestCases: [{ input: "bbbbb\n", output: "1\n" }, { input: "pwwkew\n", output: "3\n" }],
-    marks: 20,
-    starterCode: {
-      Python: `import sys
-
-def main():
-    s = sys.stdin.readline().rstrip("\\n")
-    # TODO: print length of longest substring without repeating chars
-    print(0)
-
-main()
-`,
-    },
-  },
-  {
-    title: "Kth Largest Element in an Array",
-    description: `Given an integer array nums and an integer k, return the kth largest element in the array.
-
-Notes:
-- kth largest means position in sorted order, not kth distinct.
-- Prefer O(n log k) using a min-heap of size k, or quickselect average O(n).`,
-    inputFormat: "Line 1: n k\nLine 2: n space-separated integers",
-    outputFormat: "Single integer: kth largest value.",
-    sampleTestCases: [{ input: "6 2\n3 2 1 5 6 4\n", output: "5\n" }],
-    hiddenTestCases: [{ input: "9 4\n3 2 3 1 2 4 5 5 6\n", output: "4\n" }],
-    marks: 20,
-    starterCode: {
-      Python: `${pyReadIntList}
-def main():
-    data = ints()
-    n, k = data[0], data[1]
-    nums = data[2:2+n]
-    # TODO: print kth largest element
-    print(0)
-
-main()
-`,
-    },
-  },
-  {
-    title: "Merge k Sorted Lists (Flattened)",
-    description: `You are given k sorted integer lists. Merge them into a single sorted list.
-
-Input is provided as:
-- k
-- For each list: one line starts with m followed by m sorted integers.
-
-Use a min-heap for an efficient O(N log k) solution, where N is total elements.`,
-    inputFormat: "Line 1: k\nNext k lines: m followed by m sorted integers",
-    outputFormat: "One line with merged sorted integers separated by spaces.",
-    sampleTestCases: [{ input: "3\n3 1 4 5\n3 1 3 4\n2 2 6\n", output: "1 1 2 3 4 4 5 6\n" }],
-    hiddenTestCases: [{ input: "2\n0\n3 2 2 2\n", output: "2 2 2\n" }],
-    marks: 20,
-    starterCode: {
-      Python: `import sys
-
-def main():
-    # TODO: parse k lists and print merged sorted output
-    print("")
-
-main()
-`,
-    },
-  },
-  {
-    title: "Trapping Rain Water",
-    description: `Given n non-negative integers representing an elevation map where width of each bar is 1, compute how much water it can trap after raining.
-
-Expected solution:
-- Two-pointer approach with leftMax/rightMax in O(n) time and O(1) extra space.`,
-    inputFormat: "Line 1: n\nLine 2: n space-separated non-negative integers",
-    outputFormat: "Single integer: total trapped water.",
-    sampleTestCases: [{ input: "12\n0 1 0 2 1 0 1 3 2 1 2 1\n", output: "6\n" }],
-    hiddenTestCases: [{ input: "6\n4 2 0 3 2 5\n", output: "9\n" }],
-    marks: 20,
-    starterCode: {
-      Python: `${pyReadIntList}
-def main():
-    data = ints()
-    n = data[0]
-    h = data[1:1+n]
-    # TODO: print total trapped rain water
-    print(0)
-
-main()
-`,
-    },
-  },
-];
-
 function cloneWithDifficulty(item, difficulty, seq) {
   const next = { ...item, difficulty };
   void seq;
@@ -736,7 +492,9 @@ function normalizeMcqPool(mcqs) {
 
 function normalizeCodingPool(codingProblems) {
   const source =
-    Array.isArray(codingProblems) && codingProblems.length >= 6 ? codingProblems : CURATED_CODING_SET;
+    Array.isArray(codingProblems) && codingProblems.length >= 6
+      ? codingProblems
+      : googleHiringCodingProblems;
   return CODING_DISTRIBUTION.map((difficulty, idx) => {
     const base = source[idx % source.length];
     const seq = Math.floor(idx / source.length) + 1;
@@ -800,6 +558,7 @@ async function main() {
       demoSortOrder,
       mcqs,
       codingProblems,
+      assessmentDelivery,
     } = pack;
 
     const resolvedLogoUrl = String(demoBrandLogoUrl || "").trim() || logoDevUrl(demoLogoDomain);
@@ -820,13 +579,10 @@ async function main() {
           demoBrandLogoUrl: resolvedLogoUrl,
           demoSortOrder,
           showOnHomepage: true,
-          assessmentDelivery: {
-            mcqPerAttempt: 4,
-            codingPerAttempt: 2,
-            easyDurationMinutes: 35,
-            mediumDurationMinutes: 45,
-            hardDurationMinutes: 55,
-          },
+          assessmentDelivery:
+            assessmentDelivery && typeof assessmentDelivery === "object"
+              ? assessmentDelivery
+              : DEFAULT_ASSESSMENT_DELIVERY,
           updatedAt: now,
         },
         $setOnInsert: {

@@ -38,5 +38,5 @@ export function resolvePublicDemoLogo(input: {
   const fallback = input.demoCardImageUrl?.trim();
   if (fallback) return fallback;
 
-  return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80&auto=format&fit=crop";
+  return "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=90";
 }

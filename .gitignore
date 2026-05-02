@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local DB dumps / merge artifacts (never ship with the app)
+/mongo-merge-backup/
+/mongo-backup-copyonly/

@@ -107,7 +107,7 @@ function mapPracticeDocsToCards(
         demoCardSubtitle: (d.demoCardSubtitle?.trim() || "Practice MCQs & coding — hiring-style.").slice(0, 140),
         demoCardImageUrl:
           d.demoCardImageUrl?.trim() ||
-          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=90",
         logoUrl,
         demoSortOrder: typeof d.demoSortOrder === "number" ? d.demoSortOrder : 0,
         duration: d.duration,

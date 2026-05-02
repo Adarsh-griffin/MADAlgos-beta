@@ -10,7 +10,8 @@ import { resolvePublicDemoLogo } from "@/lib/company-test-branding";
 import { Clock, ListChecks, Code2, ArrowLeft, NotebookPen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getSessionFromRequestCookies } from "@/lib/auth";
-import { PublicDemoStartButton } from "@/components/assessment/PublicDemoStartButton";
+import { PublicDemoTestPrepPanel } from "@/components/assessment/PublicDemoTestPrepPanel";
+import { resolveUnifiedDifficultyDurationMinutes } from "@/lib/practice-duration-for-difficulty";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -39,11 +40,16 @@ export default async function AvailableTestDetailPage({ params }: PageProps) {
     $or: [{ showOnHomepage: true }, { showOnHomepage: { $exists: false } }],
   })
     .select(
-      "title duration demoCardSubtitle demoCardImageUrl demoBannerImageUrl demoBrandLogoUrl demoLogoDomain mcqs codingProblems"
+      "title duration assessmentDelivery demoCardSubtitle demoCardImageUrl demoBannerImageUrl demoBrandLogoUrl demoLogoDomain mcqs codingProblems"
     )
     .lean<{
       title: string;
       duration: number;
+      assessmentDelivery?: {
+        easyDurationMinutes?: number;
+        mediumDurationMinutes?: number;
+        hardDurationMinutes?: number;
+      };
       demoCardSubtitle?: string;
       demoCardImageUrl?: string;
       demoBannerImageUrl?: string;
@@ -67,9 +73,14 @@ export default async function AvailableTestDetailPage({ params }: PageProps) {
   const imageUrl =
     test.demoBannerImageUrl?.trim() ||
     test.demoCardImageUrl?.trim() ||
-    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=80&auto=format&fit=crop";
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=90";
   const mcqCount = Array.isArray(test.mcqs) ? test.mcqs.length : 0;
   const codeCount = Array.isArray(test.codingProblems) ? test.codingProblems.length : 0;
+  const visitorDurationMinutes = resolveUnifiedDifficultyDurationMinutes(
+    "medium",
+    test.assessmentDelivery,
+    test.duration
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-[#010818] text-foreground antialiased">
@@ -143,55 +154,63 @@ export default async function AvailableTestDetailPage({ params }: PageProps) {
             ))}
           </div>
 
-          <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            {[
-              { icon: Clock, label: "Duration", value: `${test.duration} minutes` },
-              { icon: ListChecks, label: "MCQs", value: String(mcqCount) },
-              { icon: Code2, label: "Coding", value: String(codeCount) },
-            ].map(({ icon: Icon, label, value }) => (
-              <div
-                key={label}
-                className="group rounded-2xl border border-white/10 bg-[#050505]/80 backdrop-blur-sm p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/45 hover:-translate-y-0.5 hover:shadow-[0_14px_35px_rgba(20,184,166,0.16)]"
-              >
-                <Icon className="h-8 w-8 text-primary shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
-                  <p className="font-bold text-white">{value}</p>
+          {session ? (
+            <PublicDemoTestPrepPanel
+              slug={slug}
+              mcqCount={mcqCount}
+              codeCount={codeCount}
+              assessmentDelivery={test.assessmentDelivery}
+              fallbackDurationMinutes={test.duration}
+            />
+          ) : (
+            <>
+              <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                {[
+                  { icon: Clock, label: "Duration", value: `${visitorDurationMinutes} minutes` },
+                  { icon: ListChecks, label: "MCQs", value: String(mcqCount) },
+                  { icon: Code2, label: "Coding", value: String(codeCount) },
+                ].map(({ icon: Icon, label, value }) => (
+                  <div
+                    key={label}
+                    className="group rounded-2xl border border-white/10 bg-[#050505]/80 backdrop-blur-sm p-4 flex items-center gap-3 transition-all duration-300 hover:border-primary/45 hover:-translate-y-0.5 hover:shadow-[0_14px_35px_rgba(20,184,166,0.16)]"
+                  >
+                    <Icon className="h-8 w-8 text-primary shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
+                      <p className="font-bold text-white">{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="group max-w-3xl mx-auto rounded-[1.4rem] border border-primary/25 bg-linear-to-b from-primary/[0.08] to-transparent p-6 md:p-8 mb-8 shadow-[0_20px_45px_rgba(20,184,166,0.08)] transition-all duration-300 hover:border-primary/40">
+                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary mb-3">Before you start</h2>
+                <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside leading-relaxed">
+                  <li>Use a stable connection and stay on the assessment tab during the attempt.</li>
+                  <li>After signup, confirm your email — check spam folders if needed.</li>
+                  <li>Admin-invited candidates follow a separate flow; this page is for public practice listings.</li>
+                </ul>
+              </div>
+
+              <div className="relative max-w-3xl mx-auto rounded-[1.3rem] border border-white/10 bg-[#050b18]/80 p-5 md:p-6 shadow-[0_22px_45px_rgba(0,0,0,0.35)] overflow-hidden">
+                <div className="pointer-events-none absolute -right-14 -top-14 h-24 w-24 rounded-full bg-primary/15 blur-3xl" />
+                <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-16 rounded-full bg-fuchsia-400/10 blur-2xl" />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">Launch assessment</p>
+                <div className="relative">
+                  <Link
+                    href={`/auth?next=${encodeURIComponent(`/available-tests/${slug}`)}`}
+                    className={cn(
+                      "inline-flex justify-center items-center w-full sm:w-auto rounded-xl py-3.5 px-10",
+                      "bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-[0.22em]",
+                      "shadow-[0_14px_48px_rgba(20,184,166,0.28)] hover:brightness-110 transition-all"
+                    )}
+                  >
+                    Sign in or register
+                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="group max-w-3xl mx-auto rounded-[1.4rem] border border-primary/25 bg-linear-to-b from-primary/[0.08] to-transparent p-6 md:p-8 mb-8 shadow-[0_20px_45px_rgba(20,184,166,0.08)] transition-all duration-300 hover:border-primary/40">
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary mb-3">Before you start</h2>
-            <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside leading-relaxed">
-              <li>Use a stable connection and stay on the assessment tab during the attempt.</li>
-              <li>After signup, confirm your email — check spam folders if needed.</li>
-              <li>Admin-invited candidates follow a separate flow; this page is for public practice listings.</li>
-            </ul>
-          </div>
-
-          <div className="relative max-w-3xl mx-auto rounded-[1.3rem] border border-white/10 bg-[#050b18]/80 p-5 md:p-6 shadow-[0_22px_45px_rgba(0,0,0,0.35)] overflow-hidden">
-            <div className="pointer-events-none absolute -right-14 -top-14 h-24 w-24 rounded-full bg-primary/15 blur-3xl" />
-            <div className="pointer-events-none absolute -left-8 bottom-0 h-16 w-16 rounded-full bg-fuchsia-400/10 blur-2xl" />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">Launch assessment</p>
-            <div className="relative">
-              {session ? (
-                <PublicDemoStartButton slug={slug} />
-              ) : (
-                <Link
-                  href={`/auth?next=${encodeURIComponent(`/available-tests/${slug}`)}`}
-                  className={cn(
-                    "inline-flex justify-center items-center w-full sm:w-auto rounded-xl py-3.5 px-10",
-                    "bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-[0.22em]",
-                    "shadow-[0_14px_48px_rgba(20,184,166,0.28)] hover:brightness-110 transition-all"
-                  )}
-                >
-                  Sign in or register
-                </Link>
-              )}
-            </div>
-          </div>
+            </>
+          )}
           <p className="max-w-3xl mx-auto mt-6 text-xs text-slate-500 leading-relaxed">
             {session
               ? "You’ll open the same split-screen assessment used for company-style practice. Invites from the dashboard use the same test engine."
