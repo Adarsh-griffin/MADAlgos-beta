@@ -39,6 +39,10 @@ import { APIDesignLessonContent } from "@/components/learn/api-design-lesson-con
 import { DataModelingLessonContent } from "@/components/learn/data-modeling-lesson-content";
 import { DatabaseIndexingLessonContent } from "@/components/learn/database-indexing-lesson-content";
 import { NumbersToKnowLessonContent } from "@/components/learn/numbers-to-know-lesson-content";
+import {
+  ExtendedSystemDesignLessonContent,
+  EXTENDED_SYSTEM_DESIGN_LESSON_IDS,
+} from "@/components/learn/extended-system-design-lessons";
 
 const ICON_MAP = {
   clock: Clock,
@@ -59,163 +63,263 @@ const LESSON_TOC: Record<
   { title: string; headings: { id: string; label: string; depth: number }[] }
 > = {
   introduction: {
-    title: "Introduction",
+    title: "Course overview",
     headings: [
-      { id: "intro-overview", label: "Overview", depth: 0 },
-      { id: "overview-structure", label: "Course map", depth: 0 },
-      { id: "what-is-sd", label: "What are system design interviews?", depth: 0 },
-      { id: "types", label: "Types of System Design Interviews", depth: 0 },
-      { id: "assessment", label: "Assessment", depth: 0 },
-      { id: "assessment-problem", label: "Problem Navigation", depth: 1 },
-      { id: "assessment-solution", label: "Solution Design", depth: 1 },
-      { id: "assessment-technical", label: "Technical Excellence", depth: 1 },
-      { id: "assessment-communication", label: "Communication & Collaboration", depth: 1 },
-      { id: "how-to-use", label: "How to Use This Guide", depth: 0 },
-      { id: "time-needed", label: "How much time do I need?", depth: 1 },
-      { id: "conclusion", label: "Conclusion", depth: 0 },
+      { id: "intro-overview", label: "At a glance", depth: 0 },
+      { id: "overview-structure", label: "Curriculum outline", depth: 0 },
+      { id: "what-is-sd", label: "What happens in system design rounds?", depth: 0 },
+      { id: "types", label: "Interview formats you'll see", depth: 0 },
+      { id: "assessment", label: "How you're evaluated", depth: 0 },
+      { id: "assessment-problem", label: "Framing the problem", depth: 1 },
+      { id: "assessment-solution", label: "Crafting the solution", depth: 1 },
+      { id: "assessment-technical", label: "Depth & technical rigor", depth: 1 },
+      { id: "assessment-communication", label: "Clarity & teamwork", depth: 1 },
+      { id: "how-to-use", label: "How to work through this guide", depth: 0 },
+      { id: "time-needed", label: "Time investment", depth: 1 },
+      { id: "conclusion", label: "Wrapping up", depth: 0 },
     ],
   },
   "how-to-prepare": {
-    title: "How to Prepare",
+    title: "Prep guide",
     headings: [
-      { id: "build-foundation", label: "Build a Foundation", depth: 0 },
-      { id: "practice", label: "Practice Practice Practice", depth: 0 },
-      { id: "questions", label: "Interview Questions", depth: 0 },
-      { id: "next-steps", label: "Next steps", depth: 0 },
+      { id: "build-foundation", label: "Lay the groundwork", depth: 0 },
+      { id: "practice", label: "Drill, repeat, refine", depth: 0 },
+      { id: "questions", label: "Sample prompts", depth: 0 },
+      { id: "next-steps", label: "Where to go next", depth: 0 },
     ],
   },
   "delivery-framework": {
-    title: "Delivery Framework",
+    title: "Interview playbook",
     headings: [
-      { id: "overall-structure", label: "Overall Structure", depth: 0 },
-      { id: "df-course-map", label: "Course map (you are here)", depth: 1 },
-      { id: "interview-structure", label: "Six-step framework", depth: 1 },
-      { id: "requirements", label: "Requirements (~5 min)", depth: 0 },
-      { id: "functional-reqs", label: "Functional Requirements", depth: 1 },
-      { id: "non-functional-reqs", label: "Non-functional Requirements", depth: 1 },
-      { id: "capacity-estimation", label: "Capacity Estimation", depth: 1 },
-      { id: "core-entities", label: "Core Entities (~2 min)", depth: 0 },
-      { id: "api-interface", label: "API or Interface (~5 min)", depth: 0 },
-      { id: "data-flow", label: "Data Flow (optional)", depth: 0 },
-      { id: "high-level-design", label: "High Level Design (~10-15 min)", depth: 0 },
-      { id: "deep-dives", label: "Deep Dives (~10 min)", depth: 0 },
+      { id: "overall-structure", label: "Big-picture layout", depth: 0 },
+      { id: "df-course-map", label: "You are here (curriculum)", depth: 1 },
+      { id: "interview-structure", label: "Six-step flow", depth: 1 },
+      { id: "requirements", label: "Gathering requirements (~5 min)", depth: 0 },
+      { id: "functional-reqs", label: "Functional needs", depth: 1 },
+      { id: "non-functional-reqs", label: "Non-functional needs (NFRs)", depth: 1 },
+      { id: "capacity-estimation", label: "Load & capacity math", depth: 1 },
+      { id: "core-entities", label: "Core objects (~2 min)", depth: 0 },
+      { id: "api-interface", label: "APIs & boundaries (~5 min)", depth: 0 },
+      { id: "data-flow", label: "Data movement (optional)", depth: 0 },
+      { id: "high-level-design", label: "High-level architecture (~10–15 min)", depth: 0 },
+      { id: "deep-dives", label: "Component deep dives (~10 min)", depth: 0 },
     ],
   },
   "core-concepts-intro": {
-    title: "Core Concepts",
+    title: "Foundations snapshot",
     headings: [
-      { id: "cc-structure", label: "Overall Structure", depth: 0 },
-      { id: "networking", label: "Networking Essentials", depth: 0 },
-      { id: "api-design", label: "API Design", depth: 0 },
-      { id: "data-modeling", label: "Data Modeling", depth: 0 },
-      { id: "db-indexing", label: "Database Indexing", depth: 0 },
-      { id: "caching-section", label: "Caching", depth: 0 },
-      { id: "sharding-section", label: "Sharding", depth: 0 },
-      { id: "consistent-hashing-section", label: "Consistent Hashing", depth: 0 },
-      { id: "cap-section", label: "CAP Theorem", depth: 0 },
-      { id: "numbers-section", label: "Numbers to Know", depth: 0 },
+      { id: "cc-structure", label: "How this section is organized", depth: 0 },
+      { id: "networking", label: "Network fundamentals", depth: 0 },
+      { id: "api-design", label: "Designing APIs", depth: 0 },
+      { id: "data-modeling", label: "Data & schema design", depth: 0 },
+      { id: "db-indexing", label: "Indexes & performance", depth: 0 },
+      { id: "caching-section", label: "Cache strategies", depth: 0 },
+      { id: "sharding-section", label: "Horizontal partitioning", depth: 0 },
+      { id: "consistent-hashing-section", label: "Hash rings & distribution", depth: 0 },
+      { id: "cap-section", label: "CAP trade-offs", depth: 0 },
+      { id: "numbers-section", label: "Back-of-the-envelope numbers", depth: 0 },
     ],
   },
   "networking-essentials": {
-    title: "Networking Essentials",
+    title: "Network fundamentals",
     headings: [
-      { id: "osi-model", label: "The OSI Model", depth: 0 },
-      { id: "tcp-udp", label: "TCP vs UDP", depth: 0 },
-      { id: "http", label: "HTTP (1.1, 2, 3)", depth: 0 },
-      { id: "dns", label: "DNS", depth: 0 },
+      { id: "osi-model", label: "OSI layers (refresher)", depth: 0 },
+      { id: "tcp-udp", label: "TCP versus UDP", depth: 0 },
+      { id: "http", label: "HTTP/1.1, HTTP/2, HTTP/3", depth: 0 },
+      { id: "dns", label: "DNS essentials", depth: 0 },
     ],
   },
   "api-design": {
-    title: "API Design",
+    title: "Designing APIs",
     headings: [
-      { id: "api-types", label: "API Types", depth: 0 },
+      { id: "api-types", label: "Styles of APIs", depth: 0 },
       { id: "rest", label: "REST", depth: 0 },
       { id: "graphql", label: "GraphQL", depth: 0 },
       { id: "grpc", label: "gRPC", depth: 0 },
-      { id: "idempotency", label: "Idempotency", depth: 0 },
+      { id: "idempotency", label: "Safe retries (idempotency)", depth: 0 },
     ],
   },
   "data-modeling": {
-    title: "Data Modeling",
+    title: "Data & schema design",
     headings: [
-      { id: "db-model-options", label: "Database Options", depth: 0 },
-      { id: "schema-design", label: "Schema Design", depth: 0 },
+      { id: "db-model-options", label: "Picking a datastore", depth: 0 },
+      { id: "schema-design", label: "Modeling schemas", depth: 0 },
     ],
   },
   "database-indexing": {
-    title: "Database Indexing",
+    title: "Indexes & performance",
     headings: [
-      { id: "indexing-overview", label: "Overview", depth: 0 },
-      { id: "index-types", label: "Index Types", depth: 0 },
-      { id: "composite-indexes", label: "Composite Indexes", depth: 0 },
+      { id: "indexing-overview", label: "Snapshot", depth: 0 },
+      { id: "index-types", label: "Kinds of indexes", depth: 0 },
+      { id: "composite-indexes", label: "Multi-column indexes", depth: 0 },
     ],
   },
   "caching": {
-    title: "Caching",
+    title: "Cache strategies",
     headings: [
-      { id: "caching-strategies", label: "Caching Strategies", depth: 0 },
-      { id: "eviction-policies", label: "Eviction Policies", depth: 0 },
-      { id: "distributed-caching", label: "Distributed Caching", depth: 0 },
+      { id: "caching-strategies", label: "Where and how to cache", depth: 0 },
+      { id: "eviction-policies", label: "What to evict", depth: 0 },
+      { id: "distributed-caching", label: "Caches across nodes", depth: 0 },
     ],
   },
   "sharding": {
-    title: "Sharding",
+    title: "Horizontal partitioning",
     headings: [
-      { id: "sharding-why", label: "Why Shard?", depth: 0 },
-      { id: "sharding-strategies", label: "Strategies", depth: 0 },
-      { id: "sharding-tradeoffs", label: "Tradeoffs", depth: 0 },
+      { id: "sharding-why", label: "When splitting data helps", depth: 0 },
+      { id: "sharding-strategies", label: "Sharding approaches", depth: 0 },
+      { id: "sharding-tradeoffs", label: "Costs & trade-offs", depth: 0 },
     ],
   },
   "consistent-hashing": {
-    title: "Consistent Hashing",
+    title: "Hash rings & distribution",
     headings: [
-      { id: "hashing-problem", label: "The Problem", depth: 0 },
-      { id: "consistent-hashing-sol", label: "The Solution", depth: 0 },
-      { id: "virtual-nodes", label: "Virtual Nodes", depth: 0 },
+      { id: "hashing-problem", label: "Hotspots & remapping", depth: 0 },
+      { id: "consistent-hashing-sol", label: "Ring-based routing", depth: 0 },
+      { id: "virtual-nodes", label: "Virtual nodes (vnodes)", depth: 0 },
     ],
   },
   "cap-theorem": {
-    title: "CAP Theorem",
+    title: "CAP trade-offs",
     headings: [
-      { id: "what-is-cap", label: "What is CAP?", depth: 0 },
-      { id: "choose-consistency", label: "Choosing Consistency", depth: 0 },
-      { id: "choose-availability", label: "Choosing Availability", depth: 0 },
-      { id: "consistency-spectrum", label: "Consistency Spectrum", depth: 0 },
+      { id: "what-is-cap", label: "The CAP idea", depth: 0 },
+      { id: "choose-consistency", label: "Favoring consistency", depth: 0 },
+      { id: "choose-availability", label: "Favoring availability", depth: 0 },
+      { id: "consistency-spectrum", label: "Strong vs eventual", depth: 0 },
     ],
   },
   "numbers-to-know": {
-    title: "Numbers to Know",
+    title: "Back-of-the-envelope numbers",
     headings: [
-      { id: "latency-numbers", label: "Latency Numbers", depth: 0 },
-      { id: "scale-estimates", label: "Scale Estimates", depth: 0 },
-      { id: "quick-math", label: "Interview Math", depth: 0 },
+      { id: "latency-numbers", label: "Latency cheat sheet", depth: 0 },
+      { id: "scale-estimates", label: "Order-of-magnitude sizing", depth: 0 },
+      { id: "quick-math", label: "Mental math for interviews", depth: 0 },
     ],
   },
   "key-technologies-intro": {
-    title: "Key Technologies",
+    title: "Tech landscape (intro)",
     headings: [
-      { id: "kt-intro", label: "Introduction", depth: 0 },
-      { id: "databases", label: "Databases", depth: 0 },
-      { id: "queues", label: "Message Queues", depth: 0 },
-      { id: "search", label: "Search", depth: 0 },
-      { id: "storage", label: "Storage & CDN", depth: 0 },
+      { id: "kt-intro", label: "Overview", depth: 0 },
+      { id: "databases", label: "Data stores", depth: 0 },
+      { id: "queues", label: "Queues & streams", depth: 0 },
+      { id: "search", label: "Search infra", depth: 0 },
+      { id: "storage", label: "Blob storage & CDNs", depth: 0 },
     ],
   },
   "common-patterns-intro": {
-    title: "Common Patterns",
+    title: "Pattern primer",
     headings: [
-      { id: "patterns-intro", label: "Introduction", depth: 0 },
-      { id: "fanout", label: "Fan-out", depth: 0 },
-      { id: "saga", label: "Saga Pattern", depth: 0 },
-      { id: "rate-limiting", label: "Rate Limiting", depth: 0 },
-      { id: "circuit-breaker", label: "Circuit Breaker", depth: 0 },
+      { id: "patterns-intro", label: "Overview", depth: 0 },
+      { id: "fanout", label: "Fan-out workloads", depth: 0 },
+      { id: "saga", label: "Saga workflows", depth: 0 },
+      { id: "rate-limiting", label: "Throttling & quotas", depth: 0 },
+      { id: "circuit-breaker", label: "Circuit breakers", depth: 0 },
     ],
   },
   "question-breakdowns-intro": {
-    title: "Question Breakdowns",
+    title: "Deconstructing prompts",
     headings: [
-      { id: "qb-how-to-use", label: "How to Use", depth: 0 },
-      { id: "qb-list", label: "Question List", depth: 0 },
+      { id: "qb-how-to-use", label: "Using this section", depth: 0 },
+      { id: "qb-list", label: "Prompt bank", depth: 0 },
+    ],
+  },
+  "wt-url-shortener": {
+    title: "URL shortener",
+    headings: [
+      { id: "wt-url-clarify", label: "Clarify requirements", depth: 0 },
+      { id: "wt-url-capacity", label: "Back-of-envelope capacity", depth: 0 },
+      { id: "wt-url-api", label: "API sketch", depth: 0 },
+      { id: "wt-url-data", label: "Data model & encoding", depth: 0 },
+      { id: "wt-url-deep", label: "Deep dives", depth: 0 },
+    ],
+  },
+  "wt-news-feed": {
+    title: "Fan-out news feed",
+    headings: [
+      { id: "wt-feed-clarify", label: "Scope", depth: 0 },
+      { id: "wt-feed-model", label: "Fan-out model", depth: 0 },
+      { id: "wt-feed-storage", label: "Storage & retrieval", depth: 0 },
+      { id: "wt-feed-scale", label: "Ranking & scale hooks", depth: 0 },
+    ],
+  },
+  "wt-notification-system": {
+    title: "Notification system",
+    headings: [
+      { id: "wt-notify-clarify", label: "Requirements", depth: 0 },
+      { id: "wt-notify-pipeline", label: "Pipeline", depth: 0 },
+      { id: "wt-notify-idem", label: "Idempotency & dedupe", depth: 0 },
+      { id: "wt-notify-observe", label: "Observability", depth: 0 },
+    ],
+  },
+  "pat-gateway-bff": {
+    title: "Gateways & BFF",
+    headings: [
+      { id: "pat-gw-edge", label: "API gateway responsibilities", depth: 0 },
+      { id: "pat-gw-bff", label: "Backend-for-frontend", depth: 0 },
+      { id: "pat-gw-failure", label: "Failure modes", depth: 0 },
+    ],
+  },
+  "pat-event-driven": {
+    title: "Event-driven backbone",
+    headings: [
+      { id: "pat-ev-building", label: "Building blocks", depth: 0 },
+      { id: "pat-ev-saga", label: "Sagas & compensation", depth: 0 },
+      { id: "pat-ev-ops", label: "Operational cautions", depth: 0 },
+    ],
+  },
+  "pat-strangler": {
+    title: "Strangler fig migration",
+    headings: [
+      { id: "pat-strangler-seams", label: "Find seams", depth: 0 },
+      { id: "pat-strangler-data", label: "Data synchronization", depth: 0 },
+      { id: "pat-strangler-risk", label: "Risk controls", depth: 0 },
+    ],
+  },
+  "tech-kafka-streams": {
+    title: "Kafka & streams",
+    headings: [
+      { id: "tech-kafka-core", label: "Core concepts", depth: 0 },
+      { id: "tech-kafka-streams-api", label: "Stream processors", depth: 0 },
+      { id: "tech-kafka-ops", label: "Operations", depth: 0 },
+    ],
+  },
+  "tech-redis-production": {
+    title: "Redis at scale",
+    headings: [
+      { id: "tech-redis-topo", label: "Topologies", depth: 0 },
+      { id: "tech-redis-memory", label: "Memory discipline", depth: 0 },
+      { id: "tech-redis-persist", label: "Durability notes", depth: 0 },
+    ],
+  },
+  "tech-object-storage": {
+    title: "Object storage & CDN",
+    headings: [
+      { id: "tech-obj-model", label: "Consistency & listing", depth: 0 },
+      { id: "tech-obj-lifecycle", label: "Lifecycle tiers", depth: 0 },
+      { id: "tech-obj-cdn", label: "CDN integration", depth: 0 },
+    ],
+  },
+  "adv-leader-election": {
+    title: "Leader election",
+    headings: [
+      { id: "adv-le-why", label: "Why it matters", depth: 0 },
+      { id: "adv-le-raft", label: "Raft sketch", depth: 0 },
+      { id: "adv-le-zk", label: "ZooKeeper / etcd patterns", depth: 0 },
+    ],
+  },
+  "adv-observability": {
+    title: "Tracing & SLOs",
+    headings: [
+      { id: "adv-obs-three", label: "Three pillars", depth: 0 },
+      { id: "adv-obs-slos", label: "SLO design", depth: 0 },
+      { id: "adv-obs-cost", label: "Sampling & cost", depth: 0 },
+    ],
+  },
+  "adv-release-safety": {
+    title: "Progressive delivery",
+    headings: [
+      { id: "adv-rel-canary", label: "Canary releases", depth: 0 },
+      { id: "adv-rel-bg", label: "Blue / green", depth: 0 },
+      { id: "adv-rel-flags", label: "Feature flags", depth: 0 },
     ],
   },
 };
@@ -577,6 +681,10 @@ export default function SystemDesignCourseClient() {
                   }}
                 />
               </article>
+            ) : EXTENDED_SYSTEM_DESIGN_LESSON_IDS.has(activeLesson) ? (
+              <article className="max-w-none">
+                <ExtendedSystemDesignLessonContent lessonId={activeLesson} />
+              </article>
             ) : (
               <>
                 <p className="text-sm text-gray-400">System design in a hurry</p>
@@ -600,29 +708,29 @@ export default function SystemDesignCourseClient() {
             <div className="group relative shrink-0 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0f111a]/95 p-4 shadow-[0_22px_48px_rgba(0,0,0,0.45)]">
               <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-teal-400/20 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
               <span className="absolute right-3 top-3 rounded-full bg-teal-500/20 px-2.5 py-0.5 text-[10px] font-bold text-teal-400">
-                Up to 20% off
+                Save up to 20%
               </span>
-              <p className="text-base font-bold text-white">MADAlgos Premium</p>
-              <p className="mt-1 text-xs text-gray-500">Unlock the full learning experience</p>
+              <p className="text-base font-bold text-white">Premium membership</p>
+              <p className="mt-1 text-xs text-gray-500">Full access to mentorship & mock interviews</p>
               <ul className="mt-4 space-y-2.5 text-[13px] text-gray-400">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-500" />
-                  Live mentorship tracks
+                  1:1 mentorship programs
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-500" />
-                  Interview-style mocks
+                  Realistic mock interviews
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-teal-500" />
-                  Mentor-reviewed feedback
+                  Expert feedback on your sessions
                 </li>
               </ul>
               <Link
                 href="/book-mentorship"
                 className="mt-4 flex w-full items-center justify-center rounded-full bg-white py-2 text-sm font-semibold text-black transition hover:bg-gray-200 hover:shadow-[0_0_28px_rgba(255,255,255,0.2)]"
               >
-                Learn more
+                Explore plans
               </Link>
             </div>
 
@@ -631,7 +739,7 @@ export default function SystemDesignCourseClient() {
               <div className="mb-2 flex items-center justify-between text-xs text-gray-400">
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="h-3.5 w-3.5" />
-                  Reading progress
+                  Lesson progress
                 </span>
                 <span className="text-teal-400">{readProgress}%</span>
               </div>
@@ -646,7 +754,7 @@ export default function SystemDesignCourseClient() {
             {/* TOC */}
             {toc ? (
               <div className="flex-1 overflow-hidden">
-                <p className="mb-3 text-xs text-gray-400">On this page</p>
+                <p className="mb-3 text-xs text-gray-400">In this lesson</p>
                 <ul className="max-h-[48vh] space-y-2 overflow-auto border-l border-white/10 pl-3 text-[13px] text-gray-500 pr-1">
                   {toc.headings.map((h, i) => (
                     <li key={h.id} style={{ paddingLeft: h.depth * 10 }}>

@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { isMcqMultiple } from "@/lib/assessment-mcq";
 import { ASSESSMENT_CODE_HINTS, getDefaultStarterCode } from "@/lib/assessment-code-starters";
 import type { AssessmentLangKey } from "@/lib/assessment-code-starters";
@@ -36,6 +37,8 @@ type RunCaseResult = {
   status: string;
   stdout?: string;
   stderr?: string;
+  /** Judge0 compiler/interpreter diagnostics (e.g. Python SyntaxError, C compile errors). */
+  compile_output?: string;
   visibility?: "sample" | "hidden";
   input?: string;
   expected?: string;
@@ -76,6 +79,37 @@ const MAX_TAB_LEAVES_BEFORE_AUTO_SUBMIT = 3;
 
 function shouldHideRuntimeDetails(status: string): boolean {
   return /(judge0|http\s*\d{3}|internal error|rate-?limit|unavailable|timeout|network|rapidapi)/i.test(status);
+}
+
+/** Plain-text block for the editor output panel (compile + stderr + stdout, Judge0-style). */
+function formatAssessmentRunCaseBlock(r: RunCaseResult, index: number): string {
+  const label = r.visibility === "hidden" ? "Hidden" : "Sample";
+  const lines: string[] = [`${label} ${index + 1}: ${r.passed ? "PASS" : "FAIL"} (${r.status})`];
+
+  if (r.visibility === "sample") {
+    lines.push("", "Input:", String(r.input ?? ""), "", "Expected:", String(r.expected ?? ""));
+  }
+
+  const compile = String(r.compile_output ?? "").trim();
+  const stderr = String(r.stderr ?? "").trim();
+  const stdout = String(r.stdout ?? "").trim();
+
+  if (!r.passed) {
+    lines.push("", "ERROR!");
+  }
+  if (compile) {
+    lines.push("", compile);
+  }
+  if (stderr) {
+    lines.push("", stderr);
+  }
+  lines.push("", "stdout:", stdout || "(empty)");
+
+  if (!r.passed) {
+    lines.push("", "=== Code Exited With Errors ===");
+  }
+
+  return lines.join("\n");
 }
 
 function getSecondsLeft(usedAt: string | Date | undefined, durationMinutes: number) {
@@ -466,12 +500,7 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
         return;
       }
 
-      const lines = results.map(
-        (r, i) =>
-          `${r.visibility === "hidden" ? "Hidden" : "Sample"} ${i + 1}: ${r.passed ? "PASS" : "FAIL"} (${r.status})` +
-          (r.visibility === "sample" ? `\ninput:\n${r.input ?? ""}\nexpected:\n${r.expected ?? ""}` : "") +
-          `\nstdout:\n${r.stdout ?? ""}\nstderr:\n${r.stderr ?? ""}`
-      );
+      const lines = results.map((r, i) => formatAssessmentRunCaseBlock(r, i));
       setRunResults(results);
       setRunSummaryOpen(true);
       setRunOutput(lines.join("\n\n---\n\n"));
@@ -801,7 +830,14 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                     />
                   </div>
                   {runOutput !== null && (
-                    <div className="shrink-0 max-h-36 overflow-auto rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                    <div
+                      className={cn(
+                        "shrink-0 max-h-72 overflow-auto rounded-xl border p-3 text-xs font-mono whitespace-pre-wrap",
+                        runResults.some((x) => !x.passed)
+                          ? "border-red-500/35 bg-[#140808] text-red-100"
+                          : "border-white/10 bg-[#0a0a0a] text-slate-300"
+                      )}
+                    >
                       {runOutput}
                     </div>
                   )}
@@ -922,7 +958,14 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
                     />
                   </div>
                   {runOutput !== null && (
-                    <div className="shrink-0 max-h-36 overflow-auto rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                    <div
+                      className={cn(
+                        "shrink-0 max-h-72 overflow-auto rounded-xl border p-3 text-xs font-mono whitespace-pre-wrap",
+                        runResults.some((x) => !x.passed)
+                          ? "border-red-500/35 bg-[#140808] text-red-100"
+                          : "border-white/10 bg-[#0a0a0a] text-slate-300"
+                      )}
+                    >
                       {runOutput}
                     </div>
                   )}
@@ -1001,15 +1044,35 @@ export function TestRoom({ test, tokenData }: TestRoomProps) {
           </AlertDialogHeader>
           <div className="max-h-[55vh] overflow-auto space-y-2 pr-1">
             {runResults.map((r, i) => (
-              <div key={`${r.visibility ?? "sample"}-${i}`} className="rounded-lg border border-white/10 bg-white/2 p-3">
+              <div key={`${r.visibility ?? "sample"}-${i}`} className="rounded-lg border border-white/10 bg-white/2 p-3 space-y-2">
                 <p className={`text-sm font-semibold ${r.passed ? "text-green-400" : "text-red-400"}`}>
                   {(r.visibility === "hidden" ? "Hidden" : "Sample") + ` ${i + 1}: ` + (r.passed ? "PASS" : "FAIL")}{" "}
                   <span className="text-slate-400 font-medium">({r.status})</span>
                 </p>
                 {r.visibility === "sample" ? (
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-400">
                     input: <span className="text-slate-300">{String(r.input ?? "").trim() || "—"}</span> | expected:{" "}
                     <span className="text-slate-300">{String(r.expected ?? "").trim() || "—"}</span>
+                  </p>
+                ) : null}
+                {!r.passed ? <p className="text-xs font-bold text-red-400">ERROR!</p> : null}
+                {String(r.compile_output ?? "").trim() ? (
+                  <pre className="text-[11px] leading-relaxed text-red-200/95 whitespace-pre-wrap font-mono border border-red-500/20 rounded-md bg-black/40 p-2">
+                    {String(r.compile_output).trim()}
+                  </pre>
+                ) : null}
+                {String(r.stderr ?? "").trim() ? (
+                  <pre className="text-[11px] leading-relaxed text-orange-200/90 whitespace-pre-wrap font-mono border border-orange-500/20 rounded-md bg-black/40 p-2">
+                    {String(r.stderr).trim()}
+                  </pre>
+                ) : null}
+                <pre className="text-[11px] leading-relaxed text-slate-300 whitespace-pre-wrap font-mono border border-white/10 rounded-md bg-black/30 p-2">
+                  <span className="text-slate-500 block mb-1">stdout</span>
+                  {String(r.stdout ?? "").trim() || "(empty)"}
+                </pre>
+                {!r.passed ? (
+                  <p className="text-[11px] font-mono text-slate-500 pt-1 border-t border-white/10">
+                    === Code Exited With Errors ===
                   </p>
                 ) : null}
               </div>

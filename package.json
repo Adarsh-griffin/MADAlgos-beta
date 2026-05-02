@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start -p $PORT",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit --pretty",
+    "typecheck:problems": "tsc --noEmit",
     "check:editor": "node scripts/check-assessment-editor.mjs",
     "download:logos": "node scripts/download-logos.cjs",
     "seed:booking": "node scripts/seed-booking-test-data.mjs",
