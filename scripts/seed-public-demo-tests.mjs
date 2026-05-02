@@ -11,6 +11,46 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
+import {
+  googleHiringAssessmentDelivery,
+  googleHiringCodingProblems,
+} from "./google-hiring-practice-coding.mjs";
+import {
+  microsoftHiringAssessmentDelivery,
+  microsoftHiringCodingProblems,
+} from "./microsoft-hiring-practice-coding.mjs";
+import {
+  tcsHiringAssessmentDelivery,
+  tcsHiringCodingProblems,
+} from "./tcs-hiring-practice-coding.mjs";
+import {
+  capgeminiHiringAssessmentDelivery,
+  capgeminiHiringCodingProblems,
+} from "./capgemini-hiring-practice-coding.mjs";
+import {
+  infosysHiringAssessmentDelivery,
+  infosysHiringCodingProblems,
+} from "./infosys-hiring-practice-coding.mjs";
+import {
+  metaHiringAssessmentDelivery,
+  metaHiringCodingProblems,
+} from "./meta-hiring-practice-coding.mjs";
+import {
+  appleHiringAssessmentDelivery,
+  appleHiringCodingProblems,
+} from "./apple-hiring-practice-coding.mjs";
+import {
+  netflixHiringAssessmentDelivery,
+  netflixHiringCodingProblems,
+} from "./netflix-hiring-practice-coding.mjs";
+import {
+  amazonHiringAssessmentDelivery,
+  amazonHiringCodingProblems,
+} from "./amazon-hiring-practice-coding.mjs";
+import {
+  techMahindraHiringAssessmentDelivery,
+  techMahindraHiringCodingProblems,
+} from "./tech-mahindra-hiring-practice-coding.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, "..");
@@ -166,13 +206,14 @@ const PACKS = [
   {
     publicSlug: "google-hiring-practice",
     title: "Google — hiring practice",
-    duration: 50,
+    duration: 130,
     demoCardSubtitle:
-      "OA-style mix: DSA fundamentals + 2 coding tasks (~45–60 min industry-style sprints). Timed, autosave.",
+      "OA-style mix: MCQs plus six stdin coding tasks (two-sum → trapping rain water). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "google.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 1,
+    assessmentDelivery: googleHiringAssessmentDelivery,
     mcqs: [
       {
         questionText:
@@ -213,57 +254,19 @@ const PACKS = [
         selectionType: "single",
       },
     ],
-    codingProblems: [
-      {
-        title: "Maximum subarray sum (Kadane)",
-        description: `Given an integer array, find the maximum sum of a contiguous subarray.
-
-Read from stdin:
-- Line 1: integer n (1 ≤ n ≤ 10⁵)
-- Line 2: n space-separated integers (each |value| ≤ 10⁹)
-
-Print one integer: the maximum sum. Use a single pass O(n).`,
-        inputFormat: "Line 1: n. Line 2: n integers.",
-        outputFormat: "Single integer (with newline).",
-        sampleTestCases: [{ input: "5\n1 -3 2 1 -2\n", output: "3\n" }],
-        hiddenTestCases: [
-          { input: "1\n5\n", output: "5\n" },
-          { input: "4\n-1 -2 -3 -4\n", output: "-1\n" },
-          { input: "6\n3 -2 5 -1 3 -4\n", output: "8\n" },
-        ],
-        marks: 20,
-        starterCode: starterKadane,
-      },
-      {
-        title: "Balanced bracket string",
-        description: `Determine if a string made only of '(', ')', '[', ']' is **validly** bracketed (properly nested and closed).
-
-Read one line from stdin: the string (length ≤ 5000).
-
-Print YES if valid, otherwise NO.`,
-        inputFormat: "One line, bracket characters only.",
-        outputFormat: "YES or NO (uppercase) with newline.",
-        sampleTestCases: [{ input: "([])\n", output: "YES\n" }],
-        hiddenTestCases: [
-          { input: "([)]\n", output: "NO\n" },
-          { input: "((\n", output: "NO\n" },
-          { input: "()[]()\n", output: "YES\n" },
-        ],
-        marks: 20,
-        starterCode: starterBrackets,
-      },
-    ],
+    codingProblems: googleHiringCodingProblems,
   },
   {
     publicSlug: "microsoft-hiring-practice",
     title: "Microsoft — hiring practice",
-    duration: 42,
+    duration: 130,
     demoCardSubtitle:
-      "Systems + coding: Windows/Azure-friendly CS concepts with two stdin tasks (multi-section screen ~40 min).",
+      "Windows/Azure CS fundamentals plus six stdin coding tasks (OneDrive → pipeline backpressure). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "microsoft.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 2,
+    assessmentDelivery: microsoftHiringAssessmentDelivery,
     mcqs: [
       {
         questionText: "In Win32-style processes, a crash in one user-mode process typically:",
@@ -316,53 +319,19 @@ Print YES if valid, otherwise NO.`,
         selectionType: "single",
       },
     ],
-    codingProblems: [
-      {
-        title: "Sorted array search (exists?)",
-        description: `Given **sorted** distinct integers, report whether a target appears.
-
-Read stdin:
-- Line 1: n and target (space-separated)
-- Line 2: n increasing integers
-
-Print 1 if target is present, else 0.`,
-        inputFormat: "n target, then n sorted ints.",
-        outputFormat: "1 or 0 with newline.",
-        sampleTestCases: [{ input: "6 4\n1 3 4 5 7 9\n", output: "1\n" }],
-        hiddenTestCases: [
-          { input: "5 10\n1 2 3 4 5\n", output: "0\n" },
-          { input: "1 7\n7\n", output: "1\n" },
-        ],
-        marks: 18,
-        starterCode: starterBinarySearch,
-      },
-      {
-        title: "Reverse the string",
-        description: `Read one line (no leading/trailing spaces constraint beyond the line content). Print it reversed.
-
-Example: abcde → edcba`,
-        inputFormat: "Single line string, length 1–5000.",
-        outputFormat: "Reversed string with newline.",
-        sampleTestCases: [{ input: "hello\n", output: "olleh\n" }],
-        hiddenTestCases: [
-          { input: "a\n", output: "a\n" },
-          { input: "stressed\n", output: "desserts\n" },
-        ],
-        marks: 18,
-        starterCode: starterReverse,
-      },
-    ],
+    codingProblems: microsoftHiringCodingProblems,
   },
   {
     publicSlug: "tcs-hiring-practice",
     title: "TCS — hiring practice",
-    duration: 35,
+    duration: 130,
     demoCardSubtitle:
-      "IT services pattern: numerical/logical + CS basics; two short coding drills (~30–40 min total).",
+      "IT services pattern: aptitude MCQs plus six stdin tasks (payroll → data-centre cooling). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "tcs.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 3,
+    assessmentDelivery: tcsHiringAssessmentDelivery,
     mcqs: [
       {
         questionText: "If a train 120 m long crosses a pole in 4 s, its speed in m/s is:",
@@ -400,47 +369,19 @@ Example: abcde → edcba`,
         selectionType: "single",
       },
     ],
-    codingProblems: [
-      {
-        title: "Sum of digits",
-        description: `Given a non-negative integer n (\`0 ≤ n ≤ 10¹²\`), print the sum of its decimal digits.
-
-Example: 904 = 9+0+4 = 13`,
-        inputFormat: "Single integer n on one line.",
-        outputFormat: "Single integer with newline.",
-        sampleTestCases: [{ input: "904\n", output: "13\n" }],
-        hiddenTestCases: [
-          { input: "0\n", output: "0\n" },
-          { input: "999\n", output: "27\n" },
-        ],
-        marks: 16,
-        starterCode: starterSumDigits,
-      },
-      {
-        title: "Is prime?",
-        description: `Given an integer n, print 1 if n is **prime**, else 0. Constraints: \`2 ≤ n ≤ 1000\`.`,
-        inputFormat: "Single integer n.",
-        outputFormat: "1 or 0 with newline.",
-        sampleTestCases: [{ input: "7\n", output: "1\n" }],
-        hiddenTestCases: [
-          { input: "4\n", output: "0\n" },
-          { input: "2\n", output: "1\n" },
-        ],
-        marks: 16,
-        starterCode: starterPrime,
-      },
-    ],
+    codingProblems: tcsHiringCodingProblems,
   },
   {
     publicSlug: "capgemini-hiring-practice",
     title: "Capgemini — hiring practice",
-    duration: 40,
+    duration: 130,
     demoCardSubtitle:
-      "Consulting-tech blend: SQL/process MCQs + two small programs (mixed screen ~35–45 min).",
+      "Consulting-tech blend: SQL/agile MCQs plus six stdin tasks (sprint budget → transformation bottlenecks). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "capgemini.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 4,
+    assessmentDelivery: capgeminiHiringAssessmentDelivery,
     mcqs: [
       {
         questionText: "In SQL, which clause filters rows **before** aggregation is applied?",
@@ -488,47 +429,19 @@ Example: 904 = 9+0+4 = 13`,
         selectionType: "single",
       },
     ],
-    codingProblems: [
-      {
-        title: "Factorial",
-        description: `Compute n! for \`0 ≤ n ≤ 12\`.`,
-        inputFormat: "Single integer n.",
-        outputFormat: "Single integer with newline.",
-        sampleTestCases: [{ input: "5\n", output: "120\n" }],
-        hiddenTestCases: [
-          { input: "0\n", output: "1\n" },
-          { input: "7\n", output: "5040\n" },
-        ],
-        marks: 16,
-        starterCode: starterFactorial,
-      },
-      {
-        title: "GCD (Euclidean)",
-        description: `Read two non-negative integers (not both zero). Print their **greatest common divisor**.
-
-Example: gcd(48, 18) = 6.`,
-        inputFormat: "One line: a b",
-        outputFormat: "One integer with newline.",
-        sampleTestCases: [{ input: "48 18\n", output: "6\n" }],
-        hiddenTestCases: [
-          { input: "7 13\n", output: "1\n" },
-          { input: "100 25\n", output: "25\n" },
-        ],
-        marks: 16,
-        starterCode: starterGcd,
-      },
-    ],
+    codingProblems: capgeminiHiringCodingProblems,
   },
   {
     publicSlug: "amazon-hiring-practice",
     title: "Amazon — hiring practice",
-    duration: 50,
+    duration: 130,
     demoCardSubtitle:
-      "OA-style rounds: arrays/strings + implementation-focused coding with edge-case heavy hidden tests.",
+      "OA-style MCQs plus six stdin tasks (delivery truck match → S3 tier overflow). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "amazon.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 5,
+    assessmentDelivery: amazonHiringAssessmentDelivery,
     mcqs: [
       { questionText: "Which data structure is ideal for BFS traversal?", options: ["Stack", "Queue", "Heap", "Trie"], correctOption: 1, marks: 5, selectionType: "single" },
       { questionText: "Amortized time for push in dynamic array is typically:", options: ["O(n)", "O(log n)", "O(1)", "O(n log n)"], correctOption: 2, marks: 5, selectionType: "single" },
@@ -536,39 +449,19 @@ Example: gcd(48, 18) = 6.`,
       { questionText: "Two-pointer technique is most useful when:", options: ["Data is random graph", "Input often has ordering/monotonicity", "Only recursion allowed", "Memory is infinite"], correctOption: 1, marks: 5, selectionType: "single" },
       { questionText: "Worst-case lookup in an unbalanced BST is:", options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], correctOption: 2, marks: 5, selectionType: "single" },
     ],
-    codingProblems: [
-      {
-        title: "Balanced bracket string",
-        description: "Given a bracket string of (), [] characters, print YES if balanced, else NO.",
-        inputFormat: "One line string.",
-        outputFormat: "YES or NO with newline.",
-        sampleTestCases: [{ input: "([])\n", output: "YES\n" }],
-        hiddenTestCases: [{ input: "([)]\n", output: "NO\n" }, { input: "()[]\n", output: "YES\n" }],
-        marks: 20,
-        starterCode: starterBrackets,
-      },
-      {
-        title: "Reverse the string",
-        description: "Read one line and print the reversed string.",
-        inputFormat: "Single line string.",
-        outputFormat: "Reversed string with newline.",
-        sampleTestCases: [{ input: "amazon\n", output: "nozama\n" }],
-        hiddenTestCases: [{ input: "a\n", output: "a\n" }, { input: "madalgos\n", output: "sogladam\n" }],
-        marks: 20,
-        starterCode: starterReverse,
-      },
-    ],
+    codingProblems: amazonHiringCodingProblems,
   },
   {
     publicSlug: "meta-hiring-practice",
     title: "Meta — hiring practice",
-    duration: 48,
+    duration: 130,
     demoCardSubtitle:
-      "Product-company style MCQ + coding mix focusing on linear scans, hashing, and clean implementation.",
+      "Product-style MCQs plus six stdin tasks (ads spend → Stories engagement trap). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "meta.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 6,
+    assessmentDelivery: metaHiringAssessmentDelivery,
     mcqs: [
       { questionText: "Typical average lookup complexity in hash set:", options: ["O(1)", "O(log n)", "O(n)", "O(n²)"], correctOption: 0, marks: 5, selectionType: "single" },
       { questionText: "A stable sort guarantees:", options: ["In-place only", "Equal keys keep relative order", "Always O(n)", "No recursion"], correctOption: 1, marks: 5, selectionType: "single" },
@@ -576,39 +469,19 @@ Example: gcd(48, 18) = 6.`,
       { questionText: "When using sliding window, window movement is usually:", options: ["Random", "Monotonic over indices", "Recursive tree-only", "Hash collision-based"], correctOption: 1, marks: 5, selectionType: "single" },
       { questionText: "Time to traverse graph with V nodes and E edges using BFS:", options: ["O(V)", "O(E)", "O(V+E)", "O(VE)"], correctOption: 2, marks: 5, selectionType: "single" },
     ],
-    codingProblems: [
-      {
-        title: "Maximum subarray sum (Kadane)",
-        description: "Given n integers, print maximum contiguous subarray sum.",
-        inputFormat: "Line 1: n. Line 2: n integers.",
-        outputFormat: "One integer with newline.",
-        sampleTestCases: [{ input: "5\n1 -3 2 1 -2\n", output: "3\n" }],
-        hiddenTestCases: [{ input: "4\n-1 -2 -3 -4\n", output: "-1\n" }, { input: "6\n3 -2 5 -1 3 -4\n", output: "8\n" }],
-        marks: 20,
-        starterCode: starterKadane,
-      },
-      {
-        title: "Is prime?",
-        description: "Given n, print 1 if n is prime else 0.",
-        inputFormat: "Single integer n.",
-        outputFormat: "1 or 0 with newline.",
-        sampleTestCases: [{ input: "7\n", output: "1\n" }],
-        hiddenTestCases: [{ input: "4\n", output: "0\n" }, { input: "2\n", output: "1\n" }],
-        marks: 20,
-        starterCode: starterPrime,
-      },
-    ],
+    codingProblems: metaHiringCodingProblems,
   },
   {
     publicSlug: "apple-hiring-practice",
     title: "Apple — hiring practice",
-    duration: 45,
+    duration: 130,
     demoCardSubtitle:
-      "Core CS + implementation discipline: correctness-first questions with strict hidden validation.",
+      "Core CS MCQs plus six stdin tasks (Music offline quota → camera lens flare trap). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "apple.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 7,
+    assessmentDelivery: appleHiringAssessmentDelivery,
     mcqs: [
       { questionText: "Which sorting algorithm is NOT comparison-based?", options: ["Merge sort", "Heap sort", "Counting sort", "Quick sort"], correctOption: 2, marks: 5, selectionType: "single" },
       { questionText: "Binary search requires input to be:", options: ["Unique only", "Sorted", "Prime-sized", "2D"], correctOption: 1, marks: 5, selectionType: "single" },
@@ -616,39 +489,19 @@ Example: gcd(48, 18) = 6.`,
       { questionText: "Recursion depth risk in practice is mainly:", options: ["Hash collisions", "Stack overflow", "DNS failure", "Cache line split"], correctOption: 1, marks: 5, selectionType: "single" },
       { questionText: "Which is best for fast membership checks?", options: ["Array scan", "Hash set", "Linked list", "Plain string"], correctOption: 1, marks: 5, selectionType: "single" },
     ],
-    codingProblems: [
-      {
-        title: "Sorted array search (exists?)",
-        description: "Given sorted integers and target, print 1 if target exists else 0.",
-        inputFormat: "Line 1: n target. Line 2: n sorted ints.",
-        outputFormat: "1 or 0 with newline.",
-        sampleTestCases: [{ input: "6 4\n1 3 4 5 7 9\n", output: "1\n" }],
-        hiddenTestCases: [{ input: "5 10\n1 2 3 4 5\n", output: "0\n" }, { input: "1 7\n7\n", output: "1\n" }],
-        marks: 20,
-        starterCode: starterBinarySearch,
-      },
-      {
-        title: "GCD (Euclidean)",
-        description: "Read a and b, print gcd(a,b).",
-        inputFormat: "One line: a b",
-        outputFormat: "One integer with newline.",
-        sampleTestCases: [{ input: "48 18\n", output: "6\n" }],
-        hiddenTestCases: [{ input: "7 13\n", output: "1\n" }, { input: "100 25\n", output: "25\n" }],
-        marks: 20,
-        starterCode: starterGcd,
-      },
-    ],
+    codingProblems: appleHiringCodingProblems,
   },
   {
     publicSlug: "netflix-hiring-practice",
     title: "Netflix — hiring practice",
-    duration: 50,
+    duration: 130,
     demoCardSubtitle:
-      "Performance-minded coding set: arrays, search, and edge-case handling under timed pressure.",
+      "Streaming/CDN-style MCQs plus six stdin tasks (licensing slots → encoding buffer trap). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "netflix.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 8,
+    assessmentDelivery: netflixHiringAssessmentDelivery,
     mcqs: [
       { questionText: "Asymptotically faster growth means:", options: ["Smaller input only", "Worse scalability for large n", "Always less memory", "No difference"], correctOption: 1, marks: 5, selectionType: "single" },
       { questionText: "Which complexity is better at scale?", options: ["O(n²)", "O(n log n)", "O(2ⁿ)", "O(n!)"], correctOption: 1, marks: 5, selectionType: "single" },
@@ -656,39 +509,19 @@ Example: gcd(48, 18) = 6.`,
       { questionText: "Two-sum optimal common approach uses:", options: ["Nested loops only", "Hash map", "DFS tree", "Heap sort each step"], correctOption: 1, marks: 5, selectionType: "single" },
       { questionText: "Space complexity of iterative binary search is:", options: ["O(n)", "O(log n)", "O(1)", "O(n log n)"], correctOption: 2, marks: 5, selectionType: "single" },
     ],
-    codingProblems: [
-      {
-        title: "Reverse the string",
-        description: "Read one line and print it reversed.",
-        inputFormat: "Single line.",
-        outputFormat: "Reversed line with newline.",
-        sampleTestCases: [{ input: "stream\n", output: "maerts\n" }],
-        hiddenTestCases: [{ input: "a\n", output: "a\n" }, { input: "planet\n", output: "tenalp\n" }],
-        marks: 20,
-        starterCode: starterReverse,
-      },
-      {
-        title: "Sum of digits",
-        description: "Given non-negative integer n, print sum of its digits.",
-        inputFormat: "Single integer n.",
-        outputFormat: "Single integer with newline.",
-        sampleTestCases: [{ input: "904\n", output: "13\n" }],
-        hiddenTestCases: [{ input: "0\n", output: "0\n" }, { input: "999\n", output: "27\n" }],
-        marks: 20,
-        starterCode: starterSumDigits,
-      },
-    ],
+    codingProblems: netflixHiringCodingProblems,
   },
   {
     publicSlug: "tech-mahindra-hiring-practice",
     title: "Tech Mahindra — hiring practice",
-    duration: 35,
+    duration: 130,
     demoCardSubtitle:
-      "Services-style round: aptitude + CS fundamentals + two compact coding tasks for screening.",
+      "Telecom / services MCQs plus six stdin tasks (plan budget → tower shadow). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "techmahindra.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 9,
+    assessmentDelivery: techMahindraHiringAssessmentDelivery,
     mcqs: [
       { questionText: "Simple interest on P at rate R for T years is:", options: ["P*R*T", "P*R*T/100", "P+R+T", "P*R/100T"], correctOption: 1, marks: 4, selectionType: "single" },
       { questionText: "In OOP, encapsulation means:", options: ["Only inheritance", "Bundling data with methods + controlled access", "Only polymorphism", "No classes"], correctOption: 1, marks: 4, selectionType: "single" },
@@ -696,39 +529,19 @@ Example: gcd(48, 18) = 6.`,
       { questionText: "Queue follows:", options: ["LIFO", "FIFO", "Random order", "Priority always"], correctOption: 1, marks: 4, selectionType: "single" },
       { questionText: "Best known complexity for checking primality up to sqrt(n) is:", options: ["O(n)", "O(log n)", "O(sqrt(n))", "O(n²)"], correctOption: 2, marks: 4, selectionType: "single" },
     ],
-    codingProblems: [
-      {
-        title: "Is prime?",
-        description: "Given integer n (>=2), print 1 if prime else 0.",
-        inputFormat: "Single integer n.",
-        outputFormat: "1 or 0 with newline.",
-        sampleTestCases: [{ input: "7\n", output: "1\n" }],
-        hiddenTestCases: [{ input: "4\n", output: "0\n" }, { input: "2\n", output: "1\n" }],
-        marks: 16,
-        starterCode: starterPrime,
-      },
-      {
-        title: "Factorial",
-        description: "Compute n! for 0 <= n <= 12.",
-        inputFormat: "Single integer n.",
-        outputFormat: "Single integer with newline.",
-        sampleTestCases: [{ input: "5\n", output: "120\n" }],
-        hiddenTestCases: [{ input: "0\n", output: "1\n" }, { input: "7\n", output: "5040\n" }],
-        marks: 16,
-        starterCode: starterFactorial,
-      },
-    ],
+    codingProblems: techMahindraHiringCodingProblems,
   },
   {
     publicSlug: "infosys-hiring-practice",
     title: "Infosys — hiring practice",
-    duration: 38,
+    duration: 130,
     demoCardSubtitle:
-      "Campus screening style: quant/logical + programming basics with practical coding drills.",
+      "Campus / InfyTQ style: quant MCQs plus six stdin tasks (training calendar → campus rainwater). Multi-language starters. Timed, autosave.",
     demoLogoDomain: "infosys.com",
     demoCardImageUrl:
       "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80&auto=format&fit=crop",
     demoSortOrder: 10,
+    assessmentDelivery: infosysHiringAssessmentDelivery,
     mcqs: [
       { questionText: "If x:y = 3:4 and y=20, x is:", options: ["10", "12", "15", "16"], correctOption: 2, marks: 4, selectionType: "single" },
       { questionText: "Which SQL command removes rows but keeps table structure?", options: ["DROP", "DELETE", "REMOVE", "ERASE"], correctOption: 1, marks: 4, selectionType: "single" },
@@ -736,28 +549,7 @@ Example: gcd(48, 18) = 6.`,
       { questionText: "A function calling itself is:", options: ["Iteration", "Recursion", "Encapsulation", "Compilation"], correctOption: 1, marks: 4, selectionType: "single" },
       { questionText: "Time complexity of linear search is:", options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], correctOption: 2, marks: 4, selectionType: "single" },
     ],
-    codingProblems: [
-      {
-        title: "Sum of digits",
-        description: "Given non-negative integer n, print sum of digits.",
-        inputFormat: "Single integer n.",
-        outputFormat: "One integer with newline.",
-        sampleTestCases: [{ input: "904\n", output: "13\n" }],
-        hiddenTestCases: [{ input: "0\n", output: "0\n" }, { input: "999\n", output: "27\n" }],
-        marks: 16,
-        starterCode: starterSumDigits,
-      },
-      {
-        title: "GCD (Euclidean)",
-        description: "Read a and b, print gcd(a,b).",
-        inputFormat: "One line: a b",
-        outputFormat: "One integer with newline.",
-        sampleTestCases: [{ input: "48 18\n", output: "6\n" }],
-        hiddenTestCases: [{ input: "7 13\n", output: "1\n" }, { input: "100 25\n", output: "25\n" }],
-        marks: 16,
-        starterCode: starterGcd,
-      },
-    ],
+    codingProblems: infosysHiringCodingProblems,
   },
 ];
 
