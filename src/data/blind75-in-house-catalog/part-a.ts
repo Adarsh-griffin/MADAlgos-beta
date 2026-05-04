@@ -23,7 +23,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums, target) {\n  // >>> START CODING HERE\n  return [0, 1];\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const h = (lines[0] || "").trim().split(/\\s+/).map(Number);\n  const n = h[0] || 0;\n  const target = h[1] || 0;\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  const [i, j] = solve(nums, target);\n  process.stdout.write(String(i) + " " + String(j) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int], target: int):\n    # >>> START CODING HERE\n    return [0, 1]\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    h = list(map(int, lines[0].split()))\n    n, target = h[0], h[1]\n    nums = list(map(int, lines[1].split()))\n    i, j = solve(nums, target)\n    sys.stdout.write(str(i) + " " + str(j) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -58,7 +58,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(prices) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const n = parseInt((lines[0] || "0").trim(), 10) || 0;\n  const prices = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(prices)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(prices: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -93,7 +93,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return "NO";\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> str:\n    # >>> START CODING HERE\n    return "NO"\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(solve(nums) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -128,7 +128,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return nums.map(() => 0);\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  const out = solve(nums);\n  process.stdout.write(out.join(" ") + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> list[int]:\n    # >>> START CODING HERE\n    return [0] * len(nums)\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    print(" ".join(str(x) for x in solve(nums)))\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -163,7 +163,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -198,7 +198,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -233,7 +233,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return nums[0];\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> int:\n    # >>> START CODING HERE\n    return nums[0]\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -269,7 +269,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums, target) {\n  // >>> START CODING HERE\n  return -1;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const h = (lines[0] || "").trim().split(/\\s+/).map(Number);\n  const n = h[0] || 0;\n  const target = h[1] || 0;\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums, target)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int], target: int) -> int:\n    # >>> START CODING HERE\n    return -1\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    h = list(map(int, lines[0].split()))\n    n, target = h[0], h[1]\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums, target)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -304,7 +304,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -339,7 +339,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(heights) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const heights = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(heights)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(heights: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    heights = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(heights)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -374,7 +374,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(a, b) {\n  // >>> START CODING HERE\n  return a + b;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const parts = (lines[0] || "").trim().split(/\\s+/).filter(Boolean);\n  const a = parts.length > 0 ? Number(parts[0]) : 0;\n  const b = parts.length > 1 ? Number(parts[1]) : 0;\n  process.stdout.write(String(solve(a, b)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(a: int, b: int) -> int:\n    # >>> START CODING HERE\n    return a + b\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    a, b = map(int, sys.stdin.readline().split())\n    sys.stdout.write(str(solve(a, b)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -409,7 +409,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(n) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const n = parseInt((lines[0] || "0").trim(), 10) || 0;\n  process.stdout.write(String(solve(n)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(n: int) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    n = int(sys.stdin.readline())\n    sys.stdout.write(str(solve(n)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -444,7 +444,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(n) {\n  // >>> START CODING HERE\n  return Array.from({ length: n + 1 }, () => 0);\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const n = parseInt((lines[0] || "0").trim(), 10) || 0;\n  const out = solve(n);\n  process.stdout.write(out.join(" ") + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(n: int) -> list[int]:\n    # >>> START CODING HERE\n    return [0] * (n + 1)\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    n = int(sys.stdin.readline())\n    print(" ".join(str(x) for x in solve(n)))\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -479,7 +479,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -514,7 +514,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(n) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const n = parseInt((lines[0] || "0").trim(), 10) || 0;\n  process.stdout.write(String(solve(n)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(n: int) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    n = int(sys.stdin.readline())\n    sys.stdout.write(str(solve(n)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -549,7 +549,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(n) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const n = parseInt((lines[0] || "0").trim(), 10) || 0;\n  process.stdout.write(String(solve(n)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(n: int) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    n = int(sys.stdin.readline())\n    sys.stdout.write(str(solve(n)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -585,7 +585,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(amount, coins) {\n  // >>> START CODING HERE\n  return -1;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const amount = parseInt((lines[0] || "0").trim(), 10) || 0;\n  const coins = (lines[2] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(amount, coins)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(amount: int, coins: list[int]) -> int:\n    # >>> START CODING HERE\n    return -1\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    amount = int(lines[0])\n    coins = list(map(int, lines[2].split()))\n    sys.stdout.write(str(solve(amount, coins)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -620,7 +620,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const nums = (lines[1] || "").trim().split(/\\s+/).map(Number);\n  process.stdout.write(String(solve(nums)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(nums: list[int]) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    nums = list(map(int, lines[1].split()))\n    sys.stdout.write(str(solve(nums)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -655,7 +655,7 @@ export const BLIND75_IN_HOUSE_PART_A: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(s, t) {\n  // >>> START CODING HERE\n  return 0;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const s = (lines[0] || "").trim();\n  const t = (lines[1] || "").trim();\n  process.stdout.write(String(solve(s, t)) + "\\n");\n});\n`,
       Python:
-        `import sys\n\n` +
+        `from __future__ import annotations\n\nimport sys\n\n` +
         B.Python +
         `def solve(s: str, t: str) -> int:\n    # >>> START CODING HERE\n    return 0\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    lines = sys.stdin.read().splitlines()\n    s, t = lines[0].strip(), lines[1].strip()\n    sys.stdout.write(str(solve(s, t)) + "\\n")\n\n\nif __name__ == "__main__":\n    main()\n`,
       Java:

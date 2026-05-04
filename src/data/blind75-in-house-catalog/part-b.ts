@@ -23,7 +23,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(s, words) {\n  return "NO";\n}\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (l) => lines.push(l));\nrl.on("close", () => {\n  const s = (lines[0] || "").trim();\n  const words = (lines[2] || "").trim().split(/\\s+/).filter(Boolean);\n  process.stdout.write(solve(s, words) + "\\n");\n});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(s: str, words: list[str]) -> str:\n    return "NO"\n\ndef main():\n    lines = sys.stdin.read().splitlines()\n    s = lines[0].strip()\n    words = lines[2].split()\n    sys.stdout.write(solve(s, words) + "\\n")\nif __name__ == "__main__":\n    main()\n`,
       Java:
@@ -58,7 +58,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(target, coins) { return 0; }\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst lines=[];rl.on("line",l=>lines.push(l));rl.on("close",()=>{\nconst t=+lines[0];const coins=lines[2].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(t,coins))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(t:int,c:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()` +
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(t:int,c:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()` +
         `\nprint(solve(int(lines[0]),list(map(int,lines[2].split()))))\n`,
       Java:
         `import java.util.*;\n` +
@@ -92,7 +92,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(nums))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -125,7 +125,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(nums))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -158,7 +158,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(s){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nprocess.stdout.write(String(solve((L[0]||"").trim()))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(s:str)->int: return 0\nprint(solve(sys.stdin.readline().strip()))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(s:str)->int: return 0\nprint(solve(sys.stdin.readline().strip()))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -191,7 +191,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(m,n){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nrl.on("line",l=>{const[m,n]=l.trim().split(/\\s+/).map(Number);process.stdout.write(String(solve(m,n))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(m:int,n:int)->int: return 0\nm,n=map(int,sys.stdin.readline().split())\nprint(solve(m,n))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(m:int,n:int)->int: return 0\nm,n=map(int,sys.stdin.readline().split())\nprint(solve(m,n))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -224,7 +224,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums){return "NO";}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(solve(nums)+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(nums:list[int])->str: return "NO"\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(nums:list[int])->str: return "NO"\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -258,7 +258,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(n,edges){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst [n,m]=L[0].trim().split(/\\s+/).map(Number);\nconst edges=[];for(let i=1;i<=m;i++){const [u,v]=L[i].trim().split(/\\s+/).map(Number);edges.push([u,v]);}\nprocess.stdout.write(String(solve(n,edges))+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(n:int,edges:list[tuple[int,int]])->int: return 0\nlines=sys.stdin.read().splitlines()\nn,m=map(int,lines[0].split())\nedges=[tuple(map(int,lines[i].split())) for i in range(1,m+1)]\nprint(solve(n,edges))\n`,
       Java:
@@ -293,7 +293,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(n,edges){return "NO";}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst [n,m]=L[0].trim().split(/\\s+/).map(Number);\nconst edges=[];for(let i=1;i<=m;i++){const [a,b]=L[i].trim().split(/\\s+/).map(Number);edges.push([a,b]);}\nprocess.stdout.write(solve(n,edges)+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(n:int,edges:list[tuple[int,int]])->str: return "NO"\nlines=sys.stdin.read().splitlines()\nn,m=map(int,lines[0].split())\nedges=[tuple(map(int,lines[i].split())) for i in range(1,m+1)]\nprint(solve(n,edges))\n`,
       Java:
@@ -333,7 +333,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(grid){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst [r,c]=L[0].trim().split(/\\s+/).map(Number);\nconst grid=L.slice(1,1+r).map(x=>x.trim());\nprocess.stdout.write(String(solve(grid))+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(grid:list[str])->int: return 0\nlines=sys.stdin.read().splitlines()\nr,c=map(int,lines[0].split())\ngrid=lines[1:1+r]\nprint(solve(grid))\n`,
       Java:
@@ -374,7 +374,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(grid,w){return "NO";}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst [r,c]=L[0].trim().split(/\\s+/).map(Number);\nconst grid=L.slice(1,1+r).map(x=>x.trim());\nconst w=(L[1+r]||"").trim();\nprocess.stdout.write(solve(grid,w)+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(grid:list[str],w:str)->str: return "NO"\nlines=sys.stdin.read().splitlines()\nr,c=map(int,lines[0].split())\ngrid=lines[1:1+r]\nw=lines[1+r].strip()\nprint(solve(grid,w))\n`,
       Java:
@@ -409,7 +409,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(nums))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -442,7 +442,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(s){return "NO";}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nprocess.stdout.write(solve((L[0]||""))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(s:str)->str: return "NO"\nprint(solve(sys.stdin.readline().rstrip("\\n")))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(s:str)->str: return "NO"\nprint(solve(sys.stdin.readline().rstrip("\\n")))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -475,7 +475,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums,target){return [1,2];}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst [n,t]=L[0].trim().split(/\\s+/).map(Number);\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nconst [i,j]=solve(nums,t);\nprocess.stdout.write(i+" "+j+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(nums:list[int],t:int)->list[int]: return [1,2]\nlines=sys.stdin.read().splitlines()\nn,t=map(int,lines[0].split())\nnums=list(map(int,lines[1].split()))\ni,j=solve(nums,t)\nprint(i,j)\n`,
       Java:
@@ -510,7 +510,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums,target){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst [n,t]=L[0].trim().split(/\\s+/).map(Number);\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(nums,t))+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(nums:list[int],t:int)->int: return 0\nlines=sys.stdin.read().splitlines()\nn,t=map(int,lines[0].split())\nnums=list(map(int,lines[1].split()))\nprint(solve(nums,t))\n`,
       Java:
@@ -545,7 +545,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(h){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst h=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(h))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(h:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(h:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -578,7 +578,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(p){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst p=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(p))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(p:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(p:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -611,7 +611,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(nums){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst nums=L[1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(nums))+"\\n");});\n`,
       Python:
-        `import sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
+        `from __future__ import annotations\n\nimport sys\n` + B.Python + `def solve(nums:list[int])->int: return 0\nlines=sys.stdin.read().splitlines()\nprint(solve(list(map(int,lines[1].split()))))\n`,
       Java:
         `import java.util.*;\n` +
         B.Java +
@@ -649,7 +649,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(iv){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst n=+L[0];const iv=[];for(let i=1;i<=n;i++){const [a,b]=L[i].trim().split(/\\s+/).map(Number);iv.push([a,b]);}\nprocess.stdout.write(String(solve(iv))+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(iv:list[tuple[int,int]])->int: return 0\nlines=sys.stdin.read().splitlines()\nn=int(lines[0])\niv=[tuple(map(int,lines[i].split())) for i in range(1,n+1)]\nprint(solve(iv))\n`,
       Java:
@@ -690,7 +690,7 @@ export const BLIND75_IN_HOUSE_PART_B: Record<string, InHouseBlind75Entry> = {
         B.Javascript +
         `function solve(iv,ni){return 0;}\nconst readline=require("readline");\nconst rl=readline.createInterface({input:process.stdin});\nconst L=[];rl.on("line",l=>L.push(l));rl.on("close",()=>{\nconst n=+L[0];const iv=[];for(let i=1;i<=n;i++){const [a,b]=L[i].trim().split(/\\s+/).map(Number);iv.push([a,b]);}\nconst [ns,ne]=L[n+1].trim().split(/\\s+/).map(Number);\nprocess.stdout.write(String(solve(iv,[ns,ne]))+"\\n");});\n`,
       Python:
-        `import sys\n` +
+        `from __future__ import annotations\n\nimport sys\n` +
         B.Python +
         `def solve(iv:list[tuple[int,int]],ni:tuple[int,int])->int: return 0\nlines=sys.stdin.read().splitlines()\nn=int(lines[0])\niv=[tuple(map(int,lines[i].split())) for i in range(1,n+1)]\nni=tuple(map(int,lines[n+1].split()))\nprint(solve(iv,ni))\n`,
       Java:

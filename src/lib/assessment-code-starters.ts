@@ -12,38 +12,32 @@ const LANGUAGE_ALIASES: Record<AssessmentLangKey, string[]> = {
 };
 
 /**
- * Wide banner so students immediately see where to implement their solution.
- * (Intentionally does not mention LeetCode — those lines are stripped elsewhere when needed.)
+ * Short banners so students see where to type code (LeetCode-looking lines are stripped elsewhere).
  */
 export const STUDENT_CODE_ZONE_BANNER: Record<AssessmentLangKey, string> = {
-  Javascript: `// ========================== START CODING HERE ==========================
-// Replace only the logic section below. Keep stdin/stdout wiring as-is.
-// ========================================================================
+  Javascript: `// --- Your code goes inside solve(...) ---
+// The lines below read stdin and print the answer; leave them alone unless you change the input shape.
 
 `,
-  Python: `# ========================== START CODING HERE ==========================
-# Replace only the logic section below. Keep stdin/stdout wiring as-is.
-# ========================================================================
+  Python: `# --- Your code goes inside solve(...) ---
+# The helper below reads stdin and prints the answer; adjust only if your input format differs.
 
 `,
   Java: `/*
- * ========================= START CODING HERE =========================
- * Replace only the logic section below. Keep stdin/stdout wiring as-is.
- * ====================================================================
+ * --- Your code goes inside solve(...) ---
+ * main() below reads stdin and prints; change it only if your input format differs.
  */
 
 `,
   "C++": `/*
- * ========================= START CODING HERE =========================
- * Replace only the logic section below. Keep stdin/stdout wiring as-is.
- * ====================================================================
+ * --- Your code goes inside solve(...) ---
+ * main() below reads stdin and prints; change it only if your input format differs.
  */
 
 `,
   C: `/*
- * ========================= START CODING HERE =========================
- * Replace only the logic section below. Keep stdin/stdout wiring as-is.
- * ====================================================================
+ * --- Your code goes inside solve(...) ---
+ * main() below reads stdin and prints; change it only if your input format differs.
  */
 
 `,
@@ -52,12 +46,12 @@ export const STUDENT_CODE_ZONE_BANNER: Record<AssessmentLangKey, string> = {
 /** Short tips shown next to the editor for the chosen language. */
 export const ASSESSMENT_CODE_HINTS: Record<AssessmentLangKey, string> = {
   Javascript:
-    "Implement solve(...) and return the answer. Harness code handles stdin/stdout and final print.",
+    "Fill in solve(...). Return the value; the template reads input and writes output for you.",
   Python:
-    "Implement solve(...) and return the answer. Harness code handles stdin/stdout and final print.",
-  Java: "Implement solve(...) and return the result; main() handles input/output wiring.",
-  "C++": "Implement solve(...) and return the result; provided main() handles input/output wiring.",
-  C: "Implement solve(...) and return the result; provided main() handles scanf/printf.",
+    "Fill in solve(...). Return the value; the template reads stdin and prints it.",
+  Java: "Fill in solve(...). main() reads input with Scanner and prints the result.",
+  "C++": "Fill in solve(...). main() uses cin/cout for input and output.",
+  C: "Fill in solve(...). main() uses scanf/printf for input and output.",
 };
 
 /**
@@ -158,23 +152,23 @@ function getProblemStarterByLanguage(
 const SNIPPETS: Record<AssessmentLangKey, string> = {
   Javascript:
     STUDENT_CODE_ZONE_BANNER.Javascript +
-    `function solve(a, b) {\n  // >>> START CODING HERE\n  // Return value only (do not print here)\n  return a + b;\n  // >>> END CODING HERE\n}\n\nconst readline = require('readline');\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on('line', (line) => lines.push(line));\nrl.on('close', () => {\n  const parts = (lines[0] || '').trim().split(/\\s+/).filter(Boolean);\n  const a = parts.length > 0 ? Number(parts[0]) : 0;\n  const b = parts.length > 1 ? Number(parts[1]) : 0;\n  const result = solve(a, b);\n  process.stdout.write(String(result) + '\\n');\n});\n`,
+    `function solve(a, b) {\n  // Example: add two numbers from the first line of input.\n  return a + b;\n}\n\nconst readline = require('readline');\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on('line', (line) => lines.push(line));\nrl.on('close', () => {\n  const parts = (lines[0] || '').trim().split(/\\s+/).filter(Boolean);\n  const a = parts.length > 0 ? Number(parts[0]) : 0;\n  const b = parts.length > 1 ? Number(parts[1]) : 0;\n  const result = solve(a, b);\n  process.stdout.write(String(result) + '\\n');\n});\n`,
   Python:
-    `import sys\n\n` +
+    `from __future__ import annotations\n\nimport sys\n\n` +
     STUDENT_CODE_ZONE_BANNER.Python +
-    `def solve(a: int, b: int):\n    # >>> START CODING HERE\n    # Return value only (do not print here)\n    return a + b\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    parts = sys.stdin.readline().strip().split()\n    a = int(parts[0]) if len(parts) > 0 else 0\n    b = int(parts[1]) if len(parts) > 1 else 0\n    result = solve(a, b)\n    sys.stdout.write(str(result) + \"\\n\")\n\n\nif __name__ == '__main__':\n    main()\n`,
+    `def solve(a: int, b: int) -> int:\n    # Return the answer; main() will print it.\n    return a + b\n\n\ndef main() -> None:\n    parts = sys.stdin.readline().strip().split()\n    a = int(parts[0]) if len(parts) > 0 else 0\n    b = int(parts[1]) if len(parts) > 1 else 0\n    result = solve(a, b)\n    sys.stdout.write(str(result) + \"\\n\")\n\n\nif __name__ == '__main__':\n    main()\n`,
   Java:
     `import java.util.Scanner;\n\n` +
     STUDENT_CODE_ZONE_BANNER.Java +
-    `public class Main {\n    static long solve(long a, long b) {\n        // >>> START CODING HERE\n        // Return value only (do not print here)\n        return a + b;\n        // >>> END CODING HERE\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        long a = sc.hasNextLong() ? sc.nextLong() : 0;\n        long b = sc.hasNextLong() ? sc.nextLong() : 0;\n        long result = solve(a, b);\n        System.out.println(result);\n        sc.close();\n    }\n}\n`,
+    `public class Main {\n    static long solve(long a, long b) {\n        // Example starter: add two numbers.\n        return a + b;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        long a = sc.hasNextLong() ? sc.nextLong() : 0;\n        long b = sc.hasNextLong() ? sc.nextLong() : 0;\n        long result = solve(a, b);\n        System.out.println(result);\n        sc.close();\n    }\n}\n`,
   "C++":
     `#include <iostream>\nusing namespace std;\n\n` +
     STUDENT_CODE_ZONE_BANNER["C++"] +
-    `long long solve(long long a, long long b) {\n    // >>> START CODING HERE\n    // Return value only (do not print here)\n    return a + b;\n    // >>> END CODING HERE\n}\n\nint main() {\n    long long a = 0, b = 0;\n    if (!(cin >> a >> b)) return 0;\n    long long result = solve(a, b);\n    cout << result << "\\n";\n    return 0;\n}\n`,
+    `long long solve(long long a, long long b) {\n    // Example: add two numbers read in main().\n    return a + b;\n}\n\nint main() {\n    long long a = 0, b = 0;\n    if (!(cin >> a >> b)) return 0;\n    long long result = solve(a, b);\n    cout << result << "\\n";\n    return 0;\n}\n`,
   C:
     `#include <stdio.h>\n\n` +
     STUDENT_CODE_ZONE_BANNER.C +
-    `long long solve(long long a, long long b) {\n    /* >>> START CODING HERE */\n    /* Return value only (do not print here) */\n    return a + b;\n    /* >>> END CODING HERE */\n}\n\nint main(void) {\n    long long a = 0, b = 0;\n    if (scanf("%lld %lld", &a, &b) != 2) return 0;\n    long long result = solve(a, b);\n    printf("%lld\\n", result);\n    return 0;\n}\n`,
+    `long long solve(long long a, long long b) {\n    /* Example: add two numbers from scanf in main(). */\n    return a + b;\n}\n\nint main(void) {\n    long long a = 0, b = 0;\n    if (scanf("%lld %lld", &a, &b) != 2) return 0;\n    long long result = solve(a, b);\n    printf("%lld\\n", result);\n    return 0;\n}\n`,
 };
 
 export function getDefaultStarterCode(lang: string, problem?: { starterCode?: Record<string, string> }): string {

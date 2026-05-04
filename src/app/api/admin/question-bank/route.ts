@@ -11,7 +11,7 @@ import {
   searchTextForBankEntry,
 } from "@/lib/question-bank";
 import { getMcqCorrectIndices } from "@/lib/assessment-mcq";
-import { cleanCodingProblemsForCreate } from "@/lib/assessment-payload-normalize";
+import { normalizeQuestionBankCodingProblem } from "@/lib/assessment-payload-normalize";
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
 
     const normalizedCoding =
       kind === "CODING"
-        ? (cleanCodingProblemsForCreate([body.coding as unknown as Record<string, unknown>])[0] as CodingProblem)
+        ? (normalizeQuestionBankCodingProblem(body.coding as unknown as Record<string, unknown>) as CodingProblem)
         : undefined;
 
     const validation = kind === "MCQ" ? validateMcq(body.mcq) : validateCoding(normalizedCoding);
@@ -149,14 +149,20 @@ export async function POST(req: Request) {
       mcq: kind === "MCQ" ? body.mcq : undefined,
       coding: kind === "CODING" ? normalizedCoding : undefined,
       fingerprint,
-      searchText: searchTextForBankEntry(kind, body.mcq, body.coding),
+      searchText: searchTextForBankEntry(kind, body.mcq, normalizedCoding as CodingProblem),
       section,
       tags,
       leetcodeSlug: leetcodeSlug || undefined,
       createdBy: new mongoose.Types.ObjectId(session.uid),
     });
 
-    return NextResponse.json({ ok: true, id: String(created._id) });
+    return NextResponse.json({
+      ok: true,
+      id: String(created._id),
+      kind: created.kind,
+      mcq: created.mcq,
+      coding: created.coding,
+    });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json({ message: msg }, { status: 500 });

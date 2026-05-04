@@ -5,7 +5,7 @@ import QuestionBankItemModel, { type QuestionBankKind } from "@/models/QuestionB
 import type { MCQQuestion, CodingProblem } from "@/models/Test";
 import { fingerprintForCoding, fingerprintForMcq, searchTextForBankEntry } from "@/lib/question-bank";
 import { getMcqCorrectIndices } from "@/lib/assessment-mcq";
-import { cleanCodingProblemsForCreate } from "@/lib/assessment-payload-normalize";
+import { normalizeQuestionBankCodingProblem } from "@/lib/assessment-payload-normalize";
 
 async function requireAdmin() {
   const session = await getSessionFromRequestCookies();
@@ -59,9 +59,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const mcq = kind === "MCQ" ? (body.mcq ?? existing.mcq) : undefined;
     const coding =
       kind === "CODING"
-        ? (cleanCodingProblemsForCreate([
-            (body.coding ?? existing.coding) as unknown as Record<string, unknown>,
-          ])[0] as CodingProblem)
+        ? (() => {
+            const ex = existing.coding
+              ? (JSON.parse(JSON.stringify(existing.coding)) as Record<string, unknown>)
+              : {};
+            const bd = (body.coding ? JSON.parse(JSON.stringify(body.coding)) : {}) as Record<string, unknown>;
+            const merged: Record<string, unknown> = {
+              ...ex,
+              ...bd,
+              starterCode: {
+                ...(typeof ex.starterCode === "object" && ex.starterCode && !Array.isArray(ex.starterCode)
+                  ? { ...(ex.starterCode as Record<string, string>) }
+                  : {}),
+                ...(typeof bd.starterCode === "object" && bd.starterCode && !Array.isArray(bd.starterCode)
+                  ? { ...(bd.starterCode as Record<string, string>) }
+                  : {}),
+              },
+            };
+            return normalizeQuestionBankCodingProblem(merged) as CodingProblem;
+          })()
         : undefined;
     const error = kind === "MCQ" ? validateMcq(mcq) : validateCoding(coding);
     if (error) return NextResponse.json({ message: error }, { status: 400 });
@@ -89,7 +105,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     existing.leetcodeSlug = String(body.leetcodeSlug ?? existing.leetcodeSlug ?? "").trim().toLowerCase();
     await existing.save();
 
-    return NextResponse.json({ ok: true, id: String(existing._id) });
+    return NextResponse.json({
+      ok: true,
+      id: String(existing._id),
+      kind: existing.kind,
+      mcq: existing.mcq,
+      coding: existing.coding,
+    });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json({ message: msg }, { status: 500 });

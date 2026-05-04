@@ -21,11 +21,11 @@ export function blind75StarterCode(_title: string, _leetcodeUrl: string): Record
   return {
     Javascript:
       STUDENT_CODE_ZONE_BANNER.Javascript +
-      `function solve(a, b) {\n  // >>> START CODING HERE (template: sum of two numbers)\n  return a + b;\n  // >>> END CODING HERE\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const parts = (lines[0] || "").trim().split(/\\s+/).filter(Boolean);\n  const a = parts.length > 0 ? Number(parts[0]) : 0;\n  const b = parts.length > 1 ? Number(parts[1]) : 0;\n  const result = solve(a, b);\n  process.stdout.write(String(result) + "\\n");\n});\n`,
+      `function solve(a, b) {\n  // Template: add two numbers from the first line of input.\n  return a + b;\n}\n\nconst readline = require("readline");\nconst rl = readline.createInterface({ input: process.stdin });\nconst lines = [];\nrl.on("line", (line) => lines.push(line));\nrl.on("close", () => {\n  const parts = (lines[0] || "").trim().split(/\\s+/).filter(Boolean);\n  const a = parts.length > 0 ? Number(parts[0]) : 0;\n  const b = parts.length > 1 ? Number(parts[1]) : 0;\n  const result = solve(a, b);\n  process.stdout.write(String(result) + "\\n");\n});\n`,
     Python:
-      `import sys\n\n` +
+      `from __future__ import annotations\n\nimport sys\n\n` +
       STUDENT_CODE_ZONE_BANNER.Python +
-      `def solve(a: int, b: int):\n    # >>> START CODING HERE (template: sum of two numbers)\n    return a + b\n    # >>> END CODING HERE\n\n\ndef main() -> None:\n    line = sys.stdin.readline().strip()\n    parts = line.split()\n    a = int(parts[0]) if len(parts) > 0 else 0\n    b = int(parts[1]) if len(parts) > 1 else 0\n    result = solve(a, b)\n    sys.stdout.write(str(result) + "\\n")\n\nif __name__ == "__main__":\n    main()\n`,
+      `def solve(a: int, b: int) -> int:\n    # Template: sum two numbers from the first line of stdin.\n    return a + b\n\n\ndef main() -> None:\n    line = sys.stdin.readline().strip()\n    parts = line.split()\n    a = int(parts[0]) if len(parts) > 0 else 0\n    b = int(parts[1]) if len(parts) > 1 else 0\n    result = solve(a, b)\n    sys.stdout.write(str(result) + "\\n")\n\nif __name__ == "__main__":\n    main()\n`,
     Java:
       `import java.util.Scanner;\n\n` +
       STUDENT_CODE_ZONE_BANNER.Java +

@@ -87,12 +87,12 @@ function defaultCodeTemplate(language: RunLanguage, title: string): string {
   const safeTitle = title?.trim() || "Problem";
   if (language === "Javascript") {
     return `// ${safeTitle}
-// Read input from STDIN and print output to STDOUT.
+// Node reads stdin here and prints whatever solve() returns.
 const fs = require("fs");
 const input = fs.readFileSync(0, "utf8").trim();
 
 function solve(rawInput) {
-  // TODO: implement solution
+  // Your logic here — return a string (or number coerced below).
   return "";
 }
 
@@ -106,13 +106,13 @@ if (output !== undefined && output !== null) {
     // `from __future__ import annotations` keeps PEP 585 hints (list[str], etc.) from
     // crashing on Python 3.8 and earlier runtimes (common on Judge0).
     return `# ${safeTitle}
-# Read input from STDIN and print output to STDOUT.
+# stdin → solve() → stdout (Judge0 uses Python 3.8-style runtime often).
 from __future__ import annotations
 
 import sys
 
 def solve(raw_input: str) -> str:
-    # TODO: implement solution
+    # Your logic here
     return ""
 
 if __name__ == "__main__":
@@ -124,32 +124,34 @@ if __name__ == "__main__":
   }
   if (language === "Java") {
     return `// ${safeTitle}
-// Read input from STDIN and print output to STDOUT.
-import java.io.*;
-import java.util.*;
+// Scanner reads all of stdin (works on typical Judge Java builds).
+import java.util.Scanner;
 
 public class Main {
     static String solve(String input) {
-        // TODO: implement solution
+        // Your logic here
         return "";
     }
 
-    public static void main(String[] args) throws Exception {
-        String input = new String(System.in.readAllBytes()).trim();
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        sc.useDelimiter("\\\\A");
+        String input = sc.hasNext() ? sc.next().trim() : "";
         String out = solve(input);
         if (out != null) System.out.print(out);
+        sc.close();
     }
 }
 `;
   }
   if (language === "C++") {
     return `// ${safeTitle}
-// Read input from STDIN and print output to STDOUT.
+// g++/Judge0: bits/stdc++.h is available on the judge.
 #include <bits/stdc++.h>
 using namespace std;
 
 string solve(const string& input) {
-    // TODO: implement solution
+    // Your logic here
     return "";
 }
 
@@ -164,14 +166,14 @@ int main() {
 }
 `;
   }
-  return `// ${safeTitle}
-// Read input from STDIN and print output to STDOUT.
+  return `/* ${safeTitle} */
+/* stdin read into buffer — extend if you need more than ~100k chars */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 void solve(const char* input) {
-    // TODO: implement solution
+    /* Your logic here */
 }
 
 int main(void) {
@@ -226,6 +228,7 @@ export function QuestionBankAdminClient() {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(25);
   const [saving, setSaving] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [running, setRunning] = React.useState(false);
   const [queryInput, setQueryInput] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
@@ -285,6 +288,7 @@ export function QuestionBankAdminClient() {
   }, [fetchItems]);
 
   const editingItem = useMemo(() => items.find((i) => i.id === selectedId) || null, [items, selectedId]);
+  const actionBusy = saving || deletingId !== null;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const pageNumbers = useMemo(() => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -336,6 +340,20 @@ export function QuestionBankAdminClient() {
   const saveQuestion = async () => {
     setSaving(true);
     try {
+      const starterRecord =
+        kind === "CODING"
+          ? RUN_LANGUAGES.reduce<Record<string, string>>((acc, lang) => {
+              acc[lang] = codeByLanguage[lang] ?? "";
+              return acc;
+            }, {})
+          : undefined;
+      const codingPayload =
+        kind === "CODING"
+          ? {
+              ...coding,
+              starterCode: starterRecord ?? {},
+            }
+          : undefined;
       const payload = {
         kind,
         section: section.trim(),
@@ -345,7 +363,7 @@ export function QuestionBankAdminClient() {
           .filter(Boolean),
         leetcodeSlug: leetcodeSlug.trim().toLowerCase(),
         mcq: kind === "MCQ" ? mcq : undefined,
-        coding: kind === "CODING" ? coding : undefined,
+        coding: codingPayload,
       };
       const isEdit = Boolean(selectedId);
       const res = await fetch(isEdit ? `/api/admin/question-bank/${selectedId}` : "/api/admin/question-bank", {
@@ -353,12 +371,31 @@ export function QuestionBankAdminClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json().catch(() => ({}));
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        id?: string;
+        coding?: Coding;
+        mcq?: MCQ;
+      };
       if (!res.ok) {
         toast.error(data.message || "Save failed.");
         return;
       }
       toast.success(isEdit ? "Question updated." : "Question created.");
+      if (kind === "CODING" && data.coding) {
+        const c = data.coding;
+        setCoding({
+          ...c,
+          sampleTestCases: [...(c.sampleTestCases || [])],
+          hiddenTestCases: [...(c.hiddenTestCases || [])],
+          starterCode: { ...(c.starterCode || {}) },
+        });
+        setCodeByLanguage(buildInitialCodeByLanguage(c));
+      }
+      if (kind === "MCQ" && data.mcq) {
+        const m = data.mcq;
+        setMcq({ ...m, options: [...(m.options || [])] });
+      }
       await fetchItems();
       if (!isEdit && data.id) {
         setSelectedId(String(data.id));
@@ -370,15 +407,20 @@ export function QuestionBankAdminClient() {
 
   const removeQuestion = async (id: string) => {
     if (!window.confirm("Delete this question?")) return;
-    const res = await fetch(`/api/admin/question-bank/${id}`, { method: "DELETE" });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      toast.error(data.message || "Delete failed.");
-      return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/admin/question-bank/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.message || "Delete failed.");
+        return;
+      }
+      if (selectedId === id) onNew("MCQ");
+      toast.success("Question removed.");
+      await fetchItems();
+    } finally {
+      setDeletingId(null);
     }
-    if (selectedId === id) onNew("MCQ");
-    toast.success("Question removed.");
-    await fetchItems();
   };
 
   const runTests = async () => {
@@ -444,10 +486,10 @@ export function QuestionBankAdminClient() {
         description="Manage all interview questions in one place. You can add, edit, delete, and run coding test cases."
         action={
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => onNew("MCQ")} className="rounded-full">
+            <Button type="button" variant="outline" onClick={() => onNew("MCQ")} className="rounded-full" disabled={actionBusy}>
               <Plus className="h-4 w-4 mr-1" /> New MCQ
             </Button>
-            <Button type="button" onClick={() => onNew("CODING")} className="rounded-full">
+            <Button type="button" onClick={() => onNew("CODING")} className="rounded-full" disabled={actionBusy}>
               <Plus className="h-4 w-4 mr-1" /> New Coding
             </Button>
           </div>
@@ -529,6 +571,7 @@ export function QuestionBankAdminClient() {
             <Button
               type="button"
               variant="outline"
+              disabled={loading}
               onClick={() => {
                 const immediate = queryInput.trim();
                 setDebouncedQuery(immediate);
@@ -536,9 +579,10 @@ export function QuestionBankAdminClient() {
                 fetchItems(immediate);
               }}
             >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
               Search
             </Button>
-            <Button type="button" variant="ghost" onClick={clearFilters}>
+            <Button type="button" variant="ghost" onClick={clearFilters} disabled={loading}>
               Clear
             </Button>
           </div>
@@ -579,7 +623,12 @@ export function QuestionBankAdminClient() {
                   className={`rounded-xl border p-3 ${selectedId === item.id ? "border-primary bg-primary/10" : "border-white/10 bg-black/20"}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <button type="button" className="text-left flex-1 min-w-0" onClick={() => onEdit(item)}>
+                    <button
+                      type="button"
+                      className="text-left flex-1 min-w-0"
+                      onClick={() => onEdit(item)}
+                      disabled={actionBusy}
+                    >
                       <p className="text-[10px] uppercase text-slate-500 tracking-wider">{item.kind}</p>
                       <p className="text-sm text-white truncate">
                         {item.kind === "MCQ" ? item.mcq?.questionText || "Untitled MCQ" : item.coding?.title || "Untitled Coding"}
@@ -588,8 +637,19 @@ export function QuestionBankAdminClient() {
                         {(item.tags || []).slice(0, 3).join(", ") || "No tags"} {item.section ? `• ${item.section}` : ""}
                       </p>
                     </button>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeQuestion(item.id)}>
-                      <Trash2 className="h-4 w-4 text-red-400" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled={actionBusy}
+                      onClick={() => removeQuestion(item.id)}
+                      aria-label="Delete question"
+                    >
+                      {deletingId === item.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 text-red-400" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -597,7 +657,12 @@ export function QuestionBankAdminClient() {
             )}
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-white/10 gap-2">
-            <Button type="button" variant="outline" disabled={page <= 1 || loading} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={page <= 1 || loading || actionBusy}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
               Previous
             </Button>
             <div className="flex items-center gap-1">
@@ -608,7 +673,7 @@ export function QuestionBankAdminClient() {
                   size="sm"
                   variant={n === page ? "default" : "outline"}
                   className="h-8 min-w-8 px-2"
-                  disabled={loading}
+                  disabled={loading || actionBusy}
                   onClick={() => setPage(n)}
                 >
                   {n}
@@ -618,7 +683,7 @@ export function QuestionBankAdminClient() {
             <Button
               type="button"
               variant="outline"
-              disabled={page >= totalPages || loading}
+              disabled={page >= totalPages || loading || actionBusy}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               Next
@@ -833,7 +898,7 @@ export function QuestionBankAdminClient() {
                   className="min-h-[200px] rounded-none border-0 border-b border-white/10 bg-[#0b0f14] text-slate-100 font-mono text-xs"
                 />
                 <div className="px-4 pb-4">
-                  <Button type="button" disabled={running} onClick={runTests}>
+                  <Button type="button" disabled={running || saving || deletingId !== null} onClick={runTests}>
                     {running ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Play className="h-4 w-4 mr-1" />}
                     Run test cases
                   </Button>
@@ -857,12 +922,18 @@ export function QuestionBankAdminClient() {
           )}
 
           <div className="pt-2 border-t border-white/10 flex gap-2">
-            <Button type="button" onClick={saveQuestion} disabled={saving}>
+            <Button type="button" onClick={saveQuestion} disabled={saving || deletingId !== null}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
               {selectedId ? "Update question" : "Create question"}
             </Button>
             {selectedId ? (
-              <Button type="button" variant="destructive" onClick={() => removeQuestion(selectedId)}>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={saving || deletingId !== null}
+                onClick={() => removeQuestion(selectedId)}
+              >
+                {deletingId === selectedId ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
                 Delete
               </Button>
             ) : null}

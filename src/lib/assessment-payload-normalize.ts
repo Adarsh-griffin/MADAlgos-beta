@@ -48,3 +48,31 @@ export function cleanCodingProblemsForCreate(codingProblems: unknown[]): Record<
     }, {}),
   }));
 }
+
+/**
+ * Question bank admin: keep non-empty per-language starter code as-is (admin edits + run panel),
+ * only fill missing languages with platform defaults. Avoids wiping edits on PATCH.
+ */
+export function normalizeQuestionBankCodingProblem(problem: Record<string, unknown>): Record<string, unknown> {
+  const p = { ...problem };
+  p.sampleTestCases = ((p.sampleTestCases as { input: string; output: string }[]) || []).filter(
+    (tc) => tc.input.trim() || tc.output.trim()
+  );
+  p.hiddenTestCases = ((p.hiddenTestCases as { input: string; output: string }[]) || []).filter(
+    (tc) => tc.input.trim() || tc.output.trim()
+  );
+  const incoming =
+    typeof p.starterCode === "object" && p.starterCode && !Array.isArray(p.starterCode)
+      ? { ...(p.starterCode as Record<string, string>) }
+      : {};
+  const starterCode: Record<string, string> = {};
+  for (const lang of ASSESSMENT_LANG_KEYS) {
+    const raw = typeof incoming[lang] === "string" ? incoming[lang].trim() : "";
+    if (raw) {
+      starterCode[lang] = incoming[lang] as string;
+    } else {
+      starterCode[lang] = getDefaultStarterCode(lang, { starterCode: incoming });
+    }
+  }
+  return { ...p, starterCode };
+}
