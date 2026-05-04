@@ -91,6 +91,12 @@ export function AdminSidebar() {
                     /^\/admin\/practice-tests\/[^/]+\/edit/.test(p),
             },
             {
+                name: "Question bank",
+                path: "/admin/question-bank",
+                icon: LibraryBig,
+                isActive: (p) => p.startsWith("/admin/question-bank"),
+            },
+            {
                 name: "System design CMS",
                 path: "/admin/system-design",
                 icon: LibraryBig,

@@ -14,7 +14,8 @@
     "seed:booking": "node scripts/seed-booking-test-data.mjs",
     "seed:pricing": "node scripts/seed-pricing-from-json.mjs",
     "seed:leetcode": "node scripts/seed-leetcode-list.mjs",
-    "seed:public-tests": "node scripts/seed-public-demo-tests.mjs"
+    "seed:public-tests": "node scripts/seed-public-demo-tests.mjs",
+    "export:question-bank": "node scripts/export-question-bank-xlsx.mjs"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.31.0",

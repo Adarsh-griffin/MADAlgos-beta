@@ -1,4 +1,5 @@
 /** Shared MCQ / coding normalization for platform tests and practice_test documents. */
+import { ASSESSMENT_LANG_KEYS, getDefaultStarterCode } from "@/lib/assessment-code-starters";
 
 export function normalizeMcqsForCreate(
   mcqs: unknown[]
@@ -36,5 +37,14 @@ export function cleanCodingProblemsForCreate(codingProblems: unknown[]): Record<
     hiddenTestCases: ((p.hiddenTestCases as { input: string; output: string }[]) || []).filter(
       (tc) => tc.input.trim() || tc.output.trim()
     ),
+    starterCode: ASSESSMENT_LANG_KEYS.reduce<Record<string, string>>((acc, lang) => {
+      acc[lang] = getDefaultStarterCode(lang, {
+        starterCode:
+          typeof p.starterCode === "object" && p.starterCode
+            ? (p.starterCode as Record<string, string>)
+            : undefined,
+      });
+      return acc;
+    }, {}),
   }));
 }
