@@ -3,7 +3,12 @@ import { connectDB } from "@/lib/mongodb";
 import { getSessionFromRequestCookies } from "@/lib/auth";
 import QuestionBankItemModel, { type QuestionBankKind } from "@/models/QuestionBankItem";
 import type { MCQQuestion, CodingProblem } from "@/models/Test";
-import { fingerprintForCoding, fingerprintForMcq, searchTextForBankEntry } from "@/lib/question-bank";
+import {
+  fingerprintForCoding,
+  fingerprintForCodingContent,
+  fingerprintForMcq,
+  searchTextForBankEntry,
+} from "@/lib/question-bank";
 import { getMcqCorrectIndices } from "@/lib/assessment-mcq";
 import { normalizeQuestionBankCodingProblem } from "@/lib/assessment-payload-normalize";
 
@@ -97,6 +102,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     existing.mcq = kind === "MCQ" ? (mcq as MCQQuestion) : undefined;
     existing.coding = kind === "CODING" ? (coding as CodingProblem) : undefined;
     existing.fingerprint = nextFingerprint;
+    existing.codingContentFingerprint =
+      kind === "CODING" && coding ? fingerprintForCodingContent(coding as CodingProblem) : undefined;
     existing.searchText = searchTextForBankEntry(kind, existing.mcq, existing.coding);
     existing.section = String(body.section ?? existing.section ?? "").trim();
     existing.tags = Array.isArray(body.tags)

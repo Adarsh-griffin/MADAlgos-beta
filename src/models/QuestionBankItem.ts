@@ -9,6 +9,8 @@ export interface QuestionBankItemDocument extends Document {
   coding?: CodingProblem;
   /** Stable hash for deduplication across tests */
   fingerprint: string;
+  /** Same problem identity ignoring starter code — matches company free-pack coding filters */
+  codingContentFingerprint?: string;
   /** Lowercased concatenation for simple search */
   searchText: string;
   /** e.g. blind75 — seeded catalog packs */
@@ -46,6 +48,7 @@ const QuestionBankItemSchema = new Schema<QuestionBankItemDocument>(
       starterCode: { type: Schema.Types.Mixed, default: {} },
     },
     fingerprint: { type: String, required: true, unique: true, index: true },
+    codingContentFingerprint: { type: String, index: true },
     searchText: { type: String, required: true, index: true },
     sourcePack: { type: String, index: true },
     section: { type: String, index: true },

@@ -7,9 +7,11 @@ import type { CodingProblem, MCQQuestion } from "@/models/Test";
 import {
   ensureCatalogPacksSeeded,
   fingerprintForCoding,
+  fingerprintForCodingContent,
   fingerprintForMcq,
   searchTextForBankEntry,
 } from "@/lib/question-bank";
+import { getCompanyHiringPracticeCodingContentFingerprints } from "@/lib/company-hiring-practice";
 import { getMcqCorrectIndices } from "@/lib/assessment-mcq";
 import { normalizeQuestionBankCodingProblem } from "@/lib/assessment-payload-normalize";
 
@@ -56,6 +58,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const q = (searchParams.get("q") || "").trim().toLowerCase();
     const kind = searchParams.get("kind");
+    const pricingRaw = (searchParams.get("pricing") || "all").trim().toLowerCase();
+    const pricing = pricingRaw === "free" || pricingRaw === "paid" ? pricingRaw : "all";
     const section = (searchParams.get("section") || "").trim();
     const tag = (searchParams.get("tag") || "").trim().toLowerCase();
     const pageParam = Number.parseInt(searchParams.get("page") || "1", 10);
@@ -67,11 +71,36 @@ export async function GET(req: Request) {
     await connectDB();
     await ensureCatalogPacksSeeded();
 
+    let freePackContentFps: string[] = [];
+    if (pricing === "free" || pricing === "paid") {
+      freePackContentFps = await getCompanyHiringPracticeCodingContentFingerprints();
+    }
+
     const filter: Record<string, unknown> = {};
     if (q) filter.searchText = { $regex: escapeRegex(q), $options: "i" };
-    if (kind === "MCQ" || kind === "CODING") filter.kind = kind;
     if (section) filter.section = section;
     if (tag) filter.tags = tag;
+
+    if (pricing === "free") {
+      filter.kind = "CODING";
+      filter.codingContentFingerprint = freePackContentFps.length
+        ? { $in: freePackContentFps }
+        : { $in: [] as string[] };
+    } else if (pricing === "paid") {
+      if (kind === "MCQ") {
+        filter.kind = "MCQ";
+      } else if (kind === "CODING") {
+        filter.kind = "CODING";
+        filter.codingContentFingerprint = { $nin: freePackContentFps };
+      } else {
+        filter.$or = [
+          { kind: "MCQ" },
+          { kind: "CODING", codingContentFingerprint: { $nin: freePackContentFps } },
+        ];
+      }
+    } else if (kind === "MCQ" || kind === "CODING") {
+      filter.kind = kind;
+    }
 
     const [items, total] = await Promise.all([
       QuestionBankItemModel.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limit).lean().exec(),
@@ -149,6 +178,8 @@ export async function POST(req: Request) {
       mcq: kind === "MCQ" ? body.mcq : undefined,
       coding: kind === "CODING" ? normalizedCoding : undefined,
       fingerprint,
+      codingContentFingerprint:
+        kind === "CODING" && normalizedCoding ? fingerprintForCodingContent(normalizedCoding as CodingProblem) : undefined,
       searchText: searchTextForBankEntry(kind, body.mcq, normalizedCoding as CodingProblem),
       section,
       tags,

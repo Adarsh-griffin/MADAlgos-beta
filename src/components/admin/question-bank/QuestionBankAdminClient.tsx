@@ -233,6 +233,8 @@ export function QuestionBankAdminClient() {
   const [queryInput, setQueryInput] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
   const [filterKind, setFilterKind] = React.useState<"ALL" | "MCQ" | "CODING">("ALL");
+  /** Free = coding tasks from seeded company hiring practice packs only; Paid = everything else. */
+  const [filterPricing, setFilterPricing] = React.useState<"ALL" | "FREE" | "PAID">("ALL");
   const [filterSection, setFilterSection] = React.useState("ALL");
   const [filterTag, setFilterTag] = React.useState("ALL");
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -257,6 +259,7 @@ export function QuestionBankAdminClient() {
       const params = new URLSearchParams();
       const activeQuery = typeof queryOverride === "string" ? queryOverride.trim() : debouncedQuery.trim();
       if (activeQuery) params.set("q", activeQuery);
+      if (filterPricing !== "ALL") params.set("pricing", filterPricing.toLowerCase());
       if (filterKind !== "ALL") params.set("kind", filterKind);
       if (filterSection !== "ALL") params.set("section", filterSection);
       if (filterTag !== "ALL") params.set("tag", filterTag);
@@ -273,7 +276,7 @@ export function QuestionBankAdminClient() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedQuery, filterKind, filterSection, filterTag, page, pageSize]);
+  }, [debouncedQuery, filterKind, filterPricing, filterSection, filterTag, page, pageSize]);
 
   React.useEffect(() => {
     const t = window.setTimeout(() => {
@@ -460,6 +463,7 @@ export function QuestionBankAdminClient() {
 
   const clearFilters = () => {
     setFilterKind("ALL");
+    setFilterPricing("ALL");
     setFilterSection("ALL");
     setFilterTag("ALL");
     setQueryInput("");
@@ -500,7 +504,25 @@ export function QuestionBankAdminClient() {
         <section className="rounded-2xl border border-white/10 bg-[#050505]/70 p-4 space-y-4 xl:sticky xl:top-24">
           <div className="grid grid-cols-2 gap-2">
             <Select
-              value={filterKind}
+              value={filterPricing}
+              onValueChange={(v: "ALL" | "FREE" | "PAID") => {
+                setFilterPricing(v);
+                if (v === "FREE") setFilterKind("CODING");
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Access" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All (free + paid)</SelectItem>
+                <SelectItem value="FREE">Free — company practice coding</SelectItem>
+                <SelectItem value="PAID">Paid — rest of bank</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filterPricing === "FREE" ? "CODING" : filterKind}
+              disabled={filterPricing === "FREE"}
               onValueChange={(v: "ALL" | "MCQ" | "CODING") => {
                 setFilterKind(v);
                 setPage(1);
@@ -515,26 +537,26 @@ export function QuestionBankAdminClient() {
                 <SelectItem value="CODING">Coding</SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={filterSection}
-              onValueChange={(v) => {
-                setFilterSection(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Section" />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                <SelectItem value="ALL">All sections</SelectItem>
-                {QUESTION_BANK_SECTIONS.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
+          <Select
+            value={filterSection}
+            onValueChange={(v) => {
+              setFilterSection(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+              <SelectValue placeholder="Section" />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <SelectItem value="ALL">All sections</SelectItem>
+              {QUESTION_BANK_SECTIONS.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select
             value={filterTag}
             onValueChange={(v) => {

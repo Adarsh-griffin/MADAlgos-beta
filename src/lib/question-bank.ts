@@ -32,17 +32,32 @@ export function fingerprintForMcq(mcq: MCQQuestion): string {
   return createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
 }
 
+const normTestCases = (tcs: { input: string; output: string }[]) =>
+  (tcs || []).map((t) => ({ i: t.input.trim(), o: t.output.trim() }));
+
+/** Hash of problem statement + I/O + tests (excludes starter code). Used to match company free-pack coding in the admin bank. */
+export function fingerprintForCodingContent(p: CodingProblem): string {
+  const normalized = {
+    title: p.title.trim().toLowerCase(),
+    desc: p.description.trim(),
+    inF: (p.inputFormat || "").trim(),
+    outF: (p.outputFormat || "").trim(),
+    s: normTestCases(p.sampleTestCases || []),
+    h: normTestCases(p.hiddenTestCases || []),
+    m: p.marks,
+  };
+  return createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
+}
+
 export function fingerprintForCoding(p: CodingProblem): string {
-  const normTc = (tcs: { input: string; output: string }[]) =>
-    (tcs || []).map((t) => ({ i: t.input.trim(), o: t.output.trim() }));
   const starters = p.starterCode ? JSON.stringify(p.starterCode) : "";
   const normalized = {
     title: p.title.trim().toLowerCase(),
     desc: p.description.trim(),
     inF: (p.inputFormat || "").trim(),
     outF: (p.outputFormat || "").trim(),
-    s: normTc(p.sampleTestCases || []),
-    h: normTc(p.hiddenTestCases || []),
+    s: normTestCases(p.sampleTestCases || []),
+    h: normTestCases(p.hiddenTestCases || []),
     m: p.marks,
     starters,
   };
@@ -102,6 +117,7 @@ export async function ensureDefaultQuestionBankSeeded(): Promise<void> {
       mcq: s.kind === "MCQ" ? s.mcq : undefined,
       coding: s.kind === "CODING" ? s.coding : undefined,
       fingerprint: s.fingerprint,
+      codingContentFingerprint: s.kind === "CODING" && s.coding ? fingerprintForCodingContent(s.coding) : undefined,
       searchText:
         s.kind === "MCQ" && s.mcq
           ? searchTextForBankEntry("MCQ", s.mcq)
@@ -142,6 +158,7 @@ async function ensureBlind75PackSeeded(): Promise<void> {
           kind: "CODING",
           coding,
           fingerprint,
+          codingContentFingerprint: fingerprintForCodingContent(coding),
           searchText,
           sourcePack: "blind75",
           section: row.section,
@@ -188,11 +205,37 @@ async function ensureDsaMcqPackSeeded(): Promise<void> {
   }
 }
 
+async function backfillCodingContentFingerprints(): Promise<void> {
+  const needs = await QuestionBankItemModel.countDocuments({
+    kind: "CODING",
+    $or: [{ codingContentFingerprint: { $exists: false } }, { codingContentFingerprint: null }, { codingContentFingerprint: "" }],
+  });
+  if (needs === 0) return;
+
+  const docs = await QuestionBankItemModel.find({
+    kind: "CODING",
+    $or: [{ codingContentFingerprint: { $exists: false } }, { codingContentFingerprint: null }, { codingContentFingerprint: "" }],
+  })
+    .select({ coding: 1 })
+    .lean();
+
+  await Promise.all(
+    docs.map((d: { _id: unknown; coding?: CodingProblem }) => {
+      if (!d.coding) return Promise.resolve();
+      return QuestionBankItemModel.updateOne(
+        { _id: d._id },
+        { $set: { codingContentFingerprint: fingerprintForCodingContent(d.coding) } }
+      ).exec();
+    })
+  );
+}
+
 /** Seeds starter samples, Blind 75 coding catalog, and DSA MCQs (idempotent). */
 export async function ensureCatalogPacksSeeded(): Promise<void> {
   await ensureDefaultQuestionBankSeeded();
   await ensureBlind75PackSeeded();
   await ensureDsaMcqPackSeeded();
+  await backfillCodingContentFingerprints();
 }
 
 export async function upsertBankItem(
@@ -216,6 +259,7 @@ export async function upsertBankItem(
     mcq: kind === "MCQ" ? payload.mcq : undefined,
     coding: kind === "CODING" ? payload.coding : undefined,
     fingerprint,
+    codingContentFingerprint: kind === "CODING" && payload.coding ? fingerprintForCodingContent(payload.coding) : undefined,
     searchText: searchTextForBankEntry(kind, payload.mcq, payload.coding),
     createdBy,
   });
